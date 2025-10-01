@@ -1,0 +1,1 @@
+export const slogan = "Transform the Way You Learn with Intelligent Guidance"

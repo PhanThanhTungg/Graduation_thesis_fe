@@ -1,0 +1,103 @@
+type CustomRequestOptions = Omit<RequestInit, 'method'> & {
+  baseUrl: string | undefined;
+}
+
+export const isNextClient = typeof window !== 'undefined';
+
+const request = async <Response>(
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  url: string,
+  options: CustomRequestOptions | undefined,
+  signal: AbortSignal | undefined
+) => {
+  const baseUrl = options?.baseUrl || process.env.NEXT_PUBLIC_API_URL;
+  const fullUrl = url.startsWith('/') ? `${baseUrl}${url.slice(1)}` : `${baseUrl}${url}`;
+
+  let body: FormData | string | undefined = undefined;
+  if (options?.body instanceof FormData) {
+    body = options.body;
+  } else if (options?.body) {
+    body = JSON.stringify(options.body);
+  }
+
+  const baseHeaders: Record<string, string> = body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
+
+  try {
+    const res = await fetch(fullUrl, {
+      headers: {
+        ...baseHeaders,
+        ...options?.headers,
+      },
+      method,
+      body, 
+      signal
+    });
+
+    const data: Response = await res.json();
+
+    // Intercept response here
+    
+    return {
+      status: res.status,
+      data
+    }
+  } catch (error) {
+    console.log("API Error", error)
+    return {
+      status: 500,
+      data: {
+        error,
+        message: error instanceof Error ? error.message : "An unknown error"
+      }
+    }
+  }
+}
+
+type BodyType = FormData | Record<string, unknown> | undefined;
+type OptionsType = Omit<CustomRequestOptions, 'body'> | undefined;
+
+export const get = <Response>(
+  url: string,
+  params: Record<string, string> | undefined,
+  options: OptionsType,
+  signal: AbortSignal | undefined
+) => {
+  if (params) {
+    const queryString = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach(v => queryString.append(key, v.toString()));
+      } else if (value !== null && value !== undefined) {
+        queryString.append(key, String(value));
+      }
+    });
+    url += `?${queryString.toString()}`;
+  }
+  return request<Response>('GET', url, options, signal);
+}
+
+export const post = <Response>(
+  url: string,
+  body: BodyType,
+  options: OptionsType,
+  signal: AbortSignal | undefined
+) => {
+  return request<Response>('POST', url, { ...options, body } as CustomRequestOptions, signal);
+}
+
+export const patch = <Response>(
+  url: string,
+  body: BodyType,
+  options: OptionsType,
+  signal: AbortSignal | undefined
+) => {
+  return request<Response>('PATCH', url, { ...options, body } as CustomRequestOptions, signal);
+}
+
+export const del = <Response>(
+  url: string,
+  options: OptionsType,
+  signal: AbortSignal | undefined
+) => {
+  return request<Response>('DELETE', url, options as CustomRequestOptions, signal);
+}
