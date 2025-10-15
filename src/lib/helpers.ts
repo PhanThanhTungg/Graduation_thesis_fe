@@ -73,7 +73,7 @@ export const getRecentSearches = (): string[] => {
 };
 
 // Delete recent search from local storage
-export const deleteRecentSearch = (): void => {
+export const clearRecentSearch = (): void => {
   localStorage.removeItem("recentSearches");
 };
 

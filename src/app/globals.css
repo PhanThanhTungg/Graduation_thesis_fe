@@ -41,7 +41,12 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-green: var(--green);
   --color-yellow: var(--yellow);
+  --color-star: var(--star);
   --color-green-foreground: var(--green-foreground);
+  --color-mint: var(--mint);
+  --color-peach: var(--peach);
+  --color-orange: var(--orange);
+  --color-violet: var(--violet);
 }
 
 :root {
@@ -80,6 +85,11 @@
   --green: #00a76f;
   --green-foreground: rgb(0 167 111 / 8%);
   --yellow: #b6b612;
+  --star: #eac700;
+  --mint: #B5FFE7;
+  --peach: #FDC1C1;
+  --orange: #ff8e3c;
+  --violet: #a78bd8;
 }
 
 .dark {
@@ -117,6 +127,11 @@
   --green: #51d890;
   --green-foreground: rgba(0, 255, 170, 0.15);
   --yellow: #c0c010;
+  --star: #ffd700;
+  --mint: #005436;
+  --peach: #815353;
+  --orange: #f25f4c;
+  --violet: #4e4176;
 }
 
 @layer base {
