@@ -1,5 +1,6 @@
 import { CategoryType } from "@/schema/category.schema";
 import { CourseType } from "@/schema/course.schema";
+import { CourseCurriculumType } from "@/schema/lesson.schema";
 
 export const mockCourses: CourseType[] = [
   {
@@ -237,6 +238,151 @@ export const testimonials = [
     avatar: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   },
 ]
+
+export const mockCourseCurriculum: CourseCurriculumType[] = [
+  {
+    courseId: 1,
+    totalDuration: "10h 30m",
+    totalLessons: 42,
+    sections: [
+      {
+        id: 1,
+        title: "Introduction to LearnPress",
+        lessons: [
+          {
+            id: 1,
+            title: "Welcome to the Course",
+            duration: "05:30",
+            type: "video",
+            isPreview: true,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Welcome to this comprehensive course on LearnPress. In this introduction, we'll cover what you'll learn and how to get the most out of this course.",
+          },
+          {
+            id: 2,
+            title: "Course Overview and Objectives",
+            duration: "08:45",
+            type: "video",
+            isPreview: true,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Learn about the key objectives and outcomes you can expect from this course.",
+          },
+          {
+            id: 3,
+            title: "Setting Up Your Environment",
+            duration: "12:20",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Step-by-step guide to setting up your development environment for LearnPress.",
+          },
+          {
+            id: 4,
+            title: "Quiz: Getting Started",
+            duration: "10:00",
+            type: "quiz",
+            isPreview: false,
+            isCompleted: false,
+            content: "Test your knowledge on the introduction topics.",
+          },
+        ],
+      },
+      {
+        id: 2,
+        title: "Core Concepts",
+        lessons: [
+          {
+            id: 5,
+            title: "Understanding LearnPress Architecture",
+            duration: "15:30",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Deep dive into the architecture and core concepts of LearnPress.",
+          },
+          {
+            id: 6,
+            title: "Creating Your First Course",
+            duration: "20:15",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Hands-on tutorial on creating your first course with LearnPress.",
+          },
+          {
+            id: 7,
+            title: "Managing Lessons and Quizzes",
+            duration: "18:40",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Learn how to effectively manage lessons and quizzes in your courses.",
+          },
+          {
+            id: 8,
+            title: "Assignment: Build a Sample Course",
+            duration: "30:00",
+            type: "assignment",
+            isPreview: false,
+            isCompleted: false,
+            content: "Create a sample course applying what you've learned so far.",
+          },
+        ],
+      },
+      {
+        id: 3,
+        title: "Advanced Features",
+        lessons: [
+          {
+            id: 9,
+            title: "Custom Course Templates",
+            duration: "22:10",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Master the art of creating custom course templates.",
+          },
+          {
+            id: 10,
+            title: "Payment Integration",
+            duration: "25:30",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Integrate payment gateways for monetizing your courses.",
+          },
+          {
+            id: 11,
+            title: "Analytics and Reporting",
+            duration: "16:45",
+            type: "video",
+            isPreview: false,
+            isCompleted: false,
+            videoUrl: "https://res.cloudinary.com/dndo7fe82/video/upload/v1737527345/zztvh1u93hfhb1ndhb16.mp4",
+            content: "Track student progress and generate insightful reports.",
+          },
+          {
+            id: 12,
+            title: "Final Quiz",
+            duration: "15:00",
+            type: "quiz",
+            isPreview: false,
+            isCompleted: false,
+            content: "Comprehensive quiz covering all advanced features.",
+          },
+        ],
+      },
+    ],
+  },
+];
 
 export const articles = [
   {

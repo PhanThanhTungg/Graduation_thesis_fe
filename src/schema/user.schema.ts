@@ -18,4 +18,29 @@ export const TeacherSchema = UserSchema.extend({
   linkedin: z.url().optional(),
   youtube: z.url().optional(),
 }).strip()
-export type TeacherType = z.infer<typeof TeacherSchema>;  
+export type TeacherType = z.infer<typeof TeacherSchema>;
+
+const passwordSchema = z
+  .string()
+  .min(8, "At least 8 characters")
+  .regex(/[a-z]/, "At least one lowercase letter")
+  .regex(/[A-Z]/, "At least one uppercase letter")
+  .regex(/[0-9]/, "At least one number")
+  .regex(/[^a-zA-Z0-9]/, "At least one special symbol");
+
+export const UserLoginSchema = z.object({
+  email: z.email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+}).strip();
+export type UserLoginType = z.infer<typeof UserLoginSchema>;
+
+export const UserRegisterSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.email("Invalid email address"),
+  password: passwordSchema,
+  confirmPassword: z.string().min(1, "Confirm password is required"),
+}).strict().refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+})
+export type UserRegisterType = z.infer<typeof UserRegisterSchema>;

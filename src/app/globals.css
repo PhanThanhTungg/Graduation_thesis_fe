@@ -167,6 +167,10 @@
     font-family: var(--font-exo), sans-serif;
   }
 
+  .font-heading {
+    font-family: var(--font-exo), sans-serif;
+  }
+
   .font-knewave {
     font-family: var(--font-knewave), sans-serif;
   }

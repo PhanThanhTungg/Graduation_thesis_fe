@@ -36,7 +36,10 @@ const request = async <Response>(
     const data: Response = await res.json();
 
     // Intercept response here
-    
+    console.log({
+      status: res.status,
+      data
+    })
     return {
       status: res.status,
       data
