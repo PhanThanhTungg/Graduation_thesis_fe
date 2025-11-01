@@ -17,9 +17,6 @@ export const metadata: Metadata = {
     description: "Aikabis is a platform for learning and teaching.",
     images: ["/banner.svg"],
   },
-  alternates: {
-    canonical: "https://aikabis.com",
-  },
   robots: {
     index: true,
     follow: true,

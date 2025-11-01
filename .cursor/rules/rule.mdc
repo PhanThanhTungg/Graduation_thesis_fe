@@ -1,0 +1,19 @@
+---
+alwaysApply: true
+---
+
+Đây là dự án next js cho LMS tên Aikabis, sử dụng tailwindcss 4.
+
+Không viết comment khi code.
+Các đoạn text trong html luôn sử dụng tiếng anh.
+Chỉ được sử dụng các màu đã được khai báo trong file src\app\globals.css, không tự ý sử dụng các màu bên ngoài như green-200, gray-300...
+Sử dụng các container được khai báo sẵn trong file globals.css (container-xl, container-lg, container-md, container-sm)
+Hạn chế tối đa việc sử dụng các thẻ phi ngữ nghĩa để tốt cho SEO
+KHÔNG BAO GIỜ sử dụng "use client" trong các file page.tsx (giữ pages là Server Components)
+
+Các file trong src\schema dùng để định nghĩa các schema và types trong typescript.
+File src\lib\request.ts để cấu hình cho api. Các hàm gọi api được khai báo và export trong src\service.
+File src\lib\helpers.ts chứa các hàm chuẩn hoá dữ liệu (ngày giờ, chữ cái, số...)
+File src\lib\toast.ts chứa hàm hiển thị thông báo
+Folder src\components\custom chứa các component tự tuỳ biến để tái sử dụng
+Folder src\components\ui chứa các component của thư viện shadcn
