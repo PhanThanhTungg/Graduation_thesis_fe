@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { UserLoginSchema, type UserLoginType } from '@/schema/user.schema'
+import { clientLogin } from '@/service/auth.service'
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -25,15 +26,6 @@ export function LoginForm() {
     },
   })
 
-  const onSubmit = async (data: UserLoginType) => {
-    try {
-      console.log('Login data:', { ...data, rememberMe })
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    } catch (error) {
-      console.error('Login failed:', error)
-    }
-  }
-
   return (
     <Card className="w-full max-w-md border-border/50 shadow-lg">
       <CardHeader className="space-y-1">
@@ -44,7 +36,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(clientLogin)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
