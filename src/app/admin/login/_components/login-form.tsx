@@ -37,10 +37,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md border-border/50 shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-heading text-center">Welcome Back</CardTitle>
-        <CardDescription className="text-center">
-          Enter your credentials to access your account
-        </CardDescription>
+        <CardTitle className="text-2xl font-heading text-center">Admin</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -102,19 +99,6 @@ export function LoginForm() {
               )}
             />
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-              />
-              <label 
-                htmlFor="remember" 
-                className="text-sm font-normal cursor-pointer"
-              >
-                Remember me for 30 days
-              </label>
-            </div>
 
             <Button
               type="submit"
