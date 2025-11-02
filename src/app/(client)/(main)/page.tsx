@@ -1,4 +1,4 @@
-import { mockCategories, mockCourses, testimonials, articles } from "@/lib/mockData";
+import { mockCourses, testimonials, articles } from "@/lib/mockData";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -7,16 +7,12 @@ import CourseCard from "@/components/custom/course-card";
 import Logo from "@/components/custom/logo";
 import ArticleCard from "@/components/custom/article-card";
 import { Metadata } from "next";
+import { getAllCategories } from "@/service/category.service";
 
 export const metadata: Metadata = {
   title: "Aikabis - Your learning platform",
   description: "Aikabis is a platform for learning and teaching.",
   keywords: ["Aikabis", "learning", "teaching", "online", "training"],
-  openGraph: {
-    title: "Aikabis - Your learning platform",
-    description: "Aikabis is a platform for learning and teaching.",
-    images: ["/banner.svg"],
-  },
   robots: {
     index: true,
     follow: true,
@@ -27,31 +23,23 @@ export const metadata: Metadata = {
   authors: [{ name: "Aikabis" }],
   creator: "Ha Cuong Thinh, An Quoc Viet, Phan Thanh Tung",
   publisher: "An Quoc Viet",
-  category: "education",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
+  category: "education"
 }
 
 export default async function HomePage() {
-  const categories = mockCategories.slice(0, 10);
+  const categories = await getAllCategories();
   const featuredCourses = mockCourses.slice(0, 6);
 
-  // Category icons mapping
-  const categoryIcons: Record<number, React.ReactNode> = {
-    1: <BookOpen className="size-8 text-green" />,
-    2: <Users className="size-8 text-green" />,
-    3: <GraduationCap className="size-8 text-green" />,
-    4: <PlayCircle className="size-8 text-green" />,
-    5: <Star className="size-8 text-green" />,
-    6: <BookOpen className="size-8 text-green" />,
-    7: <Users className="size-8 text-green" />,
-    8: <TrendingUp className="size-8 text-green" />,
-    9: <GraduationCap className="size-8 text-green" />,
-    10: <PlayCircle className="size-8 text-green" />,
-  };
+  const iconList = [
+    <BookOpen className="size-8 text-green" key="book" />,
+    <Users className="size-8 text-green" key="users" />,
+    <GraduationCap className="size-8 text-green" key="grad" />,
+    <PlayCircle className="size-8 text-green" key="play" />,
+    <TrendingUp className="size-8 text-green" key="trend" />,
+    <Star className="size-8 text-green" key="star" />,
+  ];
+  
+  const getCategoryIcon = (index: number) => iconList[index % iconList.length];
 
   return (
     <>
@@ -66,7 +54,7 @@ export default async function HomePage() {
             priority
             className="object-cover absolute inset-0"
           />
-          <div className="container-lg relative z-50 w-full h-full flex flex-col justify-center gap-3">
+          <div className="container-lg relative z-5 w-full h-full flex flex-col justify-center gap-3">
             <h1 className="text-3xl md:text-4xl font-semibold text-black">Aikabis: <br/> Your learning platform</h1>
             <p className="text-muted-foreground">Online training solutions help your business thrive.</p>
             <Button size="lg" className="bg-green text-white w-fit">
@@ -87,19 +75,19 @@ export default async function HomePage() {
             All Categories
           </Button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {categories.map((category) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {categories.slice(0, 10).map((category, index) => (
             <Link
               key={category.id}
               href={`/categories/${category.slug}`}
-              className="group"
+              className="group h-full"
             >
               <div className="bg-card border rounded-lg p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <div className="flex justify-center mb-4">
-                  {categoryIcons[category.id]}
+                  {getCategoryIcon(index)}
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">{category.title}</h3>
-                <p className="text-sm text-muted-foreground">{Math.floor(Math.random() * 50 + 10)} Courses</p>
+                <h3 className="font-semibold text-foreground mb-2 truncate">{category.title}</h3>
+                <p className="text-sm text-muted-foreground">View Courses</p>
               </div>
             </Link>
           ))}

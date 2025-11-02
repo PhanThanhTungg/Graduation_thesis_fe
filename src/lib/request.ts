@@ -7,8 +7,7 @@ export const isNextClient = typeof window !== 'undefined';
 const request = async <Response>(
   method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
   url: string,
-  options: CustomRequestOptions | undefined,
-  signal: AbortSignal | undefined
+  options: CustomRequestOptions | undefined
 ) => {
   const baseUrl = options?.baseUrl || process.env.NEXT_PUBLIC_API_URL;
   const fullUrl = url.startsWith('/') ? `${baseUrl}${url.slice(1)}` : `${baseUrl}${url}`;
@@ -30,26 +29,24 @@ const request = async <Response>(
       },
       method,
       body, 
-      signal
     });
 
-    const data: Response = await res.json();
+    const payload: Response = await res.json();
 
     // Intercept response here
     console.log({
       status: res.status,
-      data
+      payload
     })
     return {
       status: res.status,
-      data
+      payload
     }
   } catch (error) {
     console.log("API Error", error)
     return {
       status: 500,
-      data: {
-        error,
+      payload: {
         message: error instanceof Error ? error.message : "An unknown error"
       }
     }
@@ -62,8 +59,7 @@ type OptionsType = Omit<CustomRequestOptions, 'body'> | undefined;
 export const get = <Response>(
   url: string,
   params: Record<string, string> | undefined,
-  options: OptionsType,
-  signal: AbortSignal | undefined
+  options?: OptionsType,
 ) => {
   if (params) {
     const queryString = new URLSearchParams();
@@ -76,31 +72,28 @@ export const get = <Response>(
     });
     url += `?${queryString.toString()}`;
   }
-  return request<Response>('GET', url, options, signal);
+  return request<Response>('GET', url, options);
 }
 
 export const post = <Response>(
   url: string,
   body: BodyType,
-  options: OptionsType,
-  signal: AbortSignal | undefined
+  options?: OptionsType,
 ) => {
-  return request<Response>('POST', url, { ...options, body } as CustomRequestOptions, signal);
+  return request<Response>('POST', url, { ...options, body } as CustomRequestOptions);
 }
 
 export const patch = <Response>(
   url: string,
   body: BodyType,
-  options: OptionsType,
-  signal: AbortSignal | undefined
+  options?: OptionsType
 ) => {
-  return request<Response>('PATCH', url, { ...options, body } as CustomRequestOptions, signal);
+  return request<Response>('PATCH', url, { ...options, body } as CustomRequestOptions);
 }
 
 export const del = <Response>(
   url: string,
-  options: OptionsType,
-  signal: AbortSignal | undefined
+  options?: OptionsType,
 ) => {
-  return request<Response>('DELETE', url, options as CustomRequestOptions, signal);
+  return request<Response>('DELETE', url, options as CustomRequestOptions);
 }
