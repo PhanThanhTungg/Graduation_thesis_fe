@@ -1,23 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { UserLoginSchema, type UserLoginType } from '@/schema/user.schema'
+import { AdminLoginInput, adminLoginSchema } from '@/schema/admin.schema'
+import { adminLogin } from '@/service/admin/auth.service'
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
 
-  const form = useForm<UserLoginType>({
-    resolver: zodResolver(UserLoginSchema),
+  const form = useForm<AdminLoginInput>({
+    resolver: zodResolver(adminLoginSchema),
     mode: 'onChange',
     defaultValues: {
       email: '',
@@ -25,14 +23,6 @@ export function LoginForm() {
     },
   })
 
-  const onSubmit = async (data: UserLoginType) => {
-    try {
-      console.log('Login data:', { ...data, rememberMe })
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    } catch (error) {
-      console.error('Login failed:', error)
-    }
-  }
 
   return (
     <Card className="w-full max-w-md border-border/50 shadow-lg">
@@ -41,7 +31,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(adminLogin)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"
