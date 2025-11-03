@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Jost, Exo, Knewave } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { ToastContainer } from "react-toastify";
+import { ReduxProvider } from "@/store/provider";
 
 const jost = Jost({
   variable: "--font-jost",
@@ -37,14 +39,17 @@ export default function RootLayout({
       <body
         className={`${jost.variable} ${exo.variable} ${knewave.variable} antialiased`}
       >
-        <ThemeProvider
+        <ReduxProvider>
+          <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
+            <ToastContainer />
             {children}
           </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

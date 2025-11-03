@@ -4,13 +4,18 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { UserRegisterSchema, type UserRegisterType } from '@/schema/user.schema'
+import { clientRegister } from '@/service/auth.service'
+import { countryNames } from '@/schema/country.schema'
+import { cn } from '@/lib/utils'
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -25,10 +30,12 @@ export function RegisterForm() {
       email: '',
       password: '',
       confirmPassword: '',
+      country: 'Vietnam',
     },
   })
 
   const onSubmit = async (data: UserRegisterType) => {
+    console.log("s")
     if (!agreedToTerms) {
       form.setError('email', { 
         type: 'manual', 
@@ -37,12 +44,7 @@ export function RegisterForm() {
       return
     }
 
-    try {
-      console.log('Register data:', data)
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    } catch (error) {
-      console.error('Registration failed:', error)
-    }
+    await clientRegister(data)
   }
 
   return (
@@ -95,6 +97,63 @@ export function RegisterForm() {
                       />
                     </div>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Country</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value || "Select your country"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search country..." />
+                        <CommandList>
+                          <CommandEmpty>No country found.</CommandEmpty>
+                          <CommandGroup>
+                            {countryNames.map((country) => (
+                              <CommandItem
+                                key={country}
+                                value={country}
+                                onSelect={() => {
+                                  form.setValue("country", country)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    country === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {country}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -166,7 +225,7 @@ export function RegisterForm() {
               )}
             />
 
-            <div className="flex items-start space-x-2">
+            <div className="flex items-end space-x-2">
               <Checkbox
                 id="terms"
                 checked={agreedToTerms}
