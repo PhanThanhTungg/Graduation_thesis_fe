@@ -1,6 +1,8 @@
 import { LogOut, MoveUpRight, Settings, CreditCard, FileText } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { adminLogout } from "@/service/admin/auth.service"
+import { useEffect, useState } from "react"
 
 interface MenuItem {
   label: string
@@ -8,6 +10,14 @@ interface MenuItem {
   href: string
   icon?: React.ReactNode
   external?: boolean
+}
+
+interface AdminInfo {
+  id: string
+  email: string
+  fullName: string
+  role: string | null
+  permissions: unknown[]
 }
 
 interface Profile01Props {
@@ -18,18 +28,24 @@ interface Profile01Props {
 }
 
 const defaultProfile = {
-  name: "Eugene An",
-  role: "Prompt Engineer",
+  name: "Admin",
+  role: "Loading...",
   avatar: "https://ferf1mheo22r9ira.public.blob.vercel-storage.com/avatar-02-albo9B0tWOSLXCVZh9rX9KFxXIVWMr.png",
-  subscription: "Free Trial",
+  subscription: "Admin Account",
 } satisfies Required<Profile01Props>
 
 export default function Profile01({
-  name = defaultProfile.name,
-  role = defaultProfile.role,
   avatar = defaultProfile.avatar,
   subscription = defaultProfile.subscription,
 }: Partial<Profile01Props> = defaultProfile) {
+  const [adminInfo, setAdminInfo] = useState<AdminInfo | null>(null);
+  
+  useEffect(() => {
+    const storedAdmin = localStorage.getItem('admin');
+    if (storedAdmin) {
+      setAdminInfo(JSON.parse(storedAdmin));
+    }
+  }, []);
   const menuItems: MenuItem[] = [
     {
       label: "Subscription",
@@ -59,7 +75,7 @@ export default function Profile01({
             <div className="relative shrink-0">
               <Image
                 src={avatar}
-                alt={name}
+                alt={adminInfo?.fullName || defaultProfile.name}
                 width={72}
                 height={72}
                 className="rounded-full ring-4 ring-white dark:ring-zinc-900 object-cover"
@@ -69,8 +85,15 @@ export default function Profile01({
 
             {/* Profile Info */}
             <div className="flex-1">
-              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{name}</h2>
-              <p className="text-zinc-600 dark:text-zinc-400">{role}</p>
+              <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+                {adminInfo?.fullName || defaultProfile.name}
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                {adminInfo?.role || defaultProfile.role}
+              </p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {adminInfo?.email}
+              </p>
             </div>
           </div>
           <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-6" />
@@ -96,6 +119,7 @@ export default function Profile01({
 
             <button
               type="button"
+              onClick={() => adminLogout()}
               className="w-full flex items-center justify-between p-2 
                                 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 
                                 rounded-lg transition-colors duration-200"
