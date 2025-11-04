@@ -26,7 +26,7 @@ export async function POST (req: NextRequest, { params }: { params: Promise<{ na
     cookieStore.set({
       name,
       value: JSON.stringify(requestData.value),
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       path: '/',
     })

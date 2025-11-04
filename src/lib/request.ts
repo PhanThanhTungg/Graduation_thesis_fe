@@ -1,3 +1,5 @@
+import { getCookie } from "./cookie";
+
 type CustomRequestOptions = Omit<RequestInit, 'method'> & {
   baseUrl: string | undefined;
 }
@@ -20,12 +22,20 @@ const request = async <Response>(
   }
 
   const baseHeaders: Record<string, string> = body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
-
+  let accessToken: string | undefined = undefined;
+  if (url.includes('admin')) {
+    accessToken = await getCookie('admin_access_token');
+  } else {
+    accessToken = await getCookie('client_access_token');
+  }
+  
+  console.log("Access Token:", accessToken);
   try {
     const res = await fetch(fullUrl, {
       headers: {
         ...baseHeaders,
         ...options?.headers,
+        Authorization: `Bearer ${accessToken}`
       },
       method,
       body, 
