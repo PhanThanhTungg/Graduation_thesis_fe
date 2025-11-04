@@ -106,8 +106,8 @@ export default function Sidebar() {
                   <NavItem href="/admin/course" icon={BarChart2}>
                     Courses
                   </NavItem>
-                  <NavItem href="#" icon={Building2}>
-                    Organization
+                  <NavItem href="/admin/category" icon={Building2}>
+                    Category
                   </NavItem>
                   <NavItem href="#" icon={Folder}>
                     Projects
