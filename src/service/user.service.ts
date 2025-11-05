@@ -20,3 +20,20 @@ export const updateUserInfo: SubmitHandler<UpdateUserBodyType> = async(data): Pr
     showToast("error", "Failed to update profile");
   }
 }
+
+export const promoteToTeacher = async(currentUser: UserType): Promise<boolean> => {
+  const response = await patch('/api/profile', {
+    fullName: currentUser.fullName,
+    email: currentUser.email,
+    country: currentUser.country,
+    avatarUrl: currentUser.avatarUrl,
+    role: 'teacher'
+  });
+  if (response.status === 200) {
+    showToast("success", "You are now a teacher");
+    return true;
+  } else {
+    showToast("error", "Failed to update role");
+    return false;
+  }
+}

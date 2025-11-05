@@ -19,6 +19,10 @@ import { Camera, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { sendVerificationEmail } from "@/service/auth.service";
+import { promoteToTeacher } from "@/service/user.service";
+import { showToast } from "@/lib/toast";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface ProfileFormProps {
   user: UserType;
@@ -28,6 +32,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSendingVerify, setIsSendingVerify] = useState(false);
   const [verifyCooldown, setVerifyCooldown] = useState(0);
+  const [isPromoting, setIsPromoting] = useState(false);
+  const router = useRouter();
 
   const {
     register,
@@ -225,36 +231,10 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="role" className="text-base">
-                    Role <span className="text-destructive">*</span>
-                  </Label>
-                  <Controller
-                    name="role"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger 
-                          id="role" 
-                          className="h-11 w-full text-base"
-                          aria-invalid={!!errors.role}
-                        >
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="student">Student</SelectItem>
-                          <SelectItem value="teacher">Teacher</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.role && (
-                    <p className="text-sm text-destructive">
-                      {errors.role.message}
-                    </p>
-                  )}
+                  <Label className="text-base">Role</Label>
+                  <div className="h-11 px-4 flex items-center rounded-md border border-input bg-background text-base capitalize">
+                    {user.role}
+                  </div>
                 </div>
               </div>
             </div>
@@ -332,6 +312,48 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   </p>
                 </div>
               )}
+
+              <div className="flex flex-col gap-2">
+                <Label className="text-base text-muted-foreground">Teacher</Label>
+                {user.role === 'student' ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 px-6 text-base"
+                    onClick={async () => {
+                      if (!user.emailVerified) {
+                        showToast('error', 'Please verify your email first');
+                        return;
+                      }
+                      setIsPromoting(true);
+                      try {
+                        const ok = await promoteToTeacher(user);
+                        if (ok) {
+                          router.push('/teacher');
+                        }
+                      } finally {
+                        setIsPromoting(false);
+                      }
+                    }}
+                    disabled={isPromoting}
+                  >
+                    {isPromoting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin mr-2" />
+                        Updating...
+                      </>
+                    ) : (
+                      'Become a teacher'
+                    )}
+                  </Button>
+                ) : (
+                  <Link href="/teacher">
+                    <Button type="button" variant="outline" className="h-11 px-6 text-base">
+                      Go to teacher dashboard
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-4">
