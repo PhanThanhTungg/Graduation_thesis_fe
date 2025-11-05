@@ -76,7 +76,16 @@ export default async function ClientHeader() {
       <div className="flex items-center gap-4">
         <SearchPopover />
         {myProfile ? (
-          <UserMenu user={myProfile} />
+          <>
+            {myProfile.role === 'teacher' || true && (
+              <Button variant={"link"}
+                className="hover:text-green"
+              >
+                <Link href="/teacher/dashboard">Teacher</Link>
+              </Button>
+            )}
+            <UserMenu user={myProfile} />
+          </>
         ) : (
           <Button className="bg-green" size={'lg'}>
             <Link href="/login">Login/Register</Link>
