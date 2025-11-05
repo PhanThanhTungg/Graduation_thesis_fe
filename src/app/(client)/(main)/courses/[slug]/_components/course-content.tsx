@@ -3,28 +3,27 @@
 import { useState } from "react";
 import { CourseTabs, OverviewTab, CurriculumTab, InstructorTab, FAQsTab, ReviewsTab, CommentForm, type TabId } from "./";
 import { TeacherType } from "@/schema/user.schema";
+import { ExtendedCourseType } from "@/schema/course.schema";
 
 interface CourseContentProps {
-  instructor: TeacherType;
+  course: ExtendedCourseType;
 }
 
-export default function CourseContent({ instructor }: CourseContentProps) {
+export default function CourseContent({ course }: CourseContentProps) {
   const [activeTab, setActiveTab] = useState<TabId>("curriculum");
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
-        return <OverviewTab />;
+        return <OverviewTab course={course} />;
       case "curriculum":
-        return <CurriculumTab />;
+        return <CurriculumTab/>;
       case "instructor":
-        return <InstructorTab instructor={instructor} />;
+        return <InstructorTab instructor={course.teacher} />;
       case "faqs":
         return <FAQsTab />;
       case "reviews":
         return <ReviewsTab />;
-      default:
-        return <OverviewTab />;
     }
   };
 

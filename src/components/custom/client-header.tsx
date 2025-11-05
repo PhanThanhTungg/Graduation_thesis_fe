@@ -3,6 +3,9 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { ModeToggle } from "../theme/mode-toggle"
 import Logo from "./logo"
 import SearchPopover from "./search-popover"
+import { getMyProfile } from "@/service/user.service"
+import { Button } from "../ui/button"
+import UserMenu from "./user-menu"
 
 const navItems = [
   {
@@ -32,7 +35,9 @@ const navItems = [
   }
 ]
 
-export default function ClientHeader() {
+export default async function ClientHeader() {
+  const myProfile = await getMyProfile();
+
   return (
     <header className="sticky top-0 left-0 right-0 bg-background z-10 container-md flex items-center justify-between shadow-sm dark:border-b border-border">
       <Logo />
@@ -68,8 +73,15 @@ export default function ClientHeader() {
         </NavigationMenuList>
       </NavigationMenu>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <SearchPopover />
+        {myProfile ? (
+          <UserMenu user={myProfile} />
+        ) : (
+          <Button className="bg-green" size={'lg'}>
+            <Link href="/login">Login/Register</Link>
+          </Button>
+        )}
       </div>
 
       <div className="fixed top-0 right-0">

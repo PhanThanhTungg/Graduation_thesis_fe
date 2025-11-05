@@ -16,11 +16,7 @@ export const clientRegister: SubmitHandler<UserRegisterType> = async(data) => {
   );
 
   if (response.status === 201 && 'data' in response.payload) {
-    await post( // call API from src\app\api\cookie\[name]\route.ts
-      '/api/cookie/client_access_token', 
-      { value: response.payload.data.accessToken },
-      { baseUrl: '/'}
-    );
+    document.cookie = `client_access_token=${response.payload.data.accessToken}; path=/`;
     showToast("success", response.payload.message);
     redirect('/');
   } else {
@@ -35,11 +31,7 @@ export const clientLogin: SubmitHandler<UserLoginType> = async (data) => {
   );
 
   if (response.status === 201 && 'data' in response.payload) {
-    await post( // call API from src\app\api\cookie\[name]\route.ts
-      '/api/cookie/client_access_token', 
-      { value: response.payload.data.accessToken },
-      { baseUrl: '/'}
-    );
+    document.cookie = `client_access_token=${response.payload.data.accessToken}; path=/`;
     showToast("success", response.payload.message);
     redirect('/');
   } else {

@@ -18,8 +18,8 @@ export function LoginForm() {
     resolver: zodResolver(adminLoginSchema),
     mode: 'onChange',
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'superadmin@gmail.com',
+      password: 'Tt123456@',
     },
   })
 

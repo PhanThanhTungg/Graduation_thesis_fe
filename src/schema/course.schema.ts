@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserSchema } from "./user.schema";
+import { TeacherSchema } from "./user.schema";
 import { CategorySchema } from "./category.schema";
 
 export const CourseSchema = z.object({
@@ -14,7 +14,7 @@ export const CourseSchema = z.object({
   }).strip(),
   thumbnailUrl: z.url().optional(),
   price: z.number(),
-  teacher: UserSchema,
+  teacher: TeacherSchema,
   rating: z.number(),
   slug: z.string(),
   updatedAt: z.date(),

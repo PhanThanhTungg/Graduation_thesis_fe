@@ -8,8 +8,7 @@ export const adminLogout = async () => {
   // Clear admin info from localStorage
   localStorage.removeItem('admin');
   
-  // Clear access token cookie
-  await post('/api/cookie/admin_access_token', { value: '' }, { baseUrl: '/' });
+  document.cookie = `admin_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
   
   showToast("success", "Logged out successfully");
   redirect('/admin/login');
@@ -24,12 +23,7 @@ export const adminLogin: SubmitHandler<AdminLoginInput> = async (data) => {
   if (response.status === 201 && 'data' in response.payload) {
     const { accessToken, admin } = response.payload.data;
     
-    // Save access token
-    await post( 
-      '/api/cookie/admin_access_token', 
-      { value: accessToken },
-      { baseUrl: '/' }
-    );
+    document.cookie = `admin_access_token=${accessToken}; path=/admin`;
 
     // Save admin info
     localStorage.setItem('admin', JSON.stringify(admin));

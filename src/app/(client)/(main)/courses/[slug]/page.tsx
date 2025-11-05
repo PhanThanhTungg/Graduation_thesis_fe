@@ -1,4 +1,4 @@
-import { mockCourseCurriculum, mockCourses } from "@/lib/mockData";
+import { mockCourseCurriculum, mockCourseDetail } from "@/lib/mockData";
 import { CourseHero, CourseContent } from "./_components";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 import NotFound from "@/app/not-found";
@@ -14,7 +14,7 @@ interface CourseDetailPageProps {
 
 export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   // Find course by slug
-  const course = mockCourses.find((c) => c.slug === params.slug);
+  const course = mockCourseDetail;
 
   if (!course) {
     return <NotFound />
@@ -23,7 +23,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const curriculum = mockCourseCurriculum.find((c) => c.courseId === course.id);
   const firstLesson = curriculum?.sections[0]?.lessons[0];
   const firstLessonUrl = firstLesson
-    ? `/courses/${course.slug}/learn/${firstLesson.id}`
+    ? `/course/${course.slug}/learn/${firstLesson.id}`
     : `/courses/${course.slug}`;
 
   const breadcrumbData: BreadcrumbProps[] = [
@@ -43,7 +43,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
       {/* Main Content */}
       <section className="container-md grid grid-cols-3 gap-4 py-[40px]">
         <section className="col-span-2">
-          <CourseContent instructor={course.teacher} />
+          <CourseContent course={course} />
         </section>
         <section className="sticky top-19 bg-card border rounded-[20px] overflow-hidden h-fit">
           {/* Course Image */}
@@ -60,19 +60,14 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
           {/* Price and CTA */}
           <div className="flex items-center justify-center gap-[20px] py-[25px]">
             {/* Price */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground line-through">
-                ${(course.price * 1.2).toFixed(1)}
-              </span>
-              <span className="text-lg font-semibold text-destructive">
-                ${course.price.toFixed(1)}
-              </span>
-            </div>
+            <span className="text-lg font-semibold">
+              ${course.price.toFixed(1)}
+            </span>
 
             {/* CTA Button */}
             <Button
               size="lg"
-              className="bg-orange hover:bg-orange/90 text-secondary rounded-3xl px-6"
+              className="bg-green hover:bg-green/90 text-secondary text-lg font-bold rounded-3xl px-6"
               asChild
             >
               <Link href={firstLessonUrl}>Start now</Link>
