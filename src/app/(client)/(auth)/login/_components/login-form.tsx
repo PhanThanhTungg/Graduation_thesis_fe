@@ -21,8 +21,8 @@ export function LoginForm() {
     resolver: zodResolver(UserLoginSchema),
     mode: 'onChange',
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'anviet0901@gmail.com',
+      password: 'Viet@2003.',
     },
   })
 

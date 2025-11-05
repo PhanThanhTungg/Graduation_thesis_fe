@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getAvatarFallback } from "@/lib/helpers";
 import { UserType } from "@/schema/user.schema";
-import { User, Heart, Bell, HelpCircle, LogOut } from "lucide-react";
+import { User, Heart, Bell, HelpCircle, LogOut, BookCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { showToast } from "@/lib/toast";
@@ -76,6 +76,15 @@ export default function UserMenu({ user }: UserMenuProps) {
             <Link href="/notifications" className="cursor-pointer">
               <Bell className="mr-2" />
               <span>Notifications</span>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/my-learning" className="cursor-pointer">
+              <BookCheck className="mr-2" />
+              <span>My learning</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
