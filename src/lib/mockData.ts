@@ -27,6 +27,7 @@ export const mockCourses: CourseType[] = [
     rating: 5.0,
     slug: "learn-ay-lms-website-with-learnpress",
     updatedAt: new Date(),
+    isPublished: true,
     thumbnailUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   },
   {
@@ -52,6 +53,7 @@ export const mockCourses: CourseType[] = [
     },
     rating: 4.8,
     slug: "complete-thimpress-website-development",
+    isPublished: false,
     updatedAt: new Date(),
     thumbnailUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   },
@@ -78,6 +80,7 @@ export const mockCourses: CourseType[] = [
     },
     rating: 4.9,
     slug: "course-ay-lms-website-with-learnpress",
+    isPublished: true,
     updatedAt: new Date(),
     thumbnailUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   },
@@ -104,6 +107,7 @@ export const mockCourses: CourseType[] = [
     },
     rating: 4.7,
     slug: "learn-ay-lms-intermediate",
+    isPublished: true,
     updatedAt: new Date(),
     thumbnailUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   },
@@ -130,6 +134,7 @@ export const mockCourses: CourseType[] = [
     },
     rating: 5.0,
     slug: "course-ay-lms-professional",
+    isPublished: true,
     updatedAt: new Date(),
     thumbnailUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   },
@@ -156,6 +161,7 @@ export const mockCourses: CourseType[] = [
     },
     rating: 4.9,
     slug: "course-ay-lms-complete",
+    isPublished: false,
     updatedAt: new Date(),
     thumbnailUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
   }
@@ -266,7 +272,6 @@ export const mockCourseCurriculum: CourseCurriculumType[] = [
   {
     courseId: 1,
     totalDuration: "10h 30m",
-    totalLessons: 42,
     sections: [
       {
         id: 1,
