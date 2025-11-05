@@ -16,8 +16,9 @@ import { UpdateUserBodySchema, UpdateUserBodyType, UserType } from "@/schema/use
 import { updateUserInfo } from "@/service/user.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { sendVerificationEmail } from "@/service/auth.service";
 
 interface ProfileFormProps {
   user: UserType;
@@ -25,6 +26,8 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ user }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingVerify, setIsSendingVerify] = useState(false);
+  const [verifyCooldown, setVerifyCooldown] = useState(0);
 
   const {
     register,
@@ -38,13 +41,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       fullName: user.fullName,
       email: user.email,
       country: user.country,
-      avatarUrl: user.avatarUrl,
       role: user.role,
     },
     mode: "onChange",
   });
 
-  const avatarUrl = watch("avatarUrl");
 
   const onSubmit = async (data: UpdateUserBodyType) => {
     setIsSubmitting(true);
@@ -62,6 +63,25 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  useEffect(() => {
+    if (verifyCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setVerifyCooldown((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [verifyCooldown]);
+
+  const handleSendVerification = async () => {
+    if (verifyCooldown > 0 || isSendingVerify) return;
+    setIsSendingVerify(true);
+    try {
+      await sendVerificationEmail();
+      setVerifyCooldown(60);
+    } finally {
+      setIsSendingVerify(false);
+    }
   };
 
   return (
@@ -82,7 +102,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               <div className="flex items-center gap-6">
                 <div className="relative group">
                   <Avatar className="size-24">
-                    <AvatarImage src={avatarUrl || undefined} alt={user.fullName} />
+                    <AvatarImage src={user.avatarUrl || undefined} alt={user.fullName} />
                     <AvatarFallback className="text-2xl font-semibold bg-muted">
                       {getInitials(user.fullName)}
                     </AvatarFallback>
@@ -110,7 +130,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     >
                       Upload Image
                     </Button>
-                    {avatarUrl && (
+                    {user.avatarUrl && (
                       <Button
                         type="button"
                         variant="outline"
@@ -237,27 +257,6 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   )}
                 </div>
               </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="avatarUrl" className="text-base">
-                  Avatar URL
-                </Label>
-                <Input
-                  id="avatarUrl"
-                  {...register("avatarUrl")}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="h-11 text-base"
-                  aria-invalid={!!errors.avatarUrl}
-                />
-                {errors.avatarUrl && (
-                  <p className="text-sm text-destructive">
-                    {errors.avatarUrl.message}
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Enter a valid URL for your profile picture
-                </p>
-              </div>
             </div>
 
             <div className="flex flex-col gap-6 p-8 border border-border rounded-2xl bg-card">
@@ -289,17 +288,32 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     Email Verified
                   </Label>
                   <div className="flex items-center gap-2">
-                    {user.emailVerified ? (
+                {user.emailVerified ? (
+                  <>
+                    <div className="size-2.5 rounded-full bg-green" />
+                    <span className="text-base font-medium">Verified</span>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-sm"
+                    onClick={handleSendVerification}
+                    disabled={verifyCooldown > 0 || isSendingVerify}
+                  >
+                    {isSendingVerify ? (
                       <>
-                        <div className="size-2.5 rounded-full bg-green" />
-                        <span className="text-base font-medium">Verified</span>
+                        <Loader2 className="size-4 animate-spin mr-2" />
+                        Sending...
                       </>
+                    ) : verifyCooldown > 0 ? (
+                      `Resend in ${verifyCooldown}s`
                     ) : (
-                      <>
-                        <div className="size-2.5 rounded-full bg-yellow" />
-                        <span className="text-base font-medium">Not Verified</span>
-                      </>
+                      'Verify'
                     )}
+                  </Button>
+                )}
                   </div>
                 </div>
 
