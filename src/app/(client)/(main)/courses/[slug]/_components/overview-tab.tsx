@@ -1,23 +1,34 @@
-export default function OverviewTab() {
+import { ExtendedCourseType } from "@/schema/course.schema";
+import { Check, MessageCircleQuestionMark, PartyPopper } from "lucide-react";
+
+export default function OverviewTab({ course }: { course: ExtendedCourseType }) {
   return (
     <div className="bg-card border border-t-0 border-border rounded-bl-[20px] rounded-br-[20px] p-[25px]">
       <div className="prose max-w-none">
         <p className="text-base text-foreground leading-relaxed">
-          LearnPress is a comprehensive WordPress LMS Plugin for WordPress. This is one of the best WordPress
-          LMS Plugins which can be used to easily create & sell courses online. You can create a course
-          curriculum with lessons & quizzes included which is managed with an easy-to-use interface for users.
-          Having this WordPress LMS Plugin, now you have a chance to quickly and easily create education,
-          online school, online-course websites with no coding knowledge required.
+          {course.courseDescription.detail}
         </p>
-        <p className="text-base text-foreground leading-relaxed mt-4">
-          LearnPress is free and always will be, but it is still a premium high-quality WordPress Plugin that
-          definitely helps you with making money from your WordPress Based LMS. Just try and see how amazing
-          it is. LearnPress WordPress Online Course plugin is lightweight and super powerful with lots of
-          Add-Ons to empower its core system.
-        </p>
-        <p className="text-base text-foreground leading-relaxed mt-4">
-          How to use WPML Add-on for LearnPress? No comments yet! You be the first to comment.
-        </p>
+
+        <h5 className="mt-4 font-semibold">What will you be learned?</h5>
+        {course.courseDescription.targetKnowledges?.map((item, index) => (
+          <p className="text-base text-foreground leading-relaxed ml-2 flex items-center gap-2 font-sm" key={index}>
+            <PartyPopper className="text-orange size-5" /> {item}
+          </p>
+        ))}
+
+        <h5 className="mt-4 font-semibold">Requirements</h5>
+        {course.courseDescription.requirements?.map((item, index) => (
+          <p className="text-base text-foreground leading-relaxed ml-2 flex items-center gap-2 font-sm" key={index}>
+            <MessageCircleQuestionMark className="text-peach size-5" /> {item}
+          </p>
+        ))}
+
+        <h5 className="mt-4 font-semibold">Who should take this course?</h5>
+        {course.courseDescription.suitableParticipants?.map((item, index) => (
+          <p className="text-base text-foreground leading-relaxed ml-2 flex items-center gap-2 font-sm" key={index}>
+            <Check className="text-green size-5"/> {item}
+          </p>
+        ))}
       </div>
     </div>
   );

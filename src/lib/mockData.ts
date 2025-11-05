@@ -1,5 +1,5 @@
 import { CategoryType } from "@/schema/category.schema";
-import { CourseType } from "@/schema/course.schema";
+import { CourseType, ExtendedCourseType } from "@/schema/course.schema";
 import { CourseCurriculumType } from "@/schema/lesson.schema";
 
 export const mockCourses: CourseType[] = [
@@ -15,12 +15,14 @@ export const mockCourses: CourseType[] = [
     },
     price: 49,
     teacher: {
-      id: 1,
+      id: "1",
       fullName: "Determined-Poitras",
       email: "teacher1@example.com",
       avatarUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
       role: "teacher",
       emailVerified: true,
+      country: "Vietnam",
+      status: "active",
     },
     rating: 5.0,
     slug: "learn-ay-lms-website-with-learnpress",
@@ -39,12 +41,14 @@ export const mockCourses: CourseType[] = [
     },
     price: 59,
     teacher: {
-      id: 2,
+      id: "2",
       fullName: "Determined-Poitras",
       email: "teacher2@example.com",
       avatarUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
       role: "teacher",
       emailVerified: true,
+      country: "Vietnam",
+      status: "active",
     },
     rating: 4.8,
     slug: "complete-thimpress-website-development",
@@ -63,12 +67,14 @@ export const mockCourses: CourseType[] = [
     },
     price: 39,
     teacher: {
-      id: 3,
+      id: "3",
       fullName: "Determined-Poitras",
       email: "teacher3@example.com",
       avatarUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
       role: "teacher",
       emailVerified: true,
+      country: "Vietnam",
+      status: "active",
     },
     rating: 4.9,
     slug: "course-ay-lms-website-with-learnpress",
@@ -87,12 +93,14 @@ export const mockCourses: CourseType[] = [
     },
     price: 45,
     teacher: {
-      id: 1,
+      id: "1",
       fullName: "Determined-Poitras",
       email: "teacher1@example.com",
       avatarUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
       role: "teacher",
       emailVerified: true,
+      country: "Vietnam",
+      status: "active",
     },
     rating: 4.7,
     slug: "learn-ay-lms-intermediate",
@@ -111,12 +119,14 @@ export const mockCourses: CourseType[] = [
     },
     price: 69,
     teacher: {
-      id: 2,
+      id: "2",
       fullName: "Determined-Poitras",
       email: "teacher2@example.com",
       avatarUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
       role: "teacher",
       emailVerified: true,
+      country: "Vietnam",
+      status: "active",
     },
     rating: 5.0,
     slug: "course-ay-lms-professional",
@@ -135,12 +145,14 @@ export const mockCourses: CourseType[] = [
     },
     price: 79,
     teacher: {
-      id: 3,
+      id: "3",
       fullName: "Determined-Poitras",
       email: "teacher3@example.com",
       avatarUrl: "https://res.cloudinary.com/dndo7fe82/image/upload/v1757212590/hwqsskrgmbbo9f4gu6uf.webp",
       role: "teacher",
       emailVerified: true,
+      country: "Vietnam",
+      status: "active",
     },
     rating: 4.9,
     slug: "course-ay-lms-complete",
@@ -149,63 +161,74 @@ export const mockCourses: CourseType[] = [
   }
 ]
 
+export const mockCourseDetail: ExtendedCourseType = {
+  ...mockCourses[0],
+  countStudent: 15,
+  category: {
+    id: "5",
+    parentId: null,
+    title: "Photography",
+    slug: "photography",
+  },
+}
+
 export const mockCategories: CategoryType[] = [
   {
-    id: 1,
+    id: "1",
     parentId: null,
     title: "Art & Design",
     slug: "art-design",
   },
   {
-    id: 2,
+    id: "2",
     parentId: null,
     title: "UI/UX Design",
     slug: "ui-ux-design",
   },
   {
-    id: 3,
+    id: "3",
     parentId: null,
     title: "Communication",
     slug: "communication",
   },
   {
-    id: 4,
+    id: "4",
     parentId: null,
     title: "Videography",
     slug: "videography",
   },
   {
-    id: 5,
+    id: "5",
     parentId: null,
     title: "Photography",
     slug: "photography",
   },
   {
-    id: 6,
+    id: "6",
     parentId: null,
     title: "Marketing",
     slug: "marketing",
   },
   {
-    id: 7,
+    id: "7",
     parentId: null,
     title: "Content Writing",
     slug: "content-writing",
   },
   {
-    id: 8,
+    id: "8",
     parentId: null,
     title: "Finance",
     slug: "finance",
   },
   {
-    id: 9,
+    id: "9",
     parentId: null,
     title: "Science",
     slug: "science",
   },
   {
-    id: 10,
+    id: "10",
     parentId: null,
     title: "Video Editing",
     slug: "video-editing",

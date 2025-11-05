@@ -1,5 +1,6 @@
 "use client"
 
+import { createCategory } from "@/service/admin/category.service";
 import { uploadImages } from "@/service/upload.service"
 import { useState } from "react"
 
@@ -21,6 +22,13 @@ export default function TestPage() {
     });
     const urls = await uploadImages(formData);
     setUploadedUrls(urls);
+  }
+
+  const handleCreateCategory = async () => {
+    const response = await createCategory({
+      title: "Test Category"
+    })
+    console.log("Create Category Response:", response);
   }
 
   return (
@@ -48,6 +56,8 @@ export default function TestPage() {
           </ul>
         </div>
       )}
+
+      <button onClick={handleCreateCategory}>Create test category</button>
     </>
   )
 }

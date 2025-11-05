@@ -35,7 +35,7 @@ export default function CourseTabs({ activeTab, onTabChange }: CourseTabsProps) 
               isFirst && "rounded-tl-[20px]",
               isLast && "rounded-tr-[20px]",
               isActive
-                ? "bg-muted text-orange border-l border-t border-b-0"
+                ? "bg-muted text-green border-l border-t border-b-0"
                 : "bg-transparent text-foreground hover:bg-muted/50"
             )}
           >

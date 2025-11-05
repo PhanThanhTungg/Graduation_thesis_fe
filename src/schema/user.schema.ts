@@ -61,3 +61,12 @@ export type UserAuthResponseType = {
     user: UserType;
   }
 }
+
+export const UpdateUserBodySchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.email("Invalid email address"),
+  country: CountrySchema,
+  avatarUrl: z.url().nullable(),
+  role: z.enum(["teacher", "student"]),
+})
+export type UpdateUserBodyType = z.infer<typeof UpdateUserBodySchema>;

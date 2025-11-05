@@ -5,13 +5,13 @@ import { mockCourses, mockCourseCurriculum } from "@/lib/mockData";
 interface PageProps {
   params: Promise<{
     slug: string;
-    lessonId: string;
+    lessonSlug: string;
   }>;
 }
 
 export default async function LessonPage({ params }: PageProps) {
-  const { slug, lessonId } = await params;
-  const lessonIdNum = parseInt(lessonId);
+  const { slug, lessonSlug } = await params;
+  const lessonIdNum = parseInt(lessonSlug);
 
   // Find the course
   const course = mockCourses.find((c) => c.slug === slug);
