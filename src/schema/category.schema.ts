@@ -30,6 +30,24 @@ export const CreateCategorySchema = z.object({
   parentId: z.string().optional(),
 });
 
+export const UpdateCategorySchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  parentId: z.string().optional(),
+});
+
+export const UpdateCategoryResponseSchema = z.object({
+  message: z.string(),
+  data: z.object({
+    id: z.string(),
+    title: z.string(),
+    slug: z.string(),
+    parentId: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    deletedAt: z.string().nullable(),
+  })
+});
+
 export const CreateCategoryResponseSchema = z.object({
   message: z.string(),
   data: z.object({
@@ -53,3 +71,5 @@ export const CategoryResponseSchema = z.object({
 export type CategoryResponseType = z.infer<typeof CategoryResponseSchema>;
 export type CreateCategoryInput = z.infer<typeof CreateCategorySchema>;
 export type CreateCategoryResponse = z.infer<typeof CreateCategoryResponseSchema>;
+export type UpdateCategoryInput = z.infer<typeof UpdateCategorySchema>;
+export type UpdateCategoryResponse = z.infer<typeof UpdateCategoryResponseSchema>;

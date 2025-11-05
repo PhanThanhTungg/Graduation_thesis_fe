@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CategoryType } from '@/schema/category.schema';
@@ -68,14 +69,6 @@ const CategoryItem = ({ category, level = 0, onAdd, onEdit, onDelete }: Category
           </div>
 
           <div className="flex items-center gap-2">
-            {hasChildren && (
-              <div className={cn(
-                "text-zinc-400 transition-transform duration-200",
-                isExpanded ? "transform rotate-180" : ""
-              )}>
-                <ChevronDown size={20} />
-              </div>
-            )}
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <Button
                 variant="ghost"
@@ -111,6 +104,14 @@ const CategoryItem = ({ category, level = 0, onAdd, onEdit, onDelete }: Category
                 <Trash2 size={16} />
               </Button>
             </div>
+            {hasChildren && (
+              <div className={cn(
+                "text-zinc-400 transition-transform duration-200",
+                isExpanded ? "transform rotate-180" : ""
+              )}>
+                <ChevronDown size={20} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -125,7 +126,7 @@ const CategoryItem = ({ category, level = 0, onAdd, onEdit, onDelete }: Category
           <div className="overflow-hidden">
             <div className="grid gap-4">
               {category.children?.map((child) => (
-                <CategoryItem
+                <CategoryItem    
                   key={child.id}
                   category={child}
                   level={level + 1}
@@ -170,10 +171,10 @@ export function ListCategory() {
     setIsModalOpen(true);
   };
 
+  const router = useRouter();
+  
   const handleEditCategory = (category: CategoryType) => {
-    setModalMode('edit');
-    setSelectedCategory(category);
-    setIsModalOpen(true);
+    router.push(`/admin/category/edit/${category.slug}`);
   };
 
   const handleDeleteCategory = async (category: CategoryType) => {
