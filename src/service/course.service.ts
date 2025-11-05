@@ -1,5 +1,5 @@
-import { post } from "@/lib/request";
-import { CreateCourseBodySchema } from "@/schema/course.schema";
+import { get, patch, post } from "@/lib/request";
+import { CreateCourseBodySchema, CourseType } from "@/schema/course.schema";
 import { z } from "zod";
 
 type CreateCourseBody = z.infer<typeof CreateCourseBodySchema>;
@@ -34,7 +34,7 @@ export const createCourse = async (
     title: data.title,
     price: data.price,
     categoryId: data.categoryId,
-    isPublished: data.isPublished || false,
+    isPublished: false,
     courseDescription: {
       headline: data.courseDescription?.headline,
       targetKnowledges: data.courseDescription?.targetKnowledges,
@@ -60,6 +60,83 @@ export const createCourse = async (
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
         : "Failed to create course"
+    );
+  }
+};
+
+type GetMyCoursesResponse = {
+  message: string;
+  data: {
+    items: CourseType[];
+  };
+};
+
+type GetMyCoursesParams = {
+  keySearch?: string;
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+};
+
+export const getMyCourses = async (
+  params?: GetMyCoursesParams
+): Promise<CourseType[]> => {
+  const queryParams: Record<string, string> = {};
+  
+  if (params?.keySearch) {
+    queryParams.keySearch = params.keySearch;
+  }
+  if (params?.sortField) {
+    queryParams.sortField = params.sortField;
+  }
+  if (params?.sortOrder) {
+    queryParams.sortOrder = params.sortOrder;
+  }
+  if (params?.page) {
+    queryParams.page = params.page.toString();
+  }
+  if (params?.limit) {
+    queryParams.limit = params.limit.toString();
+  }
+
+  const response = await get<GetMyCoursesResponse>(
+    "/api/course/teacher-area/my-courses",
+    Object.keys(queryParams).length > 0 ? queryParams : undefined
+  );
+
+  if (response.status === 200) {
+    return (response.payload as GetMyCoursesResponse).data.items;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get courses"
+    );
+  }
+};
+
+type UpdateCourseStatusResponse = {
+  message: string;
+  data: CourseType;
+};
+
+export const updateCourseStatus = async (
+  courseId: number,
+  isPublished: boolean
+): Promise<CourseType> => {
+  const response = await patch<UpdateCourseStatusResponse>(
+    `/api/course/teacher-area/${courseId}`,
+    { isPublished }
+  );
+
+  if (response.status === 200) {
+    return (response.payload as UpdateCourseStatusResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to update course status"
     );
   }
 };

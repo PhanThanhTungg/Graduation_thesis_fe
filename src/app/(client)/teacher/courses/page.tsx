@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import { getAllCategories } from "@/service/category.service";
-import { CreateCourseDialog } from "@/components/teacher/create-course-dialog";
+import { getMyCourses } from "@/service/course.service";
+import { CourseType } from "@/schema/course.schema";
+import { TeacherCoursesPageClient } from "./_components/teacher-courses-page-client";
 
 export const metadata: Metadata = {
   title: "My Courses - Teacher Space",
@@ -9,17 +11,19 @@ export const metadata: Metadata = {
 
 export default async function CoursesPage() {
   const categories = await getAllCategories();
+  let courses: CourseType[] = [];
+  
+  try {
+    courses = await getMyCourses();
+  } catch (error) {
+    console.error("Failed to fetch courses:", error);
+  }
 
   return (
-    <section className="container-xl py-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">My Courses</h1>
-        <CreateCourseDialog categories={categories} />
-      </div>
-      <div className="text-muted-foreground">
-        Your courses will appear here
-      </div>
-    </section>
+    <TeacherCoursesPageClient 
+      categories={categories} 
+      initialCourses={courses} 
+    />
   );
 }
 
