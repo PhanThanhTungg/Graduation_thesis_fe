@@ -329,7 +329,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                       try {
                         const ok = await promoteToTeacher(user);
                         if (ok) {
-                          router.push('/teacher');
+                          router.push('/teacher/dashboard');
                         }
                       } finally {
                         setIsPromoting(false);
@@ -347,7 +347,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     )}
                   </Button>
                 ) : (
-                  <Link href="/teacher">
+                  <Link href="/teacher/dashboard">
                     <Button type="button" variant="outline" className="h-11 px-6 text-base">
                       Go to teacher dashboard
                     </Button>
