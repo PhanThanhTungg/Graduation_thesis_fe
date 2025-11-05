@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconListDetails, IconSearch, IconSettings, IconUsers, IconWallet } from "@tabler/icons-react"
+import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconListDetails, IconSearch, IconSettings, IconUser, IconUsers, IconWallet } from "@tabler/icons-react"
 import { NavMain } from "@/components/teacher/nav-main"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import Link from "next/link"
@@ -18,6 +18,11 @@ const data = {
       title: "Dashboard",
       url: "/teacher/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Profile",
+      url: "/teacher/profile",
+      icon: IconUser,
     },
     {
       title: "Courses",

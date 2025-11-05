@@ -16,8 +16,13 @@ import { UpdateUserBodySchema, UpdateUserBodyType, UserType } from "@/schema/use
 import { updateUserInfo } from "@/service/user.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { sendVerificationEmail } from "@/service/auth.service";
+import { promoteToTeacher } from "@/service/user.service";
+import { showToast } from "@/lib/toast";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface ProfileFormProps {
   user: UserType;
@@ -25,6 +30,10 @@ interface ProfileFormProps {
 
 export default function ProfileForm({ user }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSendingVerify, setIsSendingVerify] = useState(false);
+  const [verifyCooldown, setVerifyCooldown] = useState(0);
+  const [isPromoting, setIsPromoting] = useState(false);
+  const router = useRouter();
 
   const {
     register,
@@ -38,13 +47,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       fullName: user.fullName,
       email: user.email,
       country: user.country,
-      avatarUrl: user.avatarUrl,
       role: user.role,
     },
     mode: "onChange",
   });
 
-  const avatarUrl = watch("avatarUrl");
 
   const onSubmit = async (data: UpdateUserBodyType) => {
     setIsSubmitting(true);
@@ -62,6 +69,25 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  useEffect(() => {
+    if (verifyCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setVerifyCooldown((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [verifyCooldown]);
+
+  const handleSendVerification = async () => {
+    if (verifyCooldown > 0 || isSendingVerify) return;
+    setIsSendingVerify(true);
+    try {
+      await sendVerificationEmail();
+      setVerifyCooldown(60);
+    } finally {
+      setIsSendingVerify(false);
+    }
   };
 
   return (
@@ -82,7 +108,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
               <div className="flex items-center gap-6">
                 <div className="relative group">
                   <Avatar className="size-24">
-                    <AvatarImage src={avatarUrl || undefined} alt={user.fullName} />
+                    <AvatarImage src={user.avatarUrl || undefined} alt={user.fullName} />
                     <AvatarFallback className="text-2xl font-semibold bg-muted">
                       {getInitials(user.fullName)}
                     </AvatarFallback>
@@ -110,7 +136,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     >
                       Upload Image
                     </Button>
-                    {avatarUrl && (
+                    {user.avatarUrl && (
                       <Button
                         type="button"
                         variant="outline"
@@ -205,58 +231,11 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <Label htmlFor="role" className="text-base">
-                    Role <span className="text-destructive">*</span>
-                  </Label>
-                  <Controller
-                    name="role"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger 
-                          id="role" 
-                          className="h-11 w-full text-base"
-                          aria-invalid={!!errors.role}
-                        >
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="student">Student</SelectItem>
-                          <SelectItem value="teacher">Teacher</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.role && (
-                    <p className="text-sm text-destructive">
-                      {errors.role.message}
-                    </p>
-                  )}
+                  <Label className="text-base">Role</Label>
+                  <div className="h-11 px-4 flex items-center rounded-md border border-input bg-background text-base capitalize">
+                    {user.role}
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="avatarUrl" className="text-base">
-                  Avatar URL
-                </Label>
-                <Input
-                  id="avatarUrl"
-                  {...register("avatarUrl")}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="h-11 text-base"
-                  aria-invalid={!!errors.avatarUrl}
-                />
-                {errors.avatarUrl && (
-                  <p className="text-sm text-destructive">
-                    {errors.avatarUrl.message}
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Enter a valid URL for your profile picture
-                </p>
               </div>
             </div>
 
@@ -289,17 +268,32 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                     Email Verified
                   </Label>
                   <div className="flex items-center gap-2">
-                    {user.emailVerified ? (
+                {user.emailVerified ? (
+                  <>
+                    <div className="size-2.5 rounded-full bg-green" />
+                    <span className="text-base font-medium">Verified</span>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-sm"
+                    onClick={handleSendVerification}
+                    disabled={verifyCooldown > 0 || isSendingVerify}
+                  >
+                    {isSendingVerify ? (
                       <>
-                        <div className="size-2.5 rounded-full bg-green" />
-                        <span className="text-base font-medium">Verified</span>
+                        <Loader2 className="size-4 animate-spin mr-2" />
+                        Sending...
                       </>
+                    ) : verifyCooldown > 0 ? (
+                      `Resend in ${verifyCooldown}s`
                     ) : (
-                      <>
-                        <div className="size-2.5 rounded-full bg-yellow" />
-                        <span className="text-base font-medium">Not Verified</span>
-                      </>
+                      'Verify'
                     )}
+                  </Button>
+                )}
                   </div>
                 </div>
 
@@ -318,6 +312,48 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                   </p>
                 </div>
               )}
+
+              <div className="flex flex-col gap-2">
+                <Label className="text-base text-muted-foreground">Teacher</Label>
+                {user.role === 'student' ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 px-6 text-base"
+                    onClick={async () => {
+                      if (!user.emailVerified) {
+                        showToast('error', 'Please verify your email first');
+                        return;
+                      }
+                      setIsPromoting(true);
+                      try {
+                        const ok = await promoteToTeacher(user);
+                        if (ok) {
+                          router.push('/teacher/dashboard');
+                        }
+                      } finally {
+                        setIsPromoting(false);
+                      }
+                    }}
+                    disabled={isPromoting}
+                  >
+                    {isPromoting ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin mr-2" />
+                        Updating...
+                      </>
+                    ) : (
+                      'Become a teacher'
+                    )}
+                  </Button>
+                ) : (
+                  <Link href="/teacher/dashboard">
+                    <Button type="button" variant="outline" className="h-11 px-6 text-base">
+                      Go to teacher dashboard
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
 
             <div className="flex justify-end gap-4">

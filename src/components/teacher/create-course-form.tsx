@@ -34,14 +34,17 @@ import { CreateCourseBodySchema } from "@/schema/course.schema"
 import { CategoryType } from "@/schema/category.schema"
 import { z } from "zod"
 import { toast } from "sonner"
+import { createCourse } from "@/service/course.service"
+import { uploadImages } from "@/service/upload.service"
 
 type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
 
 interface CreateCourseFormProps {
   categories: CategoryType[]
+  onSuccess?: () => void
 }
 
-export function CreateCourseForm({ categories }: CreateCourseFormProps) {
+export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
 
@@ -110,14 +113,37 @@ export function CreateCourseForm({ categories }: CreateCourseFormProps) {
   const onSubmit = async (data: CreateCourseFormValues) => {
     setIsLoading(true)
     try {
-      console.log("Form data:", data)
-      // TODO: Implement API call to create course
-      toast.success("Course created successfully!")
+      let thumbnailUrl: string | undefined = undefined;
+
+      if (data.thumbnailUrl instanceof File) {
+        const formData = new FormData();
+        formData.append("files", data.thumbnailUrl);
+        const urls = await uploadImages(formData);
+        if (urls.length > 0) {
+          thumbnailUrl = urls[0];
+        }
+      } else if (typeof data.thumbnailUrl === "string") {
+        thumbnailUrl = data.thumbnailUrl;
+      }
+
+      await createCourse({
+        ...data,
+        thumbnailUrl,
+      });
+
+      toast.success("Course created successfully!");
+      form.reset();
+      setThumbnailPreview(null);
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      toast.error("Failed to create course")
-      console.error(error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to create course";
+      toast.error(errorMessage);
+      console.error(error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -126,13 +152,13 @@ export function CreateCourseForm({ categories }: CreateCourseFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         {/* Basic Information */}
         <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Basic Information</CardTitle>
             <CardDescription>
               Enter the basic details about your course
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <FormField
               control={form.control}
               name="title"
@@ -262,13 +288,13 @@ export function CreateCourseForm({ categories }: CreateCourseFormProps) {
 
         {/* Course Description */}
         <Card>
-          <CardHeader>
-            <CardTitle>Course Description</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Course Description</CardTitle>
             <CardDescription>
               Provide detailed information about your course
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <FormField
               control={form.control}
               name="courseDescription.headline"
@@ -427,7 +453,7 @@ export function CreateCourseForm({ categories }: CreateCourseFormProps) {
         </Card>
 
         {/* Submit Button */}
-        <div className="flex justify-end gap-4">
+        <div className="flex justify-end gap-4 pt-4">
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>

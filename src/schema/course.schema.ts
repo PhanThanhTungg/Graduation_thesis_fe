@@ -21,6 +21,7 @@ export const CourseSchema = z.object({
   slug: z.string(),
   isPublished: z.boolean().default(true),
   updatedAt: z.date(),
+  countStudent: z.number().optional(),
 }).strip()
 export type CourseType = z.infer<typeof CourseSchema>;
 
