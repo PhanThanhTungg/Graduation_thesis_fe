@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getAllCategories } from "@/service/category.service";
 import { getMyCourses } from "@/service/course.service";
-import { CourseType } from "@/schema/course.schema";
+import { ExtendedCourseType } from "@/schema/course.schema";
 import { TeacherCoursesPageClient } from "./_components/teacher-courses-page-client";
 
 export const metadata: Metadata = {
@@ -11,10 +11,13 @@ export const metadata: Metadata = {
 
 export default async function CoursesPage() {
   const categories = await getAllCategories();
-  let courses: CourseType[] = [];
+  let courses: ExtendedCourseType[] = [];
   
   try {
-    courses = await getMyCourses();
+    // TODO: Update getMyCourses to return ExtendedCourseType with countStudent and category
+    const rawCourses = await getMyCourses();
+    // For now, cast to ExtendedCourseType (you'll need to update the API response)
+    courses = rawCourses as ExtendedCourseType[];
   } catch (error) {
     console.error("Failed to fetch courses:", error);
   }

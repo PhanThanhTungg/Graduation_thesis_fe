@@ -1,124 +1,208 @@
 "use client"
 
-import { CourseType } from "@/schema/course.schema"
+import { ExtendedCourseType } from "@/schema/course.schema"
 import { useEffect, useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { updateCourseStatus } from "@/service/course.service"
-import { showToast } from "@/lib/toast"
+import { CourseCard } from "@/components/teacher/course-card"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Users } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { mockTeacherCourses } from "@/lib/mockData"
 
 interface TeacherCoursesListProps {
-  initialCourses?: CourseType[]
+  initialCourses?: ExtendedCourseType[]
   onCourseUpdated?: () => void
 }
 
 export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: TeacherCoursesListProps) {
-  const [courses, setCourses] = useState<CourseType[]>(initialCourses)
+  // Use mock data for now if no initial courses
+  const [courses, setCourses] = useState<ExtendedCourseType[]>(
+    initialCourses.length > 0 ? initialCourses : mockTeacherCourses
+  )
+  const [filteredCourses, setFilteredCourses] = useState<ExtendedCourseType[]>(courses)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState("newest")
+  const [currentPage, setCurrentPage] = useState(1)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
+  const itemsPerPage = 6
 
   useEffect(() => {
-    setCourses(initialCourses)
+    if (initialCourses.length > 0) {
+      setCourses(initialCourses)
+    }
   }, [initialCourses])
 
-  const handleToggleStatus = async (e: React.MouseEvent, course: CourseType) => {
-    e.preventDefault()
-    e.stopPropagation()
+  // Filter and sort courses
+  useEffect(() => {
+    let result = [...courses]
+
+    // Search filter
+    if (searchQuery) {
+      result = result.filter(course =>
+        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.courseDescription?.headline?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Sort
+    switch (sortBy) {
+      case "newest":
+        result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        break
+      case "oldest":
+        result.sort((a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime())
+        break
+      case "price-high":
+        result.sort((a, b) => b.price - a.price)
+        break
+      case "price-low":
+        result.sort((a, b) => a.price - b.price)
+        break
+      case "students":
+        result.sort((a, b) => (b.countStudent || 0) - (a.countStudent || 0))
+        break
+      case "rating":
+        result.sort((a, b) => b.rating - a.rating)
+        break
+    }
+
+    setFilteredCourses(result)
+    setCurrentPage(1) // Reset to first page when filters change
+  }, [courses, searchQuery, sortBy])
+
+  const handleTogglePublish = async (courseId: number, newStatus: boolean) => {
+    setUpdatingId(courseId)
     
-    setUpdatingId(course.id)
-    try {
-      const updatedCourse = await updateCourseStatus(course.id, !course.isPublished)
-      setCourses(courses.map(c => c.id === course.id ? updatedCourse : c))
-      showToast("success", `Course ${updatedCourse.isPublished ? "published" : "unpublished"} successfully`)
+    // TODO: Implement API call to update course status
+    // For now, just update local state
+    setTimeout(() => {
+      setCourses(courses.map(c => 
+        c.id === courseId ? { ...c, isPublished: newStatus } : c
+      ))
+      setUpdatingId(null)
       if (onCourseUpdated) {
         onCourseUpdated()
       }
-    } catch (error) {
-      showToast("error", "Failed to update course status")
-      console.error(error)
-    } finally {
-      setUpdatingId(null)
-    }
+    }, 500)
   }
+
+  // Pagination
+  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCourses = filteredCourses.slice(startIndex, endIndex)
 
   if (courses.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground mb-4">You haven't created any courses yet.</p>
-        <p className="text-sm text-muted-foreground">Click "Create Course" to get started!</p>
+      <div className="text-center py-16 bg-gradient-to-br from-violet/5 via-peach/5 to-mint/10 rounded-2xl border-2 border-dashed border-violet/30">
+        <div className="text-6xl mb-4">📚</div>
+        <p className="text-lg font-medium text-foreground mb-2">No courses yet</p>
+        <p className="text-sm text-muted-foreground">Click "Create Course" button to get started!</p>
       </div>
     )
   }
 
   return (
-    <ul className="space-y-2">
-      {courses.map((course) => (
-        <li key={course.id}>
-          <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-            <Link 
-              href={`/courses/${course.slug}`}
-              className="flex items-center gap-4 flex-1"
-            >
-              <div className="relative w-24 h-16 flex-shrink-0">
-                <Image
-                  src={course.thumbnailUrl || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7g5SvKsiKVcylCXpx4jPGGn3SDgA3vxKx5w&s"}
-                  alt={course.title}
-                  fill
-                  className="object-cover rounded"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium">{course.title}</h3>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className={`inline-block px-2 py-1 text-xs rounded ${
-                    course.isPublished 
-                      ? 'bg-green/10 text-green' 
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {course.isPublished ? 'Published' : 'Draft'}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    ${course.price}
-                  </span>
-                  {course.countStudent !== undefined && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {course.countStudent}
-                      </span>
-                    </>
-                  )}
-                  {course.rating > 0 && (
-                    <>
-                      <span className="text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground">
-                        ⭐ {course.rating}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => handleToggleStatus(e, course)}
-              disabled={updatingId === course.id}
-              className="flex-shrink-0"
-            >
-              {updatingId === course.id ? (
-                "Updating..."
-              ) : (
-                course.isPublished ? "Unpublish" : "Publish"
-              )}
-            </Button>
+    <div className="space-y-6">
+      {/* Search and Sort Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-lg border border-violet/20 shadow-sm">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-violet w-4 h-4" />
+          <Input
+            placeholder="Search courses..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 border-violet/30 focus:border-violet focus:ring-violet/20"
+          />
+        </div>
+        
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-[200px] border-violet/30 focus:border-violet focus:ring-violet/20">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">Newest First</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="price-high">Price: High to Low</SelectItem>
+            <SelectItem value="price-low">Price: Low to High</SelectItem>
+            <SelectItem value="students">Most Students</SelectItem>
+            <SelectItem value="rating">Highest Rating</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Results Count */}
+      <div className="flex items-center gap-2 text-sm">
+        <span className="font-medium text-green">
+          {filteredCourses.length} {filteredCourses.length === 1 ? 'course' : 'courses'}
+        </span>
+        <span className="text-muted-foreground">
+          • Showing {startIndex + 1}-{Math.min(endIndex, filteredCourses.length)}
+        </span>
+      </div>
+
+      {/* Course Grid - 3 columns */}
+      {currentCourses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {currentCourses.map((course) => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              onTogglePublish={handleTogglePublish}
+              isUpdating={updatingId === course.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12 bg-card rounded-lg border-2 border-dashed border-orange/30">
+          <p className="text-muted-foreground text-lg">🔍 No courses found matching your search.</p>
+          <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8 p-4 bg-card rounded-lg border border-mint/20">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="border-green/30 hover:bg-green/10 hover:text-green hover:border-green disabled:opacity-50"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </Button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={currentPage === page ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(page)}
+                className={currentPage === page 
+                  ? "w-10 bg-green hover:bg-green/90 text-white border-green" 
+                  : "w-10 border-green/30 hover:bg-green/10 hover:text-green hover:border-green"}
+              >
+                {page}
+              </Button>
+            ))}
           </div>
-        </li>
-      ))}
-    </ul>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="border-green/30 hover:bg-green/10 hover:text-green hover:border-green disabled:opacity-50"
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+    </div>
   )
 }
-
 

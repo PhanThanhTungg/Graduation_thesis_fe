@@ -1,13 +1,13 @@
 "use client"
 
 import { CategoryType } from "@/schema/category.schema"
-import { CourseType } from "@/schema/course.schema"
+import { ExtendedCourseType } from "@/schema/course.schema"
 import { CreateCourseDialog } from "@/components/teacher/create-course-dialog"
 import { TeacherCoursesList } from "./teacher-courses-list"
 
 interface TeacherCoursesPageClientProps {
   categories: CategoryType[]
-  initialCourses: CourseType[]
+  initialCourses: ExtendedCourseType[]
 }
 
 export function TeacherCoursesPageClient({
@@ -19,9 +19,14 @@ export function TeacherCoursesPageClient({
   }
 
   return (
-    <section className="container-xl py-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">My Courses</h1>
+    <section className="w-full px-6 py-8 bg-gradient-to-br from-violet/5 via-background to-mint/5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-violet to-green bg-clip-text text-transparent">
+            My Courses
+          </h1>
+          <p className="text-muted-foreground mt-1">Manage and track your course content</p>
+        </div>
         <CreateCourseDialog 
           categories={categories} 
           onCourseCreated={handleRefresh}

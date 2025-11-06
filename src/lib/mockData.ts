@@ -178,6 +178,110 @@ export const mockCourseDetail: ExtendedCourseType = {
   },
 }
 
+// Mock courses for teacher with extended data
+export const mockTeacherCourses: ExtendedCourseType[] = [
+  {
+    ...mockCourses[0],
+    countStudent: 1250,
+    category: {
+      id: "1",
+      parentId: null,
+      title: "Web Development",
+      slug: "web-development",
+    },
+  },
+  {
+    ...mockCourses[1],
+    countStudent: 450,
+    category: {
+      id: "2",
+      parentId: null,
+      title: "WordPress",
+      slug: "wordpress",
+    },
+  },
+  {
+    ...mockCourses[2],
+    countStudent: 890,
+    category: {
+      id: "1",
+      parentId: null,
+      title: "Web Development",
+      slug: "web-development",
+    },
+  },
+  {
+    ...mockCourses[3],
+    countStudent: 320,
+    category: {
+      id: "2",
+      parentId: null,
+      title: "WordPress",
+      slug: "wordpress",
+    },
+  },
+  {
+    ...mockCourses[4],
+    countStudent: 650,
+    category: {
+      id: "1",
+      parentId: null,
+      title: "Web Development",
+      slug: "web-development",
+    },
+  },
+  {
+    ...mockCourses[5],
+    countStudent: 180,
+    category: {
+      id: "3",
+      parentId: null,
+      title: "E-Learning",
+      slug: "e-learning",
+    },
+  },
+  {
+    ...mockCourses[0],
+    countStudent: 1250,
+    category: {
+      id: "1",
+      parentId: null,
+      title: "Web Development",
+      slug: "web-development",
+    },
+  },
+  {
+    ...mockCourses[1],
+    countStudent: 450,
+    category: {
+      id: "2",
+      parentId: null,
+      title: "WordPress",
+      slug: "wordpress",
+    },
+  },
+  {
+    ...mockCourses[2],
+    countStudent: 890,
+    category: {
+      id: "1",
+      parentId: null,
+      title: "Web Development",
+      slug: "web-development",
+    },
+  },
+  {
+    ...mockCourses[3],
+    countStudent: 320,
+    category: {
+      id: "2",
+      parentId: null,
+      title: "WordPress",
+      slug: "wordpress",
+    },
+  },
+]
+
 export const mockCategories: CategoryType[] = [
   {
     id: "1",
