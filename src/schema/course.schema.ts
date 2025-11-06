@@ -19,7 +19,9 @@ export const CourseSchema = z.object({
   teacher: TeacherSchema,
   rating: z.number(),
   slug: z.string(),
+  isPublished: z.boolean().default(true),
   updatedAt: z.date(),
+  countStudent: z.number().optional(),
 }).strip()
 export type CourseType = z.infer<typeof CourseSchema>;
 

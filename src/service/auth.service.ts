@@ -38,3 +38,29 @@ export const clientLogin: SubmitHandler<UserLoginType> = async (data) => {
     showToast("error", response.payload.message);
   }
 }
+
+export const sendVerificationEmail = async () => {
+  const response = await post<{ message: string }>(
+    '/api/auth/send-verification-email',
+    {}
+  );
+  if (response.status === 201 || response.status === 200) {
+    showToast('success', (response.payload as any)?.message || 'Verification email sent');
+  } else {
+    showToast('error', (response.payload as any)?.message || 'Failed to send verification email');
+  }
+}
+
+export const verifyEmail = async (token: string) => {
+  const response = await post<{ message: string }>(
+    '/api/auth/verify-email',
+    { token }
+  );
+  const ok = response.status === 200 || response.status === 201;
+  if (ok) {
+    showToast('success', (response.payload as any)?.message || 'Email verified successfully');
+  } else {
+    showToast('error', (response.payload as any)?.message || 'Email verification failed');
+  }
+  return { ok, message: (response.payload as any)?.message };
+}

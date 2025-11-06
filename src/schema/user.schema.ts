@@ -15,12 +15,12 @@ export type UserType = z.infer<typeof UserSchema>;
 
 
 export const TeacherSchema = UserSchema.extend({
-  bio: z.string().optional(),
-  headline: z.string().optional(),
-  website: z.url().optional(),
-  facebook: z.url().optional(),
-  linkedin: z.url().optional(),
-  youtube: z.url().optional(),
+  bio: z.string().nullable().optional(),
+  headline: z.string().nullable().optional(),
+  website: z.union([z.string().url(), z.null()]).optional(),
+  facebook: z.union([z.string().url(), z.null()]).optional(),
+  linkedin: z.union([z.string().url(), z.null()]).optional(),
+  youtube: z.union([z.string().url(), z.null()]).optional(),
 }).strip()
 export type TeacherType = z.infer<typeof TeacherSchema>;
 
@@ -70,3 +70,13 @@ export const UpdateUserBodySchema = z.object({
   role: z.enum(["teacher", "student"]),
 })
 export type UpdateUserBodyType = z.infer<typeof UpdateUserBodySchema>;
+
+export const UpdateTeacherProfileSchema = z.object({
+  bio: z.string().optional(),
+  headline: z.string().optional(),
+  website: z.union([z.string().url(), z.literal("")]).optional(),
+  facebook: z.union([z.string().url(), z.literal("")]).optional(),
+  linkedin: z.union([z.string().url(), z.literal("")]).optional(),
+  youtube: z.union([z.string().url(), z.literal("")]).optional(),
+})
+export type UpdateTeacherProfileType = z.infer<typeof UpdateTeacherProfileSchema>;

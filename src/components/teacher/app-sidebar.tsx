@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconInnerShadowTop, IconListDetails, IconSearch, IconSettings, IconUsers } from "@tabler/icons-react"
+import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconListDetails, IconSearch, IconSettings, IconUser, IconUsers, IconWallet } from "@tabler/icons-react"
 import { NavMain } from "@/components/teacher/nav-main"
-import { NavSecondary } from "@/components/teacher/nav-secondary"
-import { NavUser } from "@/components/teacher/nav-user"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
+import Link from "next/link"
+import { ArrowLeftToLine } from "lucide-react"
 
 const data = {
   user: {
@@ -20,9 +20,19 @@ const data = {
       icon: IconDashboard,
     },
     {
+      title: "Profile",
+      url: "/teacher/profile",
+      icon: IconUser,
+    },
+    {
       title: "Courses",
       url: "/teacher/courses",
       icon: IconListDetails,
+    },
+    {
+      title: "Lessons",
+      url: "/teacher/lessons",
+      icon: IconFolder,
     },
     {
       title: "Analytics",
@@ -30,15 +40,15 @@ const data = {
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
+      title: "Students",
       url: "#",
       icon: IconUsers,
     },
+    {
+      title: "Finance",
+      url: "#",
+      icon: IconWallet
+    }
   ],
   navSecondary: [
     {
@@ -69,20 +79,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/teacher/dashboard" className="flex items-center gap-2">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Aikabis Teachers</span>
-              </a>
+              <Link href="/" className="hover:underline">
+                <ArrowLeftToLine className="size-5" />
+                <span className="text-base font-semibold">Exit</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/teacher/settings">
+                <IconSettings />
+                Settings
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )
