@@ -27,12 +27,24 @@ import { z } from "zod"
 import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 
+type LessonData = {
+  id: string
+  title: string
+  description?: string | null
+  type: string
+  videoLesson?: {
+    id: string
+    videoUrl: string
+  } | null
+}
+
 interface LessonDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (data: z.infer<typeof CreateLessonBodySchema>) => Promise<void>
   mode: "add" | "edit"
   isLoading?: boolean
+  lesson?: LessonData | null
 }
 
 type FormData = z.infer<typeof CreateLessonBodySchema>
@@ -42,7 +54,8 @@ export function LessonDialog({
   onOpenChange, 
   onSave, 
   mode,
-  isLoading = false
+  isLoading = false,
+  lesson = null
 }: LessonDialogProps) {
   const {
     register,
@@ -66,14 +79,24 @@ export function LessonDialog({
 
   useEffect(() => {
     if (open) {
-      reset({
-        title: "",
-        type: "video",
-        isPreview: false,
-        content: "",
-      })
+      if (mode === "edit" && lesson) {
+        reset({
+          title: lesson.title,
+          type: lesson.type as "video" | "theory" | "exercise",
+          isPreview: false,
+          content: lesson.description || "",
+          videoUrl: lesson.videoLesson?.videoUrl || "",
+        })
+      } else {
+        reset({
+          title: "",
+          type: "video",
+          isPreview: false,
+          content: "",
+        })
+      }
     }
-  }, [open, reset])
+  }, [open, reset, mode, lesson])
 
   const onSubmit = async (data: FormData) => {
     try {
