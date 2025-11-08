@@ -93,10 +93,6 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Type</h3>
-                  <p className="text-sm">{getTypeLabel(lesson.type)}</p>
-                </div>
 
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Position</h3>
@@ -116,12 +112,38 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
                 )}
               </div>
 
-              {lesson.type === "video" && (
+              {lesson.videoLesson && (
                 <UploadVideo
                   lessonId={lesson.id}
                   currentVideoId={lesson.videoLesson?.videoId || null}
                   currentEmbedUrl={lesson.videoLesson?.embedUrl || null}
                 />
+              )}
+
+              {lesson.files && lesson.files.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-4">Files</h3>
+                  <div className="space-y-2">
+                    {lesson.files.map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{file.fileName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(file.fileSize / 1024).toFixed(2)} KB
+                          </p>
+                        </div>
+                        <a
+                          href={file.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-green hover:underline"
+                        >
+                          Download
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

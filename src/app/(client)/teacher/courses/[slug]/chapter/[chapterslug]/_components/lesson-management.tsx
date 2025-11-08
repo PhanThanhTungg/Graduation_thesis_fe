@@ -24,7 +24,6 @@ type LessonType = {
   id: string
   title: string
   description?: string | null
-  type: string
   position: number
   duration?: number | null
   slug: string
@@ -56,7 +55,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
   
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
   const [sortField, setSortField] = useState("position")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [page, setPage] = useState(1)
@@ -79,14 +77,13 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
 
   useEffect(() => {
     loadLessons()
-  }, [chapterId, debouncedSearch, typeFilter, sortField, sortOrder, page, limit])
+  }, [chapterId, debouncedSearch, sortField, sortOrder, page, limit])
 
   const loadLessons = async () => {
     try {
       setIsLoading(true)
       const data = await getLessonsByChapterId(chapterId, {
         keySearch: debouncedSearch || undefined,
-        type: typeFilter !== "all" ? (typeFilter as "video" | "theory" | "exercise") : undefined,
         sortField,
         sortOrder,
         page,
@@ -113,7 +110,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
           id: updatedLesson.id,
           title: updatedLesson.title,
           description: updatedLesson.description,
-          type: updatedLesson.type,
           position: updatedLesson.position,
           duration: updatedLesson.duration,
           slug: updatedLesson.slug,
@@ -134,7 +130,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
           id: newLesson.id,
           title: newLesson.title,
           description: newLesson.description,
-          type: newLesson.type,
           position: newLesson.position,
           duration: newLesson.duration,
           slug: newLesson.slug,
@@ -225,11 +220,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
     setPage(1)
   }
 
-  const handleTypeFilterChange = (value: string) => {
-    setTypeFilter(value)
-    setPage(1)
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -255,22 +245,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Label htmlFor="type-filter" className="text-sm whitespace-nowrap">
-              Type:
-            </Label>
-            <Select value={typeFilter} onValueChange={handleTypeFilterChange}>
-              <SelectTrigger id="type-filter" className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-                <SelectItem value="theory">Theory</SelectItem>
-                <SelectItem value="exercise">Exercise</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -284,7 +258,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
             <SelectContent>
               <SelectItem value="position">Position</SelectItem>
               <SelectItem value="title">Title</SelectItem>
-              <SelectItem value="type">Type</SelectItem>
               <SelectItem value="createdAt">Created Date</SelectItem>
             </SelectContent>
           </Select>
@@ -331,11 +304,13 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
                       )}
                       <div className="flex items-center gap-4 mt-2">
                         <span className="text-xs text-muted-foreground">
-                          Type: {lesson.type}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
                           Position: {lesson.position}
                         </span>
+                        {lesson.videoLesson && (
+                          <span className="text-xs text-muted-foreground">
+                            Has Video
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -433,7 +408,6 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
           id: editingLesson.id,
           title: editingLesson.title,
           description: editingLesson.description,
-          type: editingLesson.type,
           videoLesson: editingLesson.videoLesson || null,
         } : null}
       />
