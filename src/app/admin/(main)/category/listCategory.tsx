@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CategoryType } from '@/schema/category.schema';
-import { getAllCategories } from '@/service/admin/category.service';
+import { getAllCategories, deleteCategory } from '@/service/admin/category.service';
 import { ChevronRight, ChevronDown, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CategoryModal } from './CategoryModal';
+import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { showToast } from '@/lib/toast';
 
 interface CategoryItemProps {
   category: CategoryType;
@@ -60,11 +63,9 @@ const CategoryItem = ({ category, level = 0, onAdd, onEdit, onDelete }: Category
               <h3 className="font-medium text-zinc-900 dark:text-zinc-100">
                 {category.title}
               </h3>
-                {hasChildren && (
                 <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {category.children?.length} subcategories
+                  {(category.children?.length ?? 0)} subcategories
                 </span>
-              )}
             </div>
           </div>
 
@@ -147,8 +148,12 @@ export function ListCategory() {
   const [categories, setCategories] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryType | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -167,21 +172,45 @@ export function ListCategory() {
 
   const handleAddCategory = (parentId?: string) => {
     setModalMode('add');
-    setSelectedCategory(parentId ? categories.find(c => c.id === parentId) || null : null);
+    setSelectedCategory(null);
+    setSelectedParentId(parentId);
     setIsModalOpen(true);
   };
 
   const router = useRouter();
   
   const handleEditCategory = (category: CategoryType) => {
-    router.push(`/admin/category/edit/${category.slug}`);
+    setModalMode('edit');
+    setSelectedCategory(category);
+    setSelectedParentId(undefined);
+    setIsModalOpen(true);
   };
 
-  const handleDeleteCategory = async (category: CategoryType) => {
-    if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
-      // TODO: Implement delete API call
-      console.log('Delete category:', category);
+  const handleDeleteCategory = (category: CategoryType) => {
+    setCategoryToDelete(category);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteCategory(categoryToDelete.id);
+      showToast('success', 'Category deleted successfully');
+      setIsDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+      fetchCategories(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      showToast('error', 'Failed to delete category');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleModalSuccess = () => {
+    fetchCategories(); // Refresh the list after successful add/edit
   };
 
   return (
@@ -210,7 +239,25 @@ export function ListCategory() {
         )}
       </CardContent>
 
-      {/* TODO: Add CategoryModal component for add/edit operations */}
+      <CategoryModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mode={modalMode}
+        category={selectedCategory || undefined}
+        parentId={selectedParentId}
+        onSuccess={handleModalSuccess}
+      />
+
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setCategoryToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        category={categoryToDelete}
+        isDeleting={isDeleting}
+      />
     </Card>
   );
 }

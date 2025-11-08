@@ -137,8 +137,8 @@ export default function Sidebar() {
                   Team
                 </div>
                 <div className="space-y-1">
-                  <NavItem href="#" icon={Users2}>
-                    Members
+                  <NavItem href="/admin/user" icon={Users2}>
+                    Users
                   </NavItem>
                   <NavItem href="#" icon={Shield}>
                     Permissions

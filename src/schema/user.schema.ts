@@ -80,3 +80,89 @@ export const UpdateTeacherProfileSchema = z.object({
   youtube: z.union([z.string().url(), z.literal("")]).optional(),
 })
 export type UpdateTeacherProfileType = z.infer<typeof UpdateTeacherProfileSchema>;
+
+// Admin User Management Types
+export type UserListItem = {
+  id: string;
+  name: string;
+  email: string;
+  role: "teacher" | "student";
+  emailVerified: boolean;
+  avatarUrl: string | null;
+  status: "active" | "inactive" | "banned";
+  country: string;
+  createdAt: string;
+};
+
+export type UserListResponse = {
+  message: string;
+  data: {
+    items: UserListItem[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+};
+
+export type UserDetailResponse = {
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    role: "teacher" | "student";
+    emailVerified: boolean;
+    avatarUrl: string | null;
+    status: "active" | "inactive" | "banned";
+    country: string;
+    createdAt: string;
+    updatedAt: string;
+    teacherSettings?: {
+      id: string;
+      bio: string | null;
+      headline: string | null;
+      website: string | null;
+      facebook: string | null;
+      linkedin: string | null;
+      youtube: string | null;
+    } | null;
+    courses?: Array<{
+      id: string;
+      title: string;
+      thumbnailUrl: string | null;
+      price: number;
+      countStudent: number;
+      isPublished: boolean;
+      slug: string;
+      category: {
+        id: string;
+        name: string;
+      } | null;
+      createdAt: string;
+    }>;
+  };
+};
+
+export type UpdateUserStatusResponse = {
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    email: string;
+    role: "teacher" | "student";
+    status: "active" | "inactive" | "banned";
+    updatedAt: string;
+  };
+};
+
+export type GetAllUsersParams = {
+  keySearch?: string;
+  role?: "teacher" | "student";
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+};
