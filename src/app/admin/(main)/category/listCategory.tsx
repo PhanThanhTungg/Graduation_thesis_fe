@@ -63,11 +63,9 @@ const CategoryItem = ({ category, level = 0, onAdd, onEdit, onDelete }: Category
               <h3 className="font-medium text-zinc-900 dark:text-zinc-100">
                 {category.title}
               </h3>
-                {hasChildren && (
                 <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  {category.children?.length} subcategories
+                  {(category.children?.length ?? 0)} subcategories
                 </span>
-              )}
             </div>
           </div>
 
