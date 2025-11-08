@@ -77,6 +77,16 @@ export const clearRecentSearch = (): void => {
   localStorage.removeItem("recentSearches");
 };
 
+// Generate slug from string
+export const generateSlug = (str: string): string => {
+  return str
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') + '-' + Date.now().toString().slice(-5);
+};
+
 // export const flattenCategories = (
 //   categories: CategoryType[],
 //   parent?: { id: number, name: string, thumbnail: string, level: number },

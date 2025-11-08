@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bunny Video Upload</title>
+</head>
+<body>
+  <h1>Upload Video to Bunny CDN</h1>
+  <input type="file" id="fileInput" accept="video/*">
+  <input type="text" id="titleInput" placeholder="Video title (optional)">
+  <button id="uploadBtn">Upload</button>
+  <div id="status"></div>
+  <div id="result"></div>
+
+  <script>
+    const LIB_ID = '522045';
+    const API_KEY = '2bc8147f-e1cd-4cc2-a4964fd2d412-638b-4c87';
+
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+      const fileInput = document.getElementById('fileInput');
+      const titleInput = document.getElementById('titleInput');
+      const statusDiv = document.getElementById('status');
+      const resultDiv = document.getElementById('result');
+
+      const file = fileInput.files[0];
+      if (!file) {
+        statusDiv.textContent = 'Please select a file';
+        return;
+      }
+
+      const title = titleInput.value || file.name;
+
+      try {
+        statusDiv.textContent = 'Creating video...';
+
+        const createRes = await fetch(`https://video.bunnycdn.com/library/${LIB_ID}/videos`, {
+          method: 'POST',
+          headers: {
+            'AccessKey': API_KEY,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ title }),
+        });
+
+        if (!createRes.ok) {
+          const errorText = await createRes.text();
+          throw new Error(`Create video failed: ${errorText}`);
+        }
+
+        const created = await createRes.json();
+        const videoId = created.guid || created.videoId || created.id;
+
+        statusDiv.textContent = 'Uploading video...';
+
+        const arrayBuffer = await file.arrayBuffer();
+
+        const uploadRes = await fetch(
+          `https://video.bunnycdn.com/library/${LIB_ID}/videos/${videoId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'AccessKey': API_KEY,
+              'Accept': 'application/json',
+            },
+            body: arrayBuffer,
+          }
+        );
+
+        if (!uploadRes.ok) {
+          const errorText = await uploadRes.text();
+          throw new Error(`Upload failed: ${errorText}`);
+        }
+
+        const embedUrl = `https://iframe.mediadelivery.net/embed/${LIB_ID}/${videoId}`;
+        
+        statusDiv.textContent = 'Upload successful!';
+        resultDiv.innerHTML = `
+          <p>Video ID: ${videoId}</p>
+          <p>Embed URL: <a href="${embedUrl}" target="_blank">${embedUrl}</a></p>
+          <iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen></iframe>
+        `;
+      } catch (error) {
+        statusDiv.textContent = `Error: ${error.message}`;
+        resultDiv.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+</html>

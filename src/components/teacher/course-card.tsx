@@ -12,9 +12,10 @@ interface CourseCardProps {
   isUpdating?: boolean;
 }
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(input: string | number | Date): string {
+  const targetDate = input instanceof Date ? input : new Date(input);
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
   
   if (diffInSeconds < 60) return "just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;

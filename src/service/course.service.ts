@@ -1,5 +1,6 @@
 import { get, patch, post } from "@/lib/request";
-import { CreateCourseBodySchema, CourseType } from "@/schema/course.schema";
+import { CreateCourseBodySchema, CourseType, ExtendedCourseType } from "@/schema/course.schema";
+import { ChapterTreeItemType } from "@/schema/chapter.schema";
 import { z } from "zod";
 
 type CreateCourseBody = z.infer<typeof CreateCourseBodySchema>;
@@ -137,6 +138,191 @@ export const updateCourseStatus = async (
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
         : "Failed to update course status"
+    );
+  }
+};
+
+type GetCourseByIdResponse = {
+  message: string;
+  data: ExtendedCourseType;
+};
+
+export const getCourseById = async (
+  id: string
+): Promise<ExtendedCourseType> => {
+  const response = await get  <GetCourseByIdResponse>(
+    `/api/course/teacher-area/${id}`,
+    {}
+  );
+
+  if (response.status === 200) {
+    const course = (response.payload as GetCourseByIdResponse).data;
+    return {
+      ...course,
+      courseDescription: {
+        headline: course.courseDescription?.headline,
+        targetKnowledges: course.courseDescription?.targetKnowledges || [],
+        requirements: course.courseDescription?.requirements || [],
+        suitableParticipants: course.courseDescription?.suitableParticipants || [],
+        detail: course.courseDescription?.detail,
+      },
+    };
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get course"
+    );
+  }
+};
+
+type UpdateCourseRequest = {
+  title?: string;
+  thumbnailUrl?: string;
+  price?: number;
+  categoryId?: string;
+  isPublished?: boolean;
+  courseDescription?: {
+    headline?: string;
+    targetKnowledges?: string[];
+    requirement?: string[];
+    suitableParticipant?: string[];
+    detail?: string;
+  };
+};
+
+type UpdateCourseResponse = {
+  message: string;
+  data: ExtendedCourseType;
+};
+
+export const updateCourseById = async (
+  id: string,
+  data: {
+    title?: string;
+    thumbnailUrl?: string;
+    price?: number;
+    categoryId?: string;
+    isPublished?: boolean;
+    courseDescription?: {
+      headline?: string;
+      targetKnowledges?: string[];
+      requirements?: string[];
+      suitableParticipants?: string[];
+      detail?: string;
+    };
+  }
+): Promise<ExtendedCourseType> => {
+  const requestData: UpdateCourseRequest = {
+    ...(data.title !== undefined && { title: data.title }),
+    ...(data.thumbnailUrl !== undefined && { thumbnailUrl: data.thumbnailUrl }),
+    ...(data.price !== undefined && { price: data.price }),
+    ...(data.categoryId !== undefined && { categoryId: data.categoryId }),
+    ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
+    ...(data.courseDescription && {
+      courseDescription: {
+        ...(data.courseDescription.headline !== undefined && {
+          headline: data.courseDescription.headline,
+        }),
+        ...(data.courseDescription.targetKnowledges !== undefined && {
+          targetKnowledges: data.courseDescription.targetKnowledges,
+        }),
+        ...(data.courseDescription.requirements !== undefined && {
+          requirement: data.courseDescription.requirements,
+        }),
+        ...(data.courseDescription.suitableParticipants !== undefined && {
+          suitableParticipant: data.courseDescription.suitableParticipants,
+        }),
+        ...(data.courseDescription.detail !== undefined && {
+          detail: data.courseDescription.detail,
+        }),
+      },
+    }),
+  };
+
+  const response = await patch<UpdateCourseResponse>(
+    `/api/course/teacher-area/${id}`,
+    requestData
+  );
+
+  if (response.status === 200) {
+    const course = (response.payload as UpdateCourseResponse).data;
+    return {
+      ...course,
+      courseDescription: {
+        headline: course.courseDescription?.headline,
+        targetKnowledges: course.courseDescription?.targetKnowledges || [],
+        requirements: course.courseDescription?.requirements || [],
+        suitableParticipants: course.courseDescription?.suitableParticipants || [],
+        detail: course.courseDescription?.detail,
+      },
+    };
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        :       "Failed to update course"
+    );
+  }
+};
+
+type GetChapterTreeByIdResponse = {
+  message: string;
+  data: {
+    items: ChapterTreeItemType[];
+  };
+};
+
+export const getChapterTreeById = async (
+  id: string
+): Promise<ChapterTreeItemType[]> => {
+  const response = await get<GetChapterTreeByIdResponse>(
+    `/api/course/teacher-area/${id}/chapters`,
+    {}
+  );
+
+  if (response.status === 200) {
+    return (response.payload as GetChapterTreeByIdResponse).data.items;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get chapter tree"
+    );
+  }
+};
+
+type CreateChapterByIdResponse = {
+  message: string;
+  data: {
+    id: string;
+    title: string;
+    description?: string | null;
+    position: number;
+    parentId?: string | null;
+  };
+};
+
+export const createChapterById = async (
+  id: string,
+  data: {
+    title: string;
+    description?: string;
+    parentId?: string;
+  }
+): Promise<CreateChapterByIdResponse["data"]> => {
+  const response = await post<CreateChapterByIdResponse>(
+    `/api/course/teacher-area/${id}/chapters`,
+    data
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as CreateChapterByIdResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to create chapter"
     );
   }
 };
