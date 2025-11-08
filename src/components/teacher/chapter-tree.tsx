@@ -85,7 +85,7 @@ function ChapterNode({ chapter, level, courseSlug, onAddSubChapter }: ChapterNod
           <span className="w-6" />
         )}
         <Link
-          href={`/teacher/course/${courseSlug}/chapter/${chapter.slug}`}
+          href={`/teacher/courses/${courseSlug}/chapter/${chapter.slug}`}
           className="flex items-center gap-1 flex-1 text-left min-w-0 hover:opacity-80 transition-opacity"
         >
           {isExpanded ? (

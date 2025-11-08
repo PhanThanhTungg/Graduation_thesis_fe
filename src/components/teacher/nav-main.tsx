@@ -51,7 +51,7 @@ export function NavMain({
             let isActive = pathname.includes(item.url)
             
             if (item.url === "/teacher/courses") {
-              isActive = pathname.includes("/teacher/courses") || pathname.includes("/teacher/course/")
+              isActive = pathname.includes("/teacher/courses") || pathname.includes("/teacher/courses/")
             }
             
             return (

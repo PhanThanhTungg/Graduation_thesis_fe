@@ -7,7 +7,7 @@ import { LessonManagement } from "./_components/lesson-management";
 
 interface ChapterDetailPageProps {
   params: Promise<{
-    courseslug: string;
+    slug: string;
     chapterslug: string;
   }>;
 }
@@ -31,12 +31,12 @@ function findChapterBySlug(chapters: ChapterTreeItemType[], slug: string): Chapt
 }
 
 export default async function ChapterDetailPage({ params }: ChapterDetailPageProps) {
-  const { courseslug, chapterslug } = await params;
+  const { slug, chapterslug } = await params;
 
   let course;
   try {
     const myCourses = await getMyCourses();
-    const found = myCourses.find((c) => c.slug === courseslug);
+    const found = myCourses.find((c) => c.slug === slug);
     if (!found) {
       notFound();
     }
@@ -82,7 +82,7 @@ export default async function ChapterDetailPage({ params }: ChapterDetailPagePro
             <p className="text-muted-foreground mt-1">Manage your chapter information</p>
           </div>
           {chapterId && (
-            <LessonManagement chapterId={chapterId} courseSlug={courseslug} chapterSlug={chapterslug} />
+            <LessonManagement chapterId={chapterId} courseSlug={slug} chapterSlug={chapterslug} />
           )}
         </div>
       </section>

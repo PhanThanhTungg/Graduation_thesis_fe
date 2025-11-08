@@ -319,7 +319,7 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
               >
                 <div className="flex items-center justify-between">
                   <Link
-                    href={`/teacher/course/${courseSlug}/chapter/${chapterSlug}/lesson/${lesson.slug}`}
+                    href={`/teacher/courses/${courseSlug}/chapter/${chapterSlug}/lesson/${lesson.slug}`}
                     className="flex-1 cursor-pointer"
                   >
                     <div>
