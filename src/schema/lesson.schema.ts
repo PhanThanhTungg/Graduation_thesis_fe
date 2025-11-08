@@ -39,6 +39,7 @@ export const CreateLessonBodySchema = z.object({
   type: z.enum(["video", "theory", "exercise"]),
   videoId: z.string().optional(),
   embedUrl: z.union([z.string(), z.instanceof(File)]).optional(),
+  duration: z.number().optional(),
   isPreview: z.boolean().default(false),
   content: z.string().optional(),
 }).strip();

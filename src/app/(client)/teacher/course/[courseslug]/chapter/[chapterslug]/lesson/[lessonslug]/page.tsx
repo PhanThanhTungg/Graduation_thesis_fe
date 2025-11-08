@@ -92,14 +92,6 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
                 </div>
               )}
 
-              {lesson.type === "video" && (
-                <UploadVideo
-                  lessonId={lesson.id}
-                  currentVideoId={lesson.videoLesson?.videoId || null}
-                  currentEmbedUrl={lesson.videoLesson?.embedUrl || null}
-                />
-              )}
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Type</h3>
@@ -123,6 +115,14 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
                   </div>
                 )}
               </div>
+
+              {lesson.type === "video" && (
+                <UploadVideo
+                  lessonId={lesson.id}
+                  currentVideoId={lesson.videoLesson?.videoId || null}
+                  currentEmbedUrl={lesson.videoLesson?.embedUrl || null}
+                />
+              )}
             </CardContent>
           </Card>
         </div>

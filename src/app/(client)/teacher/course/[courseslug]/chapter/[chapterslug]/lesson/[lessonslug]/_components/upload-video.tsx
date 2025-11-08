@@ -4,7 +4,13 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, Loader2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Upload, Loader2, Eye } from "lucide-react"
 import { updateLesson } from "@/service/lesson.service"
 import { showToast } from "@/lib/toast"
 import { post } from "@/lib/request"
@@ -24,7 +30,23 @@ export function UploadVideo({
 }: UploadVideoProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const getVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video")
+      video.preload = "metadata"
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src)
+        resolve(Math.round(video.duration))
+      }
+      video.onerror = () => {
+        reject(new Error("Failed to load video metadata"))
+      }
+      video.src = URL.createObjectURL(file)
+    })
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -59,9 +81,17 @@ export function UploadVideo({
       if (response.status === 200 && "videoId" in response.payload && "embedUrl" in response.payload) {
         const { videoId, embedUrl } = response.payload
 
+        let duration: number | undefined
+        try {
+          duration = await getVideoDuration(selectedFile)
+        } catch (error) {
+          console.warn("Failed to get video duration:", error)
+        }
+
         await updateLesson(lessonId, {
           videoId,
           embedUrl,
+          duration,
         })
 
         showToast("success", "Video uploaded and saved successfully")
@@ -89,24 +119,35 @@ export function UploadVideo({
       <div>
         <h3 className="text-sm font-medium text-muted-foreground mb-2">Video</h3>
         {currentEmbedUrl && (
-          <div className="mb-4">
-            <div className="aspect-video rounded-lg overflow-hidden border bg-black">
-              <iframe
-                src={currentEmbedUrl}
-                className="w-full h-full"
-                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                allowFullScreen
-              />
+          <div className="mb-4 p-4 border rounded-lg bg-accent/50">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium mb-1">Video uploaded</p>
+                <p className="text-xs text-muted-foreground">
+                  Video ID: {currentVideoId}
+                </p>
+                <p className="text-xs text-muted-foreground break-all">
+                  {currentEmbedUrl}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsVideoModalOpen(true)}
+                className="ml-4"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Video ID: {currentVideoId}
-            </p>
           </div>
         )}
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="video-upload">Upload Video</Label>
+            <Label htmlFor="video-upload">
+              {currentEmbedUrl ? "Edit Video" : "Upload Video"}
+            </Label>
             <Input
               id="video-upload"
               type="file"
@@ -136,12 +177,30 @@ export function UploadVideo({
             ) : (
               <>
                 <Upload className="w-4 h-4 mr-2" />
-                Upload Video
+                {currentEmbedUrl ? "Edit Video" : "Upload Video"}
               </>
             )}
           </Button>
         </div>
       </div>
+
+      <Dialog open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Video Preview</DialogTitle>
+          </DialogHeader>
+          {currentEmbedUrl && (
+            <div className="aspect-video rounded-lg overflow-hidden border bg-black">
+              <iframe
+                src={currentEmbedUrl}
+                className="w-full h-full"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

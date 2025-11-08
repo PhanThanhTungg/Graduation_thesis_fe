@@ -4,13 +4,14 @@ import { z } from "zod";
 
 type CreateLessonBody = z.infer<typeof CreateLessonBodySchema>;
 
-type CreateLessonRequest = {
+interface CreateLessonRequest {
   title: string;
   description?: string;
   type: "video" | "theory" | "exercise";
   videoId?: string;
   embedUrl?: string;
-};
+}
+
 
 type CreateLessonResponse = {
   message: string;
@@ -52,7 +53,7 @@ export const createLesson = async (
 
   const response = await post<CreateLessonResponse>(
     `/api/lesson/teacher-area/chapter/${chapterId}`,
-    requestData
+    requestData as unknown as Record<string, unknown>
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -165,6 +166,7 @@ type UpdateLessonRequest = {
   type?: "video" | "theory" | "exercise";
   videoId?: string;
   embedUrl?: string;
+  duration?: number;
 };
 
 type UpdateLessonResponse = {
@@ -197,6 +199,9 @@ export const updateLesson = async (
     if (typeof data.embedUrl === "string") {
       requestData.embedUrl = data.embedUrl;
     }
+  }
+  if (data.duration !== undefined && typeof data.duration === "number") {
+    requestData.duration = data.duration;
   }
 
   const response = await patch<UpdateLessonResponse>(
@@ -256,7 +261,8 @@ export const getLessonBySlug = async (
   lessonSlug: string
 ): Promise<GetLessonBySlugResponse["data"]> => {
   const response = await get<GetLessonBySlugResponse>(
-    `/api/lesson/teacher-area/${lessonSlug}`
+    `/api/lesson/teacher-area/${lessonSlug}`, 
+    undefined,  
   );
 
   if (response.status === 200) {
