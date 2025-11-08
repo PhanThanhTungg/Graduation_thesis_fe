@@ -95,9 +95,9 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
           {/* Video Player */}
           <div className="bg-black">
             <div className="max-w-6xl mx-auto">
-              {currentLesson.type === "video" && currentLesson.videoUrl ? (
+              {currentLesson.type === "video" && currentLesson.embedUrl ? (
                 <VideoPlayer
-                  videoUrl={currentLesson.videoUrl}
+                  embedUrl={typeof currentLesson.embedUrl === "string" ? currentLesson.embedUrl : ""}
                   title={currentLesson.title}
                   onProgress={handleProgress}
                   onComplete={handleComplete}

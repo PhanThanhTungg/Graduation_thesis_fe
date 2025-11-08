@@ -7,7 +7,8 @@ export const LessonItemSchema = z.object({
   type: z.enum(["video", "quiz", "assignment", "reading"]),
   isPreview: z.boolean().default(false),
   isCompleted: z.boolean().default(false),
-  videoUrl: z.union([z.url(), z.instanceof(File)]).optional(),
+  videoId: z.string().optional(),
+  embedUrl: z.union([z.url(), z.instanceof(File)]).optional(),
   content: z.string().optional(),
 }).strip();
 
@@ -36,7 +37,8 @@ export const CreateSectionBodySchema = z.object({
 export const CreateLessonBodySchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   type: z.enum(["video", "theory", "exercise"]),
-  videoUrl: z.union([z.string(), z.instanceof(File)]).optional(),
+  videoId: z.string().optional(),
+  embedUrl: z.union([z.string(), z.instanceof(File)]).optional(),
   isPreview: z.boolean().default(false),
   content: z.string().optional(),
 }).strip();

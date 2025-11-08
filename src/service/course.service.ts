@@ -150,8 +150,9 @@ type GetCourseByIdResponse = {
 export const getCourseById = async (
   id: string
 ): Promise<ExtendedCourseType> => {
-  const response = await get<GetCourseByIdResponse>(
-    `/api/course/teacher-area/${id}`
+  const response = await get  <GetCourseByIdResponse>(
+    `/api/course/teacher-area/${id}`,
+    {}
   );
 
   if (response.status === 200) {
@@ -161,8 +162,8 @@ export const getCourseById = async (
       courseDescription: {
         headline: course.courseDescription?.headline,
         targetKnowledges: course.courseDescription?.targetKnowledges || [],
-        requirements: course.courseDescription?.requirement || [],
-        suitableParticipants: course.courseDescription?.suitableParticipant || [],
+        requirements: course.courseDescription?.requirements || [],
+        suitableParticipants: course.courseDescription?.suitableParticipants || [],
         detail: course.courseDescription?.detail,
       },
     };
@@ -251,8 +252,8 @@ export const updateCourseById = async (
       courseDescription: {
         headline: course.courseDescription?.headline,
         targetKnowledges: course.courseDescription?.targetKnowledges || [],
-        requirements: course.courseDescription?.requirement || [],
-        suitableParticipants: course.courseDescription?.suitableParticipant || [],
+        requirements: course.courseDescription?.requirements || [],
+        suitableParticipants: course.courseDescription?.suitableParticipants || [],
         detail: course.courseDescription?.detail,
       },
     };
@@ -276,7 +277,8 @@ export const getChapterTreeById = async (
   id: string
 ): Promise<ChapterTreeItemType[]> => {
   const response = await get<GetChapterTreeByIdResponse>(
-    `/api/course/teacher-area/${id}/chapters`
+    `/api/course/teacher-area/${id}/chapters`,
+    {}
   );
 
   if (response.status === 200) {

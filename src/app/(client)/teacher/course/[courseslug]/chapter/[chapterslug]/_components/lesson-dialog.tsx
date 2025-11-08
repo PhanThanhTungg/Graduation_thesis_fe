@@ -34,7 +34,8 @@ type LessonData = {
   type: string
   videoLesson?: {
     id: string
-    videoUrl: string
+    videoId: string
+    embedUrl: string
   } | null
 }
 
@@ -85,7 +86,8 @@ export function LessonDialog({
           type: lesson.type as "video" | "theory" | "exercise",
           isPreview: false,
           content: lesson.description || "",
-          videoUrl: lesson.videoLesson?.videoUrl || "",
+          videoId: lesson.videoLesson?.videoId || "",
+          embedUrl: lesson.videoLesson?.embedUrl || "",
         })
       } else {
         reset({
@@ -171,17 +173,27 @@ export function LessonDialog({
             </div>
 
             {lessonType === "video" && (
-              <div className="grid gap-2">
-                <Label htmlFor="video-url">Video URL (Optional)</Label>
-                <Input
-                  id="video-url"
-                  placeholder="https://example.com/video.mp4"
-                  {...register("videoUrl")}
-                />
-                <p className="text-xs text-muted-foreground">
-                  You can add video URL later
-                </p>
-              </div>
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="video-id">Video ID (Optional)</Label>
+                  <Input
+                    id="video-id"
+                    placeholder="Enter video ID"
+                    {...register("videoId")}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="embed-url">Embed URL (Optional)</Label>
+                  <Input
+                    id="embed-url"
+                    placeholder="https://example.com/embed/video"
+                    {...register("embedUrl")}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    You can add video information later
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="grid gap-2">

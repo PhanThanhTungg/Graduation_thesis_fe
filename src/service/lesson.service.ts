@@ -8,7 +8,8 @@ type CreateLessonRequest = {
   title: string;
   description?: string;
   type: "video" | "theory" | "exercise";
-  videoUrl?: string;
+  videoId?: string;
+  embedUrl?: string;
 };
 
 type CreateLessonResponse = {
@@ -38,9 +39,14 @@ export const createLesson = async (
     requestData.description = data.content;
   }
 
-  if (data.type === "video" && data.videoUrl) {
-    if (typeof data.videoUrl === "string") {
-      requestData.videoUrl = data.videoUrl;
+  if (data.type === "video") {
+    if (data.videoId && typeof data.videoId === "string") {
+      requestData.videoId = data.videoId;
+    }
+    if (data.embedUrl) {
+      if (typeof data.embedUrl === "string") {
+        requestData.embedUrl = data.embedUrl;
+      }
     }
   }
 
@@ -69,9 +75,12 @@ type LessonItem = {
   duration?: number | null;
   slug: string;
   chapterId: string;
+  createdAt: string;
+  updatedAt?: string | null;
   videoLesson?: {
     id: string;
-    videoUrl: string;
+    videoId: string;
+    embedUrl: string;
   } | null;
   theoryFile?: {
     id: string;
@@ -154,7 +163,8 @@ type UpdateLessonRequest = {
   title?: string;
   description?: string;
   type?: "video" | "theory" | "exercise";
-  videoUrl?: string;
+  videoId?: string;
+  embedUrl?: string;
 };
 
 type UpdateLessonResponse = {
@@ -180,9 +190,12 @@ export const updateLesson = async (
     requestData.type = data.type;
   }
 
-  if (data.type === "video" && data.videoUrl) {
-    if (typeof data.videoUrl === "string") {
-      requestData.videoUrl = data.videoUrl;
+  if (data.videoId && typeof data.videoId === "string") {
+    requestData.videoId = data.videoId;
+  }
+  if (data.embedUrl) {
+    if (typeof data.embedUrl === "string") {
+      requestData.embedUrl = data.embedUrl;
     }
   }
 
@@ -220,6 +233,39 @@ export const deleteLesson = async (
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
         : "Failed to delete lesson"
+    );
+  }
+};
+
+type GetLessonBySlugResponse = {
+  message: string;
+  data: LessonItem & {
+    chapter: {
+      id: string;
+      title: string;
+      slug: string;
+      course: {
+        id: string;
+        teacherId: string;
+      };
+    };
+  };
+};
+
+export const getLessonBySlug = async (
+  lessonSlug: string
+): Promise<GetLessonBySlugResponse["data"]> => {
+  const response = await get<GetLessonBySlugResponse>(
+    `/api/lesson/teacher-area/${lessonSlug}`
+  );
+
+  if (response.status === 200) {
+    return (response.payload as GetLessonBySlugResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get lesson"
     );
   }
 };

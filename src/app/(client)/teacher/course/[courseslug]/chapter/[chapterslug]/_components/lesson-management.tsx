@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,17 +31,20 @@ type LessonType = {
   chapterId: string
   videoLesson?: {
     id: string
-    videoUrl: string
+    videoId: string
+    embedUrl: string
   } | null
 }
 
 interface LessonManagementProps {
   chapterId: string
+  courseSlug: string
+  chapterSlug: string
 }
 
 type FormData = z.infer<typeof CreateLessonBodySchema>
 
-export function LessonManagement({ chapterId }: LessonManagementProps) {
+export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonManagementProps) {
   const [lessons, setLessons] = useState<LessonType[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
@@ -314,27 +318,35 @@ export function LessonManagement({ chapterId }: LessonManagementProps) {
                 className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium">{lesson.title}</h3>
-                    {lesson.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {lesson.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2">
-                      <span className="text-xs text-muted-foreground">
-                        Type: {lesson.type}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Position: {lesson.position}
-                      </span>
+                  <Link
+                    href={`/teacher/course/${courseSlug}/chapter/${chapterSlug}/lesson/${lesson.slug}`}
+                    className="flex-1 cursor-pointer"
+                  >
+                    <div>
+                      <h3 className="font-medium">{lesson.title}</h3>
+                      {lesson.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {lesson.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="text-xs text-muted-foreground">
+                          Type: {lesson.type}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Position: {lesson.position}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                   <div className="flex items-center gap-2 ml-4">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleEditLesson(lesson)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleEditLesson(lesson)
+                      }}
                       disabled={isDeleting === lesson.id}
                     >
                       <Pencil className="w-4 h-4" />
@@ -342,7 +354,10 @@ export function LessonManagement({ chapterId }: LessonManagementProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDeleteClick(lesson.id)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleDeleteClick(lesson.id)
+                      }}
                       disabled={isDeleting === lesson.id}
                       className="text-destructive hover:text-destructive"
                     >

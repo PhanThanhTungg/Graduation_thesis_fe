@@ -82,7 +82,7 @@ export default async function ChapterDetailPage({ params }: ChapterDetailPagePro
             <p className="text-muted-foreground mt-1">Manage your chapter information</p>
           </div>
           {chapterId && (
-            <LessonManagement chapterId={chapterId} />
+            <LessonManagement chapterId={chapterId} courseSlug={courseslug} chapterSlug={chapterslug} />
           )}
         </div>
       </section>
