@@ -3,6 +3,7 @@ import { getCourseById, getMyCourses, getChapterTreeById } from "@/service/cours
 import { notFound } from "next/navigation";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 import { ChapterTreeItemType } from "@/schema/chapter.schema";
+import { LessonManagement } from "./_components/lesson-management";
 
 interface ChapterDetailPageProps {
   params: Promise<{
@@ -50,11 +51,13 @@ export default async function ChapterDetailPage({ params }: ChapterDetailPagePro
   }
 
   let chapterTitle = "Chapter";
+  let chapterId: string | null = null;
   try {
     const chapters = await getChapterTreeById(String(course.id));
     const chapter = findChapterBySlug(chapters, chapterslug);
     if (chapter) {
       chapterTitle = chapter.title;
+      chapterId = chapter.id;
     }
   } catch (error) {
     console.error("Failed to fetch chapters:", error);
@@ -78,6 +81,9 @@ export default async function ChapterDetailPage({ params }: ChapterDetailPagePro
             </h1>
             <p className="text-muted-foreground mt-1">Manage your chapter information</p>
           </div>
+          {chapterId && (
+            <LessonManagement chapterId={chapterId} />
+          )}
         </div>
       </section>
     </>
