@@ -28,6 +28,7 @@ type LessonType = {
   duration?: number | null
   slug: string
   chapterId: string
+  isFree?: boolean
   videoLesson?: {
     id: string
     videoId: string

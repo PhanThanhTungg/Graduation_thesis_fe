@@ -15,6 +15,7 @@ interface CreateLessonRequest {
     fileName: string;
     fileSize: number;
   }[];
+  isFree?: boolean;
 }
 
 
@@ -56,6 +57,9 @@ export const createLesson = async (
   }
   if (data.files && Array.isArray(data.files) && data.files.length > 0) {
     requestData.files = data.files;
+  }
+  if (data.isPreview !== undefined) {
+    requestData.isFree = data.isPreview;
   }
 
   const response = await post<CreateLessonResponse>(
@@ -162,6 +166,7 @@ type UpdateLessonRequest = {
   videoId?: string;
   embedUrl?: string;
   duration?: number;
+  isFree?: boolean;
 };
 
 type UpdateLessonResponse = {
@@ -193,6 +198,9 @@ export const updateLesson = async (
   }
   if (data.duration !== undefined && typeof data.duration === "number") {
     requestData.duration = data.duration;
+  }
+  if (data.isPreview !== undefined) {
+    requestData.isFree = data.isPreview;
   }
 
   const response = await patch<UpdateLessonResponse>(

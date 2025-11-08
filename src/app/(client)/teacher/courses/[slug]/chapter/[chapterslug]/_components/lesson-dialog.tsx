@@ -26,6 +26,7 @@ type LessonData = {
   id: string
   title: string
   description?: string | null
+  isFree?: boolean
   videoLesson?: {
     id: string
     videoId: string
@@ -254,7 +255,7 @@ export function LessonDialog({
       if (mode === "edit" && lesson) {
         reset({
           title: lesson.title,
-          isPreview: false,
+          isPreview: lesson.isFree || false,
           content: lesson.description || "",
           videoId: lesson.videoLesson?.videoId || "",
           embedUrl: lesson.videoLesson?.embedUrl || "",
