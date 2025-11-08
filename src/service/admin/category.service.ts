@@ -1,4 +1,4 @@
-import { get, patch, post } from "@/lib/request";
+import { get, patch, post, del } from "@/lib/request";
 import { CategoryResponseType, CreateCategoryInput, CreateCategoryResponse, UpdateCategoryInput, UpdateCategoryResponse } from "@/schema/category.schema";
 
 export const getCategoryBySlug = async (slug: string) => {
@@ -49,4 +49,14 @@ export const createCategory = async (data: CreateCategoryInput) => {
   }
   
   throw new Error(response.payload.message || 'Failed to create category');
+};
+
+export const deleteCategory = async (id: string) => {
+  const response = await del<{ message: string }>(`/api/admin/category/${id}`, undefined);
+  
+  if (response.status === 200) {
+    return response.payload;
+  }
+  
+  throw new Error(response.payload.message || 'Failed to delete category');
 };
