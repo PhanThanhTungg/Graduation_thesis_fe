@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getMyProfile } from "@/service/user.service";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import TeacherProfileForm from "../dashboard/_components/teacher-profile-form";
+import TeacherProfileForm from "./_components/teacher-profile-form";
 import { TeacherType } from "@/schema/user.schema";
 
 export const metadata: Metadata = {
