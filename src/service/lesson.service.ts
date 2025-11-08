@@ -7,9 +7,15 @@ type CreateLessonBody = z.infer<typeof CreateLessonBodySchema>;
 interface CreateLessonRequest {
   title: string;
   description?: string;
-  type: "video" | "theory" | "exercise";
   videoId?: string;
   embedUrl?: string;
+  duration?: number;
+  files?: {
+    fileUrl: string;
+    fileName: string;
+    fileSize: number;
+  }[];
+  isFree?: boolean;
 }
 
 
@@ -19,7 +25,6 @@ type CreateLessonResponse = {
     id: string;
     title: string;
     description?: string | null;
-    type: string;
     position: number;
     duration?: number | null;
     slug: string;
@@ -33,22 +38,28 @@ export const createLesson = async (
 ): Promise<CreateLessonResponse["data"]> => {
   const requestData: CreateLessonRequest = {
     title: data.title,
-    type: data.type,
   };
 
   if (data.content) {
     requestData.description = data.content;
   }
 
-  if (data.type === "video") {
-    if (data.videoId && typeof data.videoId === "string") {
-      requestData.videoId = data.videoId;
+  if (data.videoId && typeof data.videoId === "string") {
+    requestData.videoId = data.videoId;
+  }
+  if (data.embedUrl) {
+    if (typeof data.embedUrl === "string") {
+      requestData.embedUrl = data.embedUrl;
     }
-    if (data.embedUrl) {
-      if (typeof data.embedUrl === "string") {
-        requestData.embedUrl = data.embedUrl;
-      }
-    }
+  }
+  if (data.duration !== undefined && typeof data.duration === "number") {
+    requestData.duration = data.duration;
+  }
+  if (data.files && Array.isArray(data.files) && data.files.length > 0) {
+    requestData.files = data.files;
+  }
+  if (data.isPreview !== undefined) {
+    requestData.isFree = data.isPreview;
   }
 
   const response = await post<CreateLessonResponse>(
@@ -71,7 +82,6 @@ type LessonItem = {
   id: string;
   title: string;
   description?: string | null;
-  type: string;
   position: number;
   duration?: number | null;
   slug: string;
@@ -83,18 +93,12 @@ type LessonItem = {
     videoId: string;
     embedUrl: string;
   } | null;
-  theoryFile?: {
+  files?: {
     id: string;
     fileUrl: string;
     fileName: string;
     fileSize: number;
-  } | null;
-  exerciseFile?: {
-    id: string;
-    fileUrl: string;
-    fileName: string;
-    fileSize: number;
-  } | null;
+  }[];
 };
 
 type GetLessonsByChapterIdResponse = {
@@ -112,7 +116,6 @@ type GetLessonsByChapterIdResponse = {
 
 type GetLessonsParams = {
   keySearch?: string;
-  type?: "video" | "theory" | "exercise";
   sortField?: string;
   sortOrder?: "asc" | "desc";
   page?: number;
@@ -127,9 +130,6 @@ export const getLessonsByChapterId = async (
   
   if (params?.keySearch) {
     queryParams.keySearch = params.keySearch;
-  }
-  if (params?.type) {
-    queryParams.type = params.type;
   }
   if (params?.sortField) {
     queryParams.sortField = params.sortField;
@@ -163,10 +163,10 @@ export const getLessonsByChapterId = async (
 type UpdateLessonRequest = {
   title?: string;
   description?: string;
-  type?: "video" | "theory" | "exercise";
   videoId?: string;
   embedUrl?: string;
   duration?: number;
+  isFree?: boolean;
 };
 
 type UpdateLessonResponse = {
@@ -188,10 +188,6 @@ export const updateLesson = async (
     requestData.description = data.content;
   }
 
-  if (data.type !== undefined) {
-    requestData.type = data.type;
-  }
-
   if (data.videoId && typeof data.videoId === "string") {
     requestData.videoId = data.videoId;
   }
@@ -202,6 +198,9 @@ export const updateLesson = async (
   }
   if (data.duration !== undefined && typeof data.duration === "number") {
     requestData.duration = data.duration;
+  }
+  if (data.isPreview !== undefined) {
+    requestData.isFree = data.isPreview;
   }
 
   const response = await patch<UpdateLessonResponse>(
@@ -245,6 +244,12 @@ export const deleteLesson = async (
 type GetLessonBySlugResponse = {
   message: string;
   data: LessonItem & {
+    files?: {
+      id: string;
+      fileUrl: string;
+      fileName: string;
+      fileSize: number;
+    }[];
     chapter: {
       id: string;
       title: string;

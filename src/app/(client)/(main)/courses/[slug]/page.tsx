@@ -1,10 +1,10 @@
-import { mockCourseCurriculum, mockCourseDetail } from "@/lib/mockData";
 import { CourseHero, CourseContent } from "./_components";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 import NotFound from "@/app/not-found";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { getCourseBySlug } from "@/service/course.service";
 
 interface CourseDetailPageProps {
   params: {
@@ -12,19 +12,19 @@ interface CourseDetailPageProps {
   };
 }
 
-export default function CourseDetailPage({ params }: CourseDetailPageProps) {
-  // Find course by slug
-  const course = mockCourseDetail;
+export default async function CourseDetailPage({ params }: CourseDetailPageProps) {
+  let course;
+  try {
+    course = await getCourseBySlug(params.slug);
+  } catch (error) {
+    return <NotFound />
+  }
 
   if (!course) {
     return <NotFound />
   }
 
-  const curriculum = mockCourseCurriculum.find((c) => c.courseId === course.id);
-  const firstLesson = curriculum?.sections[0]?.lessons[0];
-  const firstLessonUrl = firstLesson
-    ? `/courses/${course.slug}/learn/${firstLesson.id}`
-    : `/courses/${course.slug}`;
+  const firstLessonUrl = `/courses/${course.slug}`;
 
   const breadcrumbData: BreadcrumbProps[] = [
     { url: "/", label: "Home" },

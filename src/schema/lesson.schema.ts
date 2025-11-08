@@ -36,10 +36,14 @@ export const CreateSectionBodySchema = z.object({
 
 export const CreateLessonBodySchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
-  type: z.enum(["video", "theory", "exercise"]),
   videoId: z.string().optional(),
   embedUrl: z.union([z.string(), z.instanceof(File)]).optional(),
   duration: z.number().optional(),
-  isPreview: z.boolean().default(false),
+  isPreview: z.boolean().default(false).optional(),
   content: z.string().optional(),
+  files: z.array(z.object({
+    fileUrl: z.string(),
+    fileName: z.string(),
+    fileSize: z.number(),
+  })).optional(),
 }).strip();

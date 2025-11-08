@@ -1,10 +1,10 @@
-import { mockCourses } from "@/lib/mockData";
 import {
   CourseFilters,
   CoursePagination,
 } from "./_components";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 import CourseCard from "@/components/custom/course-card";
+import { getAllCourses } from "@/service/course.service";
 
 const breadcrumbData: BreadcrumbProps[] = [
   { url: "/", label: "Home" },
@@ -12,8 +12,8 @@ const breadcrumbData: BreadcrumbProps[] = [
 ]
 
 export default async function CoursesPage() {
-  const courses = mockCourses;
-  const totalPages = Math.ceil(courses.length / 6);
+  const { courses, pagination } = await getAllCourses({ page: 1, limit: 6 });
+  const totalPages = pagination.totalPages;
 
   return (
     <>
@@ -31,7 +31,7 @@ export default async function CoursesPage() {
 
             {/* Course List */}
             <div className="grid grid-cols-3 gap-4">
-              {courses.slice(0, 6).map((course) => (
+              {courses.map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}
             </div>
