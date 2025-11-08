@@ -9,7 +9,7 @@ import { UploadVideo } from "./_components/upload-video";
 
 interface LessonDetailPageProps {
   params: Promise<{
-    courseslug: string;
+    slug: string;
     chapterslug: string;
     lessonslug: string;
   }>;
@@ -21,12 +21,12 @@ export const metadata: Metadata = {
 };
 
 export default async function LessonDetailPage({ params }: LessonDetailPageProps) {
-  const { courseslug, chapterslug, lessonslug } = await params;
+  const { slug, chapterslug, lessonslug } = await params;
 
   let course;
   try {
     const myCourses = await getMyCourses();
-    const found = myCourses.find((c) => c.slug === courseslug);
+    const found = myCourses.find((c) => c.slug === slug);
     if (!found) {
       notFound();
     }
@@ -60,7 +60,7 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
     { url: "/teacher", label: "Teacher" },
     { url: "/teacher/courses", label: "Courses" },
     { url: `/teacher/courses/${course.slug}`, label: course.title },
-    { url: `/teacher/course/${courseslug}/chapter/${chapterslug}`, label: lesson.chapter.title },
+    { url: `/teacher/courses/${slug}/chapter/${chapterslug}`, label: lesson.chapter.title },
     { url: undefined, label: lesson.title },
   ];
 

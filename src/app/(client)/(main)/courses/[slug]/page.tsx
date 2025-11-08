@@ -23,7 +23,7 @@ export default function CourseDetailPage({ params }: CourseDetailPageProps) {
   const curriculum = mockCourseCurriculum.find((c) => c.courseId === course.id);
   const firstLesson = curriculum?.sections[0]?.lessons[0];
   const firstLessonUrl = firstLesson
-    ? `/course/${course.slug}/learn/${firstLesson.id}`
+    ? `/courses/${course.slug}/learn/${firstLesson.id}`
     : `/courses/${course.slug}`;
 
   const breadcrumbData: BreadcrumbProps[] = [
