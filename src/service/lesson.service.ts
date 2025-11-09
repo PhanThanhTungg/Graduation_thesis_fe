@@ -167,6 +167,11 @@ type UpdateLessonRequest = {
   embedUrl?: string;
   duration?: number;
   isFree?: boolean;
+  files?: {
+    fileUrl: string;
+    fileName: string;
+    fileSize: number;
+  }[];
 };
 
 type UpdateLessonResponse = {
@@ -201,6 +206,9 @@ export const updateLesson = async (
   }
   if (data.isPreview !== undefined) {
     requestData.isFree = data.isPreview;
+  }
+  if (data.files !== undefined) {
+    requestData.files = data.files;
   }
 
   const response = await patch<UpdateLessonResponse>(

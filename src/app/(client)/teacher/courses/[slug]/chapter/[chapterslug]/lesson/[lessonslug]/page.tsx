@@ -39,7 +39,7 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
   try {
     lesson = await getLessonBySlug(lessonslug);
     
-    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.slug !== slug) {
+    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.id !== course.id.toString()) {
       notFound();
     }
   } catch (error) {
