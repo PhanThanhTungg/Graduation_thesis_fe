@@ -52,7 +52,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             <p className="text-muted-foreground mt-1">Manage your course information</p>
           </div>
           <EditCourseInfo course={course} categories={categories} />
-          <ChapterTree courseSlug={course.slug} />
+          <ChapterTree courseSlug={course.slug} courseId={course.id.toString()} />
         </div>
       </section>
     </>

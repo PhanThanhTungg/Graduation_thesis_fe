@@ -808,6 +808,66 @@ export const getAllCourses = async (
   }
 };
 
+type UpdateChapterResponse = {
+  message: string;
+  data: {
+    id: string;
+    title: string;
+    slug: string;
+    description?: string | null;
+    position: number;
+    parentId?: string | null;
+  };
+};
+
+export const updateChapterBySlug = async (
+  slug: string,
+  chapterId: string,
+  data: {
+    title?: string;
+    description?: string;
+  }
+): Promise<UpdateChapterResponse["data"]> => {
+  const response = await patch<UpdateChapterResponse>(
+    `/api/course/teacher-area/slug/${slug}/chapters/${chapterId}`,
+    data
+  );
+
+  if (response.status === 200) {
+    return (response.payload as UpdateChapterResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to update chapter"
+    );
+  }
+};
+
+export const updateChapterById = async (
+  courseId: string,
+  chapterId: string,
+  data: {
+    title?: string;
+    description?: string;
+  }
+): Promise<UpdateChapterResponse["data"]> => {
+  const response = await patch<UpdateChapterResponse>(
+    `/api/course/teacher-area/${courseId}/chapters/${chapterId}`,
+    data
+  );
+
+  if (response.status === 200) {
+    return (response.payload as UpdateChapterResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to update chapter"
+    );
+  }
+};
+
 type DeleteChapterResponse = {
   message: string;
 };
