@@ -21,13 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CreateCourseBodySchema, ExtendedCourseType } from "@/schema/course.schema"
@@ -36,6 +29,7 @@ import { z } from "zod"
 import { showToast } from "@/lib/toast"
 import { updateCourseById } from "@/service/course.service"
 import { uploadImages } from "@/service/upload.service"
+import { CategoryTreeSelect } from "@/components/custom/category-tree-select"
 
 type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
 
@@ -237,25 +231,16 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category *</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <CategoryTreeSelect
+                        categories={categories}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Select a category"
+                      />
+                    </FormControl>
                     <FormDescription>
-                      Choose the main category for your course
+                      Choose the main category for your course (only leaf categories can be selected)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

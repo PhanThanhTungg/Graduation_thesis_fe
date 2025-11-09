@@ -200,16 +200,6 @@ export function TeacherCoursesList({
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = Math.min(startIndex + itemsPerPage, total)
 
-  if (!isLoading && courses.length === 0 && !debouncedSearchQuery) {
-    return (
-      <div className="text-center py-16 bg-gradient-to-br from-violet/5 via-peach/5 to-mint/10 rounded-2xl border-2 border-dashed border-violet/30">
-        <div className="text-6xl mb-4">📚</div>
-        <p className="text-lg font-medium text-foreground mb-2">No courses yet</p>
-        <p className="text-sm text-muted-foreground">Click "Create Course" button to get started!</p>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-lg border border-violet/20 shadow-sm">
@@ -293,9 +283,19 @@ export function TeacherCoursesList({
           ))}
         </ul>
       ) : (
-        <div className="text-center py-12 bg-card rounded-lg border-2 border-dashed border-orange/30">
-          <p className="text-muted-foreground text-lg">🔍 No courses found matching your search.</p>
-          <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters</p>
+        <div className="text-center py-16 bg-gradient-to-br from-violet/5 via-peach/5 to-mint/10 rounded-2xl border-2 border-dashed border-violet/30">
+          {!debouncedSearchQuery && publishFilter === "all" && sortBy === "newest" ? (
+            <>
+              <div className="text-6xl mb-4">📚</div>
+              <p className="text-lg font-medium text-foreground mb-2">No courses yet</p>
+              <p className="text-sm text-muted-foreground">Click "Create Course" button to get started!</p>
+            </>
+          ) : (
+            <>
+              <p className="text-muted-foreground text-lg">🔍 No courses found matching your search.</p>
+              <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters</p>
+            </>
+          )}
         </div>
       )}
 
