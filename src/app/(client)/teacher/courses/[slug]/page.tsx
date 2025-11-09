@@ -49,7 +49,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
     <>
       <BreadcrumbCustom breadcrumb={breadcrumbData} />
       <section className="w-full px-6 py-8 bg-gradient-to-br from-violet/5 via-background to-mint/5">
-        <div className="container-md space-y-6">
+        <div className="container-sm space-y-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-violet to-green bg-clip-text text-transparent">
               Course Details

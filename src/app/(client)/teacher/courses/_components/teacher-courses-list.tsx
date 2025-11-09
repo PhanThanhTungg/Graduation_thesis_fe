@@ -141,18 +141,19 @@ export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: Tea
         </span>
       </div>
 
-      {/* Course Grid - 3 columns */}
+      {/* Course List - Vertical Layout */}
       {currentCourses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ul className="space-y-2">
           {currentCourses.map((course) => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              onTogglePublish={handleTogglePublish}
-              isUpdating={updatingId === course.id}
-            />
+            <li key={course.id}>
+              <CourseCard
+                course={course}
+                onTogglePublish={handleTogglePublish}
+                isUpdating={updatingId === course.id}
+              />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
         <div className="text-center py-12 bg-card rounded-lg border-2 border-dashed border-orange/30">
           <p className="text-muted-foreground text-lg">🔍 No courses found matching your search.</p>

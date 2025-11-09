@@ -13,11 +13,9 @@ export const metadata: Metadata = {
 export default async function CoursesPage() {
   const categories = await getAllCategories();
   let courses: ExtendedCourseType[] = [];
-  
+
   try {
-    // TODO: Update getMyCourses to return ExtendedCourseType with countStudent and category
     const rawCourses = await getMyCourses();
-    // For now, cast to ExtendedCourseType (you'll need to update the API response)
     courses = rawCourses as ExtendedCourseType[];
   } catch (error) {
     console.error("Failed to fetch courses:", error);
@@ -31,10 +29,12 @@ export default async function CoursesPage() {
   return (
     <>
       <BreadcrumbCustom breadcrumb={breadcrumbData} />
-      <TeacherCoursesPageClient 
-        categories={categories} 
-        initialCourses={courses} 
-      />
+      <div className="container-sm">
+        <TeacherCoursesPageClient
+          categories={categories}
+          initialCourses={courses}
+        />
+      </div>
     </>
   );
 }
