@@ -1,4 +1,4 @@
-import { get, patch, post } from "@/lib/request";
+import { get, patch, post, del } from "@/lib/request";
 import { CreateCourseBodySchema, CourseType, ExtendedCourseType } from "@/schema/course.schema";
 import { ChapterTreeItemType } from "@/schema/chapter.schema";
 import { z } from "zod";
@@ -65,10 +65,36 @@ export const createCourse = async (
   }
 };
 
-type GetMyCoursesResponse = {
+type GetMyCoursesRawResponse = {
   message: string;
   data: {
-    items: CourseType[];
+    items: Array<{
+      id: number;
+      title: string;
+      thumbnailUrl?: string;
+      price: number;
+      teacher: {
+        id: string;
+        fullName: string;
+      };
+      courseDescription: {
+        headline: string | null;
+        targetKnowledges: string | null;
+        requirement: string | null;
+        suitableParticipant: string | null;
+        detail: string | null;
+      } | null;
+      category: {
+        id: string;
+        title: string;
+        slug: string | null;
+      };
+      rating: number;
+      slug: string;
+      isPublished: boolean;
+      updatedAt: string;
+      countStudent: number;
+    }>;
   };
 };
 
@@ -82,7 +108,7 @@ type GetMyCoursesParams = {
 
 export const getMyCourses = async (
   params?: GetMyCoursesParams
-): Promise<CourseType[]> => {
+): Promise<ExtendedCourseType[]> => {
   const queryParams: Record<string, string> = {};
   
   if (params?.keySearch) {
@@ -101,13 +127,65 @@ export const getMyCourses = async (
     queryParams.limit = params.limit.toString();
   }
 
-  const response = await get<GetMyCoursesResponse>(
+  const response = await get<GetMyCoursesRawResponse>(
     "/api/course/teacher-area/my-courses",
     Object.keys(queryParams).length > 0 ? queryParams : undefined
   );
 
   if (response.status === 200) {
-    return (response.payload as GetMyCoursesResponse).data.items;
+    const payload = response.payload as GetMyCoursesRawResponse;
+    return payload.data.items.map((course) => {
+      const courseDescription = course.courseDescription
+        ? {
+            headline: course.courseDescription.headline || undefined,
+            targetKnowledges: course.courseDescription.targetKnowledges
+              ? course.courseDescription.targetKnowledges.split("&&&").filter((item) => item.trim() !== "")
+              : undefined,
+            requirements: course.courseDescription.requirement
+              ? course.courseDescription.requirement.split("&&&").filter((item) => item.trim() !== "")
+              : undefined,
+            suitableParticipants: course.courseDescription.suitableParticipant
+              ? course.courseDescription.suitableParticipant.split("&&&").filter((item) => item.trim() !== "")
+              : undefined,
+            detail: course.courseDescription.detail || undefined,
+          }
+        : {
+            headline: undefined,
+            targetKnowledges: undefined,
+            requirements: undefined,
+            suitableParticipants: undefined,
+            detail: undefined,
+          };
+
+      return {
+        id: course.id,
+        title: course.title,
+        courseDescription,
+        thumbnailUrl: course.thumbnailUrl,
+        price: course.price,
+        teacher: {
+          id: course.teacher.id,
+          fullName: course.teacher.fullName,
+          email: "",
+          role: "teacher" as const,
+          emailVerified: false,
+          avatarUrl: null,
+          status: "active" as const,
+          country: "Vietnam" as const,
+        },
+        rating: course.rating,
+        slug: course.slug,
+        isPublished: course.isPublished,
+        updatedAt: new Date(course.updatedAt),
+        countStudent: course.countStudent,
+        category: {
+          id: course.category.id,
+          title: course.category.title,
+          slug: course.category.slug || "",
+          parentId: null,
+        },
+      };
+    });
   } else {
     throw new Error(
       "payload" in response.payload && "message" in response.payload
@@ -298,9 +376,35 @@ type UpdateCourseRequest = {
   };
 };
 
-type UpdateCourseResponse = {
+type UpdateCourseRawResponse = {
   message: string;
-  data: ExtendedCourseType;
+  data: {
+    id: number;
+    title: string;
+    thumbnailUrl?: string;
+    price: number;
+    teacher: {
+      id: string;
+      fullName: string;
+    };
+    courseDescription: {
+      headline: string | null;
+      targetKnowledges: string[];
+      requirement: string[];
+      suitableParticipant: string[];
+      detail: string | null;
+    } | null;
+    category: {
+      id: string;
+      title: string;
+      slug: string | null;
+    };
+    rating: number;
+    slug: string;
+    isPublished: boolean;
+    updatedAt: string;
+    countStudent: number;
+  };
 };
 
 export const updateCourseById = async (
@@ -347,28 +451,60 @@ export const updateCourseById = async (
     }),
   };
 
-  const response = await patch<UpdateCourseResponse>(
+  const response = await patch<UpdateCourseRawResponse>(
     `/api/course/teacher-area/${id}`,
     requestData
   );
 
   if (response.status === 200) {
-    const course = (response.payload as UpdateCourseResponse).data;
+    const course = (response.payload as UpdateCourseRawResponse).data;
     return {
-      ...course,
-      courseDescription: {
-        headline: course.courseDescription?.headline,
-        targetKnowledges: course.courseDescription?.targetKnowledges || [],
-        requirements: course.courseDescription?.requirements || [],
-        suitableParticipants: course.courseDescription?.suitableParticipants || [],
-        detail: course.courseDescription?.detail,
+      id: course.id,
+      title: course.title,
+      courseDescription: course.courseDescription
+        ? {
+            headline: course.courseDescription.headline || undefined,
+            targetKnowledges: course.courseDescription.targetKnowledges || [],
+            requirements: course.courseDescription.requirement || [],
+            suitableParticipants: course.courseDescription.suitableParticipant || [],
+            detail: course.courseDescription.detail || undefined,
+          }
+        : {
+            headline: undefined,
+            targetKnowledges: undefined,
+            requirements: undefined,
+            suitableParticipants: undefined,
+            detail: undefined,
+          },
+      thumbnailUrl: course.thumbnailUrl,
+      price: course.price,
+      teacher: {
+        id: course.teacher.id,
+        fullName: course.teacher.fullName,
+        email: "",
+        role: "teacher" as const,
+        emailVerified: false,
+        avatarUrl: null,
+        status: "active" as const,
+        country: "Vietnam" as const,
+      },
+      rating: course.rating,
+      slug: course.slug,
+      isPublished: course.isPublished,
+      updatedAt: new Date(course.updatedAt),
+      countStudent: course.countStudent,
+      category: {
+        id: course.category.id,
+        title: course.category.title,
+        slug: course.category.slug || "",
+        parentId: null,
       },
     };
   } else {
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        :       "Failed to update course"
+        : "Failed to update course"
     );
   }
 };
@@ -566,6 +702,28 @@ export const getAllCourses = async (
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
         : "Failed to get courses"
+    );
+  }
+};
+
+type DeleteCourseResponse = {
+  message: string;
+};
+
+export const deleteCourse = async (
+  courseId: string
+): Promise<void> => {
+  const response = await del<DeleteCourseResponse>(
+    `/api/course/teacher-area/${courseId}`
+  );
+
+  if (response.status === 200) {
+    return;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to delete course"
     );
   }
 };

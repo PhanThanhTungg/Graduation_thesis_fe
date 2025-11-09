@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { CategoryType } from "@/schema/category.schema"
 import { ExtendedCourseType } from "@/schema/course.schema"
 import { CreateCourseDialog } from "@/components/teacher/create-course-dialog"
@@ -14,6 +15,14 @@ export function TeacherCoursesPageClient({
   categories,
   initialCourses,
 }: TeacherCoursesPageClientProps) {
+  const addCourseRef = useRef<((course: ExtendedCourseType) => void) | null>(null)
+
+  const handleCourseCreated = (course: ExtendedCourseType) => {
+    if (addCourseRef.current) {
+      addCourseRef.current(course)
+    }
+  }
+
   const handleRefresh = () => {
     window.location.reload()
   }
@@ -29,12 +38,14 @@ export function TeacherCoursesPageClient({
         </div>
         <CreateCourseDialog 
           categories={categories} 
-          onCourseCreated={handleRefresh}
+          onCourseCreated={handleCourseCreated}
         />
       </div>
       <TeacherCoursesList 
-        initialCourses={initialCourses} 
+        initialCourses={initialCourses}
+        categories={categories}
         onCourseUpdated={handleRefresh}
+        onAddCourseRef={(ref) => { addCourseRef.current = ref }}
       />
     </section>
   )

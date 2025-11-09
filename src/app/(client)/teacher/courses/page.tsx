@@ -15,8 +15,7 @@ export default async function CoursesPage() {
   let courses: ExtendedCourseType[] = [];
 
   try {
-    const rawCourses = await getMyCourses();
-    courses = rawCourses as ExtendedCourseType[];
+    courses = await getMyCourses();
   } catch (error) {
     console.error("Failed to fetch courses:", error);
   }

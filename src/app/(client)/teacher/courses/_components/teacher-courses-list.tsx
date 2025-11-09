@@ -1,6 +1,7 @@
 "use client"
 
 import { ExtendedCourseType } from "@/schema/course.schema"
+import { CategoryType } from "@/schema/category.schema"
 import { useEffect, useState } from "react"
 import { CourseCard } from "@/components/teacher/course-card"
 import { Input } from "@/components/ui/input"
@@ -8,13 +9,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { mockTeacherCourses } from "@/lib/mockData"
+import { updateCourseById, deleteCourse } from "@/service/course.service"
+import { showToast } from "@/lib/toast"
 
 interface TeacherCoursesListProps {
   initialCourses?: ExtendedCourseType[]
+  categories?: CategoryType[]
   onCourseUpdated?: () => void
+  onAddCourseRef?: (ref: (course: ExtendedCourseType) => void) => void
 }
 
-export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: TeacherCoursesListProps) {
+export function TeacherCoursesList({ initialCourses = [], categories, onCourseUpdated, onAddCourseRef }: TeacherCoursesListProps) {
   // Use mock data for now if no initial courses
   const [courses, setCourses] = useState<ExtendedCourseType[]>(
     initialCourses.length > 0 ? initialCourses : mockTeacherCourses
@@ -24,6 +29,7 @@ export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: Tea
   const [sortBy, setSortBy] = useState("newest")
   const [currentPage, setCurrentPage] = useState(1)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const itemsPerPage = 6
 
   useEffect(() => {
@@ -31,6 +37,15 @@ export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: Tea
       setCourses(initialCourses)
     }
   }, [initialCourses])
+
+  useEffect(() => {
+    if (onAddCourseRef) {
+      const addCourse = (course: ExtendedCourseType) => {
+        setCourses(prevCourses => [course, ...prevCourses])
+      }
+      onAddCourseRef(addCourse)
+    }
+  }, [onAddCourseRef])
 
   // Filter and sort courses
   useEffect(() => {
@@ -73,17 +88,58 @@ export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: Tea
   const handleTogglePublish = async (courseId: number, newStatus: boolean) => {
     setUpdatingId(courseId)
     
-    // TODO: Implement API call to update course status
-    // For now, just update local state
-    setTimeout(() => {
-      setCourses(courses.map(c => 
-        c.id === courseId ? { ...c, isPublished: newStatus } : c
-      ))
+    try {
+      const updatedCourse = await updateCourseById(String(courseId), {
+        isPublished: newStatus,
+      })
+      
+      setCourses(prevCourses => 
+        prevCourses.map(c => 
+          c.id === courseId ? updatedCourse : c
+        )
+      )
+      
+      showToast(
+        "success",
+        newStatus 
+          ? "Course published successfully!" 
+          : "Course unpublished successfully!"
+      )
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update course status"
+      showToast("error", errorMessage)
+      console.error(error)
+    } finally {
       setUpdatingId(null)
-      if (onCourseUpdated) {
-        onCourseUpdated()
-      }
-    }, 500)
+    }
+  }
+
+  const handleCourseUpdated = (updatedCourse: ExtendedCourseType) => {
+    setCourses(prevCourses => 
+      prevCourses.map(c => 
+        c.id === updatedCourse.id ? updatedCourse : c
+      )
+    )
+  }
+
+  const handleCourseDeleted = async (courseId: number) => {
+    setDeletingId(courseId)
+    
+    try {
+      await deleteCourse(String(courseId))
+      
+      setCourses(prevCourses => 
+        prevCourses.filter(c => c.id !== courseId)
+      )
+      
+      showToast("success", "Course deleted successfully!")
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete course"
+      showToast("error", errorMessage)
+      console.error(error)
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   // Pagination
@@ -148,8 +204,12 @@ export function TeacherCoursesList({ initialCourses = [], onCourseUpdated }: Tea
             <li key={course.id}>
               <CourseCard
                 course={course}
+                categories={categories}
                 onTogglePublish={handleTogglePublish}
+                onCourseUpdated={handleCourseUpdated}
+                onCourseDeleted={handleCourseDeleted}
                 isUpdating={updatingId === course.id}
+                isDeleting={deletingId === course.id}
               />
             </li>
           ))}

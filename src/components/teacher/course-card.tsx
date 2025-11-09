@@ -1,15 +1,25 @@
+"use client"
+
 import { ExtendedCourseType } from "@/schema/course.schema";
+import { CategoryType } from "@/schema/category.schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Star, Clock } from "lucide-react";
+import { Users, Star, Clock, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { EditCourseDialog } from "./edit-course-dialog";
+import { DeleteConfirmationDialog } from "@/components/custom/delete-confirmation-dialog";
+import { useState } from "react";
 
 interface CourseCardProps {
   course: ExtendedCourseType;
+  categories?: CategoryType[];
   onTogglePublish?: (courseId: number, isPublished: boolean) => void;
+  onCourseUpdated?: (course: ExtendedCourseType) => void;
+  onCourseDeleted?: (courseId: number) => void;
   isUpdating?: boolean;
+  isDeleting?: boolean;
 }
 
 function formatTimeAgo(input: string | number | Date): string {
@@ -25,12 +35,26 @@ function formatTimeAgo(input: string | number | Date): string {
   return `${Math.floor(diffInSeconds / 31536000)} years ago`;
 }
 
-export function CourseCard({ course, onTogglePublish, isUpdating = false }: CourseCardProps) {
+export function CourseCard({ course, categories, onTogglePublish, onCourseUpdated, onCourseDeleted, isUpdating = false, isDeleting = false }: CourseCardProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   const handlePublishToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (onTogglePublish) {
       onTogglePublish(course.id, !course.isPublished);
+    }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (onCourseDeleted) {
+      onCourseDeleted(course.id);
     }
   };
 
@@ -65,10 +89,43 @@ export function CourseCard({ course, onTogglePublish, isUpdating = false }: Cour
 
           {/* Content */}
           <div className="flex-1 flex flex-col gap-2 min-w-0 relative">
-            {/* Published button ở góc phải trên */}
-            <div className="absolute top-0 right-0">
+            {/* Delete, Edit và Published button ở góc phải trên */}
+            <div 
+              className="absolute top-0 right-0 flex items-center gap-2"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+            >
+              {onCourseDeleted && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDeleteClick}
+                    disabled={isDeleting}
+                    className="h-7 text-xs border-destructive/50 text-destructive hover:bg-destructive/10 hover:border-destructive"
+                  >
+                    {isDeleting ? "⏳" : <Trash2 className="w-3 h-3 text-destructive" />}
+                  </Button>
+                  <DeleteConfirmationDialog
+                    open={deleteDialogOpen}
+                    onOpenChange={setDeleteDialogOpen}
+                    onConfirm={handleConfirmDelete}
+                    message="Are you sure you want to delete this course? This action cannot be undone."
+                    isLoading={isDeleting}
+                  />
+                </>
+              )}
+              {categories && onCourseUpdated && (
+                <EditCourseDialog
+                  course={course}
+                  categories={categories}
+                  onCourseUpdated={onCourseUpdated}
+                />
+              )}
               {onTogglePublish && (
-                <div className="flex items-center gap-2" onClick={handlePublishToggle}>
+                <div onClick={handlePublishToggle}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -92,16 +149,11 @@ export function CourseCard({ course, onTogglePublish, isUpdating = false }: Cour
               )}
             </div>
 
-            {/* Title và Headline */}
+            {/* Title */}
             <div className="pr-32">
               <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-violet transition-colors duration-300">
                 {course.title}
               </h3>
-              {course.courseDescription?.headline && (
-                <p className="text-sm text-muted-foreground line-clamp-1 group-hover:text-foreground/80 transition-colors mt-1">
-                  {course.courseDescription.headline}
-                </p>
-              )}
             </div>
 
             {/* Price */}

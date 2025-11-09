@@ -4,6 +4,7 @@ import { Jost, Exo, Knewave } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ToastContainer } from "react-toastify";
 import { ReduxProvider } from "@/store/provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const jost = Jost({
   variable: "--font-jost",
@@ -47,6 +48,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <ToastContainer />
+            <Toaster />
             {children}
           </ThemeProvider>
         </ReduxProvider>

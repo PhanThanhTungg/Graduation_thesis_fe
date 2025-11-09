@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { IconPlus, IconTrash, IconUpload } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,38 +34,53 @@ import { CreateCourseBodySchema, ExtendedCourseType } from "@/schema/course.sche
 import { CategoryType } from "@/schema/category.schema"
 import { z } from "zod"
 import { showToast } from "@/lib/toast"
-import { createCourse, getCourseById } from "@/service/course.service"
+import { updateCourseById } from "@/service/course.service"
 import { uploadImages } from "@/service/upload.service"
 
 type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
 
-interface CreateCourseFormProps {
+interface EditCourseFormProps {
+  course: ExtendedCourseType
   categories: CategoryType[]
   onSuccess?: (course: ExtendedCourseType) => void
 }
 
-export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProps) {
+export function EditCourseForm({ course, categories, onSuccess }: EditCourseFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
 
   const form = useForm<CreateCourseFormValues>({
     resolver: zodResolver(CreateCourseBodySchema),
     defaultValues: {
-      title: "",
-      price: 0,
-      categoryId: "",
+      title: course.title || "",
+      price: course.price || 0,
+      categoryId: course.category?.id || "",
+      thumbnailUrl: course.thumbnailUrl || undefined,
       courseDescription: {
-        headline: "",
-        targetKnowledges: [""],
-        requirements: [""],
-        suitableParticipants: [""],
-        detail: "",
+        headline: course.courseDescription?.headline || "",
+        targetKnowledges: course.courseDescription?.targetKnowledges?.length
+          ? course.courseDescription.targetKnowledges
+          : [""],
+        requirements: course.courseDescription?.requirements?.length
+          ? course.courseDescription.requirements
+          : [""],
+        suitableParticipants: course.courseDescription?.suitableParticipants?.length
+          ? course.courseDescription.suitableParticipants
+          : [""],
+        detail: course.courseDescription?.detail || "",
       },
     },
-    mode: "onChange", // Enable real-time validation
+    mode: "onChange",
   })
 
-  // Handle file upload preview
+  useEffect(() => {
+    if (course.thumbnailUrl) {
+      setThumbnailPreview(course.thumbnailUrl)
+    } else {
+      setThumbnailPreview(null)
+    }
+  }, [course.thumbnailUrl])
+
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -78,7 +93,6 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
     }
   }
 
-  // Array field helpers
   const addArrayField = (fieldName: "targetKnowledges" | "requirements" | "suitableParticipants") => {
     const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
     form.setValue(`courseDescription.${fieldName}`, [...currentValues, ""], {
@@ -113,51 +127,59 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
   const onSubmit = async (data: CreateCourseFormValues) => {
     setIsLoading(true)
     try {
-      let thumbnailUrl: string | undefined = undefined;
+      let thumbnailUrl: string | undefined = undefined
 
       if (data.thumbnailUrl instanceof File) {
-        const formData = new FormData();
-        formData.append("files", data.thumbnailUrl);
-        const urls = await uploadImages(formData);
+        const formData = new FormData()
+        formData.append("files", data.thumbnailUrl)
+        const urls = await uploadImages(formData)
         if (urls.length > 0) {
-          thumbnailUrl = urls[0];
+          thumbnailUrl = urls[0]
         }
       } else if (typeof data.thumbnailUrl === "string") {
-        thumbnailUrl = data.thumbnailUrl;
+        thumbnailUrl = data.thumbnailUrl
       }
 
-      const response = await createCourse({
-        ...data,
+      const updatedCourse = await updateCourseById(String(course.id), {
+        title: data.title,
+        price: data.price,
+        categoryId: data.categoryId,
         thumbnailUrl,
-      });
+        courseDescription: {
+          headline: data.courseDescription?.headline,
+          targetKnowledges: data.courseDescription?.targetKnowledges?.filter((item) => item.trim() !== ""),
+          requirements: data.courseDescription?.requirements?.filter((item) => item.trim() !== ""),
+          suitableParticipants: data.courseDescription?.suitableParticipants?.filter((item) => item.trim() !== ""),
+          detail: data.courseDescription?.detail,
+        },
+      })
 
-      const createdCourse = response.data.createdCourse as { id: number };
-      if (!createdCourse || !createdCourse.id) {
-        throw new Error("Failed to get course ID from response");
-      }
-      
-      const fullCourse = await getCourseById(String(createdCourse.id));
-
-      showToast("success", "Course created successfully!");
-      form.reset();
-      setThumbnailPreview(null);
+      showToast("success", "Course updated successfully!")
       
       if (onSuccess) {
-        onSuccess(fullCourse);
+        onSuccess(updatedCourse)
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create course";
-      showToast("error", errorMessage);
-      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to update course"
+      showToast("error", errorMessage)
+      console.error(error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Basic Information */}
+      <form 
+        onSubmit={form.handleSubmit(onSubmit)} 
+        className="space-y-8"
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation()
+        }}
+      >
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-lg">Basic Information</CardTitle>
@@ -256,9 +278,9 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                           onChange={handleThumbnailChange}
                           {...field}
                           className="hidden"
-                          id="thumbnail-upload"
+                          id="thumbnail-upload-edit"
                         />
-                        <label htmlFor="thumbnail-upload">
+                        <label htmlFor="thumbnail-upload-edit">
                           <Button
                             type="button"
                             variant="outline"
@@ -293,7 +315,6 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
           </CardContent>
         </Card>
 
-        {/* Course Description */}
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-lg">Course Description</CardTitle>
@@ -337,7 +358,6 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
               )}
             />
 
-            {/* Target Knowledges */}
             <div className="space-y-2">
               <FormLabel>Target Knowledges</FormLabel>
               <FormDescription>
@@ -377,7 +397,6 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
               </Button>
             </div>
 
-            {/* Requirements */}
             <div className="space-y-2">
               <FormLabel>Requirements</FormLabel>
               <FormDescription>
@@ -417,7 +436,6 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
               </Button>
             </div>
 
-            {/* Suitable Participants */}
             <div className="space-y-2">
               <FormLabel>Suitable Participants</FormLabel>
               <FormDescription>
@@ -459,16 +477,13 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
           </CardContent>
         </Card>
 
-        {/* Submit Button */}
         <div className="flex justify-end gap-4 pt-4">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
-            Reset
-          </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Course"}
+            {isLoading ? "Updating..." : "Update Course"}
           </Button>
         </div>
       </form>
     </Form>
   )
 }
+
