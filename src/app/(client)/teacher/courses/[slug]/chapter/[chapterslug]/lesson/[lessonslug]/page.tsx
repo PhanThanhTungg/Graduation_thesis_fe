@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getCourseById, getMyCourses } from "@/service/course.service";
+import { getCourseBySlugTeacherArea } from "@/service/course.service";
 import { getLessonBySlug } from "@/service/lesson.service";
 import { notFound } from "next/navigation";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
@@ -25,12 +25,7 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
 
   let course;
   try {
-    const myCourses = await getMyCourses();
-    const found = myCourses.find((c) => c.slug === slug);
-    if (!found) {
-      notFound();
-    }
-    course = await getCourseById(String(found!.id));
+    course = await getCourseBySlugTeacherArea(slug);
   } catch (error) {
     console.error("Failed to fetch course:", error);
     notFound();
@@ -44,7 +39,7 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
   try {
     lesson = await getLessonBySlug(lessonslug);
     
-    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.id !== String(course.id)) {
+    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.slug !== slug) {
       notFound();
     }
   } catch (error) {

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getAllCategories } from "@/service/category.service";
-import { getCourseById, getMyCourses } from "@/service/course.service";
+import { getCourseBySlugTeacherArea } from "@/service/course.service";
 import { EditCourseInfo } from "@/components/teacher/edit-course-info";
 import { ChapterTree } from "@/components/teacher/chapter-tree";
 import NotFound from "@/app/not-found";
@@ -24,12 +24,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   
   let course;
   try {
-    const myCourses = await getMyCourses();
-    const found = myCourses.find((c) => c.slug === slug);
-    if (!found) {
-      notFound();
-    }
-    course = await getCourseById(String(found!.id));
+    course = await getCourseBySlugTeacherArea(slug);
   } catch (error) {
     console.error("Failed to fetch course:", error);
     notFound();
@@ -57,7 +52,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
             <p className="text-muted-foreground mt-1">Manage your course information</p>
           </div>
           <EditCourseInfo course={course} categories={categories} />
-          <ChapterTree courseId={String(course.id)} courseSlug={course.slug} />
+          <ChapterTree courseSlug={course.slug} />
         </div>
       </section>
     </>

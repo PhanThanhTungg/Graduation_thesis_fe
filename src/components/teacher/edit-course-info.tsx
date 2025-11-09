@@ -34,7 +34,7 @@ import { CreateCourseBodySchema } from "@/schema/course.schema"
 import { CategoryType } from "@/schema/category.schema"
 import { ExtendedCourseType } from "@/schema/course.schema"
 import { z } from "zod"
-import { toast } from "sonner"
+import { showToast } from "@/lib/toast"
 import { updateCourseById } from "@/service/course.service"
 import { uploadImages } from "@/service/upload.service"
 import Image from "next/image"
@@ -158,14 +158,14 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
 
       setCurrentCourse(updatedCourse)
       setIsEditing(false)
-      toast.success("Course updated successfully!")
+      showToast("success", "Course updated successfully!")
       
       if (onUpdate) {
         onUpdate(updatedCourse)
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update course"
-      toast.error(errorMessage)
+      showToast("error", errorMessage)
       console.error(error)
     } finally {
       setIsLoading(false)
@@ -199,14 +199,9 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
   if (!isEditing) {
     return (
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Course Information</CardTitle>
-              <CardDescription>
-                View and edit your course details
-              </CardDescription>
-            </div>
+            <CardTitle className="text-lg">{currentCourse.title}</CardTitle>
             <Button
               type="button"
               variant="outline"
@@ -218,95 +213,6 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Title</p>
-            <p className="text-sm text-muted-foreground">{currentCourse.title}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Price</p>
-              <p className="text-sm text-muted-foreground">${currentCourse.price}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Category</p>
-              <p className="text-sm text-muted-foreground">{currentCourse.category?.title || "N/A"}</p>
-            </div>
-          </div>
-
-          {currentCourse.thumbnailUrl && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Thumbnail</p>
-              <div className="relative w-full max-w-md aspect-video">
-                <Image
-                  src={currentCourse.thumbnailUrl}
-                  alt="Course thumbnail"
-                  fill
-                  className="object-cover rounded-lg border"
-                />
-              </div>
-            </div>
-          )}
-
-          {currentCourse.courseDescription?.headline && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Headline</p>
-              <p className="text-sm text-muted-foreground">{currentCourse.courseDescription.headline}</p>
-            </div>
-          )}
-
-          {currentCourse.courseDescription?.detail && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Description</p>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {currentCourse.courseDescription.detail}
-              </p>
-            </div>
-          )}
-
-          {currentCourse.courseDescription?.targetKnowledges &&
-            currentCourse.courseDescription.targetKnowledges.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Target Knowledges</p>
-                <ul className="list-disc list-inside space-y-1">
-                  {currentCourse.courseDescription.targetKnowledges.map((item, index) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-          {currentCourse.courseDescription?.requirements &&
-            currentCourse.courseDescription.requirements.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Requirements</p>
-                <ul className="list-disc list-inside space-y-1">
-                  {currentCourse.courseDescription.requirements.map((item, index) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-          {currentCourse.courseDescription?.suitableParticipants &&
-            currentCourse.courseDescription.suitableParticipants.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Suitable Participants</p>
-                <ul className="list-disc list-inside space-y-1">
-                  {currentCourse.courseDescription.suitableParticipants.map((item, index) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-        </CardContent>
       </Card>
     )
   }
@@ -315,7 +221,7 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card>
-          <CardHeader className="pb-4">
+          <CardHeader className="">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg">Edit Course Information</CardTitle>
