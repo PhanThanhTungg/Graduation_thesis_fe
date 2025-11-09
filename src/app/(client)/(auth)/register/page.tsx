@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { RegisterForm } from './_components/register-form'
 import Logo from '@/components/custom/logo'
+import { RecaptchaProvider } from '@/components/providers/recaptcha-provider'
 
 export default function RegisterPage() {
   return (
@@ -14,7 +15,9 @@ export default function RegisterPage() {
             <Logo />
           </Link>
 
-          <RegisterForm />
+          <RecaptchaProvider>
+            <RegisterForm />
+          </RecaptchaProvider>
         </div>
       </div>
     </main>

@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 import { Eye, EyeOff, Mail, Lock, User, Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,11 +18,14 @@ import { UserRegisterSchema, type UserRegisterType } from '@/schema/user.schema'
 import { clientRegister } from '@/service/auth.service'
 import { countryNames } from '@/schema/country.schema'
 import { cn } from '@/lib/utils'
+import { showToast } from '@/lib/toast'
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const { executeRecaptcha } = useGoogleReCaptcha()
+  const router = useRouter()
 
   const form = useForm<UserRegisterType>({
     resolver: zodResolver(UserRegisterSchema),
@@ -35,7 +40,6 @@ export function RegisterForm() {
   })
 
   const onSubmit = async (data: UserRegisterType) => {
-    console.log("s")
     if (!agreedToTerms) {
       form.setError('email', { 
         type: 'manual', 
@@ -44,7 +48,22 @@ export function RegisterForm() {
       return
     }
 
-    await clientRegister(data)
+    if (!executeRecaptcha) {
+      showToast('error', 'reCAPTCHA not loaded yet. Please try again.')
+      return
+    }
+
+    try {
+      const recaptchaToken = await executeRecaptcha('register')
+      data.recaptchaToken = recaptchaToken
+      await clientRegister(data)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        throw error
+      }
+      showToast('error', 'reCAPTCHA verification failed. Please try again.')
+      console.log('reCAPTCHA error:', error)
+    }
   }
 
   return (
@@ -254,6 +273,28 @@ export function RegisterForm() {
             >
               {form.formState.isSubmitting ? 'Creating account...' : 'Create account'}
             </Button>
+
+            <p className="text-xs text-muted-foreground text-center">
+              This site is protected by reCAPTCHA and the Google{' '}
+              <a
+                href="https://policies.google.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green hover:text-green/80 underline"
+              >
+                Privacy Policy
+              </a>{' '}
+              and{' '}
+              <a
+                href="https://policies.google.com/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green hover:text-green/80 underline"
+              >
+                Terms of Service
+              </a>{' '}
+              apply.
+            </p>
           </form>
         </Form>
       </CardContent>
