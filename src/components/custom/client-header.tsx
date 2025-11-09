@@ -77,7 +77,7 @@ export default async function ClientHeader() {
         <SearchPopover />
         {myProfile ? (
           <>
-            {myProfile.role === 'teacher' || true && (
+            {myProfile.role === 'teacher' && (
               <Button variant={"link"}
                 className="hover:text-green"
               >

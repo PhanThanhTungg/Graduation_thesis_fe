@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { UserLoginSchema, type UserLoginType } from '@/schema/user.schema'
@@ -15,7 +14,6 @@ import { clientLogin } from '@/service/auth.service'
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
 
   const form = useForm<UserLoginType>({
     resolver: zodResolver(UserLoginSchema),
@@ -99,20 +97,6 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-              />
-              <label 
-                htmlFor="remember" 
-                className="text-sm font-normal cursor-pointer"
-              >
-                Remember me for 30 days
-              </label>
-            </div>
 
             <Button
               type="submit"

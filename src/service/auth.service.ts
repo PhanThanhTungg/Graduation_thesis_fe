@@ -11,7 +11,8 @@ export const clientRegister: SubmitHandler<UserRegisterType> = async(data) => {
       fullName: data.fullName,
       email: data.email,
       password: data.password,
-      country: data.country
+      country: data.country,
+      recaptchaToken: data.recaptchaToken
     }
   );
 
@@ -61,6 +62,34 @@ export const verifyEmail = async (token: string) => {
     showToast('success', (response.payload as any)?.message || 'Email verified successfully');
   } else {
     showToast('error', (response.payload as any)?.message || 'Email verification failed');
+  }
+  return { ok, message: (response.payload as any)?.message };
+}
+
+export const forgotPassword = async (email: string) => {
+  const response = await post<{ message: string }>(
+    '/api/auth/forgot-password',
+    { email }
+  );
+  const ok = response.status === 201;
+  if (ok) {
+    showToast('success', (response.payload as any)?.message || 'Reset link sent to your email');
+  } else {
+    showToast('error', (response.payload as any)?.message || 'Failed to send reset link');
+  }
+  return { ok, message: (response.payload as any)?.message };
+}
+
+export const resetPassword = async (token: string, newPassword: string) => {
+  const response = await post<{ message: string }>(
+    '/api/auth/reset-password',
+    { token, newPassword }
+  );
+  const ok = response.status === 200 || response.status === 201;
+  if (ok) {
+    showToast('success', (response.payload as any)?.message || 'Password reset successfully');
+  } else {
+    showToast('error', (response.payload as any)?.message || 'Failed to reset password');
   }
   return { ok, message: (response.payload as any)?.message };
 }

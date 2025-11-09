@@ -60,6 +60,7 @@ export function NavMain({
                   tooltip={item.title} 
                   asChild
                   isActive={isActive}
+                  className="data-[active=true]:bg-green-foreground data-[active=true]:text-green "
                 >
                   <Link href={item.url}>
                     {item.icon && <item.icon />}

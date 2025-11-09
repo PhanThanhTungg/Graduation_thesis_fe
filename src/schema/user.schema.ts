@@ -47,11 +47,28 @@ export const UserRegisterSchema = z.object({
   password: passwordSchema,
   confirmPassword: z.string().min(1, "Confirm password is required"),
   country: CountrySchema,
+  recaptchaToken: z.string().optional(),
 }).strict().refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
 })
 export type UserRegisterType = z.infer<typeof UserRegisterSchema>;
+
+
+export const ForgotPasswordSchema = z.object({
+  email: z.email("Invalid email address"),
+}).strict();
+export type ForgotPasswordType = z.infer<typeof ForgotPasswordSchema>;
+
+
+export const ResetPasswordSchema = z.object({
+  newPassword: passwordSchema,
+  confirmPassword: z.string().min(1, "Confirm password is required"),
+}).strict().refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+export type ResetPasswordType = z.infer<typeof ResetPasswordSchema>;
 
 
 export type UserAuthResponseType = {
