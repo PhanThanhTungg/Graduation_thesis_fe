@@ -92,9 +92,16 @@ type GetMyCoursesRawResponse = {
       rating: number;
       slug: string;
       isPublished: boolean;
+      createdAt: string;
       updatedAt: string;
       countStudent: number;
     }>;
+    pagination?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
   };
 };
 
@@ -104,11 +111,12 @@ type GetMyCoursesParams = {
   sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
+  isPublished?: boolean;
 };
 
 export const getMyCourses = async (
   params?: GetMyCoursesParams
-): Promise<ExtendedCourseType[]> => {
+): Promise<{ courses: ExtendedCourseType[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }> => {
   const queryParams: Record<string, string> = {};
   
   if (params?.keySearch) {
@@ -126,6 +134,9 @@ export const getMyCourses = async (
   if (params?.limit) {
     queryParams.limit = params.limit.toString();
   }
+  if (params?.isPublished !== undefined) {
+    queryParams.isPublished = params.isPublished.toString();
+  }
 
   const response = await get<GetMyCoursesRawResponse>(
     "/api/course/teacher-area/my-courses",
@@ -134,7 +145,7 @@ export const getMyCourses = async (
 
   if (response.status === 200) {
     const payload = response.payload as GetMyCoursesRawResponse;
-    return payload.data.items.map((course) => {
+    const courses = payload.data.items.map((course) => {
       const courseDescription = course.courseDescription
         ? {
             headline: course.courseDescription.headline || undefined,
@@ -176,6 +187,7 @@ export const getMyCourses = async (
         rating: course.rating,
         slug: course.slug,
         isPublished: course.isPublished,
+        createdAt: course.createdAt ? new Date(course.createdAt) : undefined,
         updatedAt: new Date(course.updatedAt),
         countStudent: course.countStudent,
         category: {
@@ -186,6 +198,11 @@ export const getMyCourses = async (
         },
       };
     });
+    
+    return {
+      courses,
+      pagination: payload.data.pagination,
+    };
   } else {
     throw new Error(
       "payload" in response.payload && "message" in response.payload

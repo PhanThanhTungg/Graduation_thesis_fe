@@ -13,9 +13,12 @@ export const metadata: Metadata = {
 export default async function CoursesPage() {
   const categories = await getAllCategories();
   let courses: ExtendedCourseType[] = [];
+  let pagination: { page: number; limit: number; total: number; totalPages: number } | undefined;
 
   try {
-    courses = await getMyCourses();
+    const result = await getMyCourses({ page: 1, limit: 6 });
+    courses = result.courses;
+    pagination = result.pagination;
   } catch (error) {
     console.error("Failed to fetch courses:", error);
   }
@@ -32,6 +35,7 @@ export default async function CoursesPage() {
         <TeacherCoursesPageClient
           categories={categories}
           initialCourses={courses}
+          initialPagination={pagination}
         />
       </div>
     </>

@@ -163,6 +163,14 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
               </span>
             </div>
 
+            {/* Created time */}
+            {course.createdAt && (
+              <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                <Clock className="w-3 h-3" />
+                <span>Created {formatTimeAgo(course.createdAt)}</span>
+              </div>
+            )}
+
             {/* Stats ở góc phải dưới */}
             <div className="absolute bottom-0 right-0 flex items-center gap-3 text-sm">
               <div className="flex items-center gap-1 text-green font-medium">
@@ -177,7 +185,7 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
 
               <div className="flex items-center gap-1 text-muted-foreground text-xs">
                 <Clock className="w-3 h-3" />
-                <span>{formatTimeAgo(course.updatedAt)}</span>
+                <span>Updated {formatTimeAgo(course.updatedAt)}</span>
               </div>
             </div>
           </div>

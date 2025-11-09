@@ -9,11 +9,13 @@ import { TeacherCoursesList } from "./teacher-courses-list"
 interface TeacherCoursesPageClientProps {
   categories: CategoryType[]
   initialCourses: ExtendedCourseType[]
+  initialPagination?: { page: number; limit: number; total: number; totalPages: number }
 }
 
 export function TeacherCoursesPageClient({
   categories,
   initialCourses,
+  initialPagination,
 }: TeacherCoursesPageClientProps) {
   const addCourseRef = useRef<((course: ExtendedCourseType) => void) | null>(null)
 
@@ -43,6 +45,7 @@ export function TeacherCoursesPageClient({
       </div>
       <TeacherCoursesList 
         initialCourses={initialCourses}
+        initialPagination={initialPagination}
         categories={categories}
         onCourseUpdated={handleRefresh}
         onAddCourseRef={(ref) => { addCourseRef.current = ref }}
