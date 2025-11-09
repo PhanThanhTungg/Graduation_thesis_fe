@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2, Loader2 } from "lucide-react"
+import { Plus, Search, ChevronLeft, ChevronRight, Pencil, Trash2, Loader2, Lock, Unlock } from "lucide-react"
 import { LessonDialog } from "./lesson-dialog"
 import { DeleteConfirmationDialog } from "@/components/custom/delete-confirmation-dialog"
 import { createLesson, getLessonsByChapterId, updateLesson, deleteLesson } from "@/service/lesson.service"
@@ -34,6 +34,12 @@ type LessonType = {
     videoId: string
     embedUrl: string
   } | null
+  files?: {
+    id: string
+    fileUrl: string
+    fileName: string
+    fileSize: number
+  }[]
 }
 
 interface LessonManagementProps {
@@ -105,44 +111,16 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
       setIsCreating(true)
       
       if (editingLesson) {
-        const updatedLesson = await updateLesson(editingLesson.id, data)
-        
-        const lessonToUpdate: LessonType = {
-          id: updatedLesson.id,
-          title: updatedLesson.title,
-          description: updatedLesson.description,
-          position: updatedLesson.position,
-          duration: updatedLesson.duration,
-          slug: updatedLesson.slug,
-          chapterId: updatedLesson.chapterId,
-          videoLesson: updatedLesson.videoLesson || null,
-        }
-        
-        setLessons((prev) =>
-          prev.map((lesson) =>
-            lesson.id === lessonToUpdate.id ? lessonToUpdate : lesson
-          )
-        )
+        await updateLesson(editingLesson.id, data)
         showToast("success", "Lesson updated successfully")
       } else {
-        const newLesson = await createLesson(chapterId, data)
-        
-        const lessonToAdd: LessonType = {
-          id: newLesson.id,
-          title: newLesson.title,
-          description: newLesson.description,
-          position: newLesson.position,
-          duration: newLesson.duration,
-          slug: newLesson.slug,
-          chapterId: newLesson.chapterId,
-        }
-        
-        setLessons((prev) => [...prev, lessonToAdd])
+        await createLesson(chapterId, data)
         showToast("success", "Lesson created successfully")
       }
       
       setDialogOpen(false)
       setEditingLesson(null)
+      await loadLessons()
     } catch (error) {
       console.error("Failed to save lesson:", error)
       showToast(
@@ -297,7 +275,14 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
                     className="flex-1 cursor-pointer"
                   >
                     <div>
-                      <h3 className="font-medium">{lesson.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{lesson.title}</h3>
+                        {lesson.isFree ? (
+                          <Unlock className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Lock className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
                       {lesson.description && (
                         <p className="text-sm text-muted-foreground mt-1">
                           {lesson.description}
@@ -409,7 +394,9 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
           id: editingLesson.id,
           title: editingLesson.title,
           description: editingLesson.description,
+          isFree: editingLesson.isFree,
           videoLesson: editingLesson.videoLesson || null,
+          files: editingLesson.files || [],
         } : null}
       />
 

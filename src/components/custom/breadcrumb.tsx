@@ -16,7 +16,7 @@ export interface BreadcrumbProps {
 
 export default function BreadcrumbCustom({ breadcrumb }: { breadcrumb: BreadcrumbProps[] }) {
   return (
-    <Breadcrumb className="container-md bg-muted/30 py-5">
+    <Breadcrumb className="container-sm bg-muted/30 py-5">
       <BreadcrumbList>
         {breadcrumb.map((item, index) => (
           <React.Fragment key={index}>

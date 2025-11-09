@@ -12,11 +12,12 @@ import {
 } from "@/components/ui/dialog"
 import { CreateCourseForm } from "./create-course-form"
 import { CategoryType } from "@/schema/category.schema"
+import { ExtendedCourseType } from "@/schema/course.schema"
 import { Plus } from "lucide-react"
 
 interface CreateCourseDialogProps {
   categories: CategoryType[]
-  onCourseCreated?: () => void
+  onCourseCreated?: (course: ExtendedCourseType) => void
 }
 
 export function CreateCourseDialog({
@@ -25,10 +26,10 @@ export function CreateCourseDialog({
 }: CreateCourseDialogProps) {
   const [open, setOpen] = useState(false)
 
-  const handleSuccess = () => {
+  const handleSuccess = (course: ExtendedCourseType) => {
     setOpen(false)
     if (onCourseCreated) {
-      onCourseCreated()
+      onCourseCreated(course)
     }
   }
 

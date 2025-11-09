@@ -1,11 +1,12 @@
 import { Metadata } from "next";
-import { getCourseById, getMyCourses } from "@/service/course.service";
+import { getCourseBySlugTeacherArea } from "@/service/course.service";
 import { getLessonBySlug } from "@/service/lesson.service";
 import { notFound } from "next/navigation";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/helpers";
-import { UploadVideo } from "./_components/upload-video";
+import { EditLessonButton } from "./_components/edit-lesson-button";
+import { VideoPreview } from "./_components/video-preview";
 
 interface LessonDetailPageProps {
   params: Promise<{
@@ -25,12 +26,7 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
 
   let course;
   try {
-    const myCourses = await getMyCourses();
-    const found = myCourses.find((c) => c.slug === slug);
-    if (!found) {
-      notFound();
-    }
-    course = await getCourseById(String(found!.id));
+    course = await getCourseBySlugTeacherArea(slug);
   } catch (error) {
     console.error("Failed to fetch course:", error);
     notFound();
@@ -44,7 +40,7 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
   try {
     lesson = await getLessonBySlug(lessonslug);
     
-    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.id !== String(course.id)) {
+    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.id !== course.id.toString()) {
       notFound();
     }
   } catch (error) {
@@ -64,10 +60,6 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
     { url: undefined, label: lesson.title },
   ];
 
-  const getTypeLabel = (type: string) => {
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
   return (
     <>
       <BreadcrumbCustom breadcrumb={breadcrumbData} />
@@ -82,7 +74,19 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
 
           <Card>
             <CardHeader>
-              <CardTitle>{lesson.title}</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>{lesson.title}</CardTitle>
+                <EditLessonButton
+                  lesson={{
+                    id: lesson.id,
+                    title: lesson.title,
+                    description: lesson.description,
+                    isFree: undefined,
+                    videoLesson: lesson.videoLesson || null,
+                    files: lesson.files || [],
+                  }}
+                />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {lesson.description && (
@@ -113,10 +117,9 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
               </div>
 
               {lesson.videoLesson && (
-                <UploadVideo
-                  lessonId={lesson.id}
-                  currentVideoId={lesson.videoLesson?.videoId || null}
-                  currentEmbedUrl={lesson.videoLesson?.embedUrl || null}
+                <VideoPreview
+                  videoId={lesson.videoLesson?.videoId || null}
+                  embedUrl={lesson.videoLesson?.embedUrl || null}
                 />
               )}
 

@@ -1,5 +1,0 @@
-export { LessonManagement } from "./lesson-management"
-export { SectionItem } from "./section-item"
-export { LessonItem } from "./lesson-item"
-export { SectionDialog } from "./section-dialog"
-export { LessonDialog } from "./lesson-dialog"

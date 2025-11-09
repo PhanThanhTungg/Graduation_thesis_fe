@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { IconPlus, IconFolder, IconFolderOpen, IconChevronRight, IconChevronDown } from "@tabler/icons-react"
+import { IconPlus, IconFolder, IconFolderOpen, IconChevronRight, IconChevronDown, IconTrash, IconEdit } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -34,15 +34,16 @@ import { CreateChapterSchema } from "@/schema/chapter.schema"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { toast } from "sonner"
-import { getChapterTreeById, createChapterById } from "@/service/course.service"
+import { showToast } from "@/lib/toast"
+import { getChapterTreeBySlug, createChapterBySlug, deleteChapterBySlug, updateChapterById } from "@/service/course.service"
 import { cn } from "@/lib/utils"
+import { DeleteConfirmationDialog } from "@/components/custom/delete-confirmation-dialog"
 
 type CreateChapterFormValues = z.infer<typeof CreateChapterSchema>
 
 interface ChapterTreeProps {
-  courseId: string
   courseSlug: string
+  courseId: string
 }
 
 interface ChapterNodeProps {
@@ -50,12 +51,24 @@ interface ChapterNodeProps {
   level: number
   courseSlug: string
   onAddSubChapter: (parentId: string) => void
+  onDeleteChapter: (chapterId: string) => void
+  onEditChapter: (chapter: ChapterTreeItemType) => void
 }
 
-function ChapterNode({ chapter, level, courseSlug, onAddSubChapter }: ChapterNodeProps) {
+function ChapterNode({ chapter, level, courseSlug, onAddSubChapter, onDeleteChapter, onEditChapter }: ChapterNodeProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const hasChildren = chapter.children && chapter.children.length > 0
+
+  const handleDelete = () => {
+    onDeleteChapter(chapter.id)
+    setIsDeleteDialogOpen(false)
+  }
+
+  const handleEdit = () => {
+    onEditChapter(chapter)
+  }
 
   return (
     <div>
@@ -104,11 +117,41 @@ function ChapterNode({ chapter, level, courseSlug, onAddSubChapter }: ChapterNod
           type="button"
           variant="ghost"
           size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleEdit()
+          }}
+          className="flex-shrink-0"
+        >
+          <IconEdit className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            setIsDeleteDialogOpen(true)
+          }}
+          className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <IconTrash className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => onAddSubChapter(chapter.id)}
           className="flex-shrink-0"
         >
           <IconPlus className="h-4 w-4" />
         </Button>
+        <DeleteConfirmationDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={setIsDeleteDialogOpen}
+          onConfirm={handleDelete}
+          message={`Are you sure you want to delete "${chapter.title}"? This action cannot be undone and will also delete all sub-chapters.`}
+        />
       </div>
       {hasChildren && isExpanded && (
         <div>
@@ -119,6 +162,8 @@ function ChapterNode({ chapter, level, courseSlug, onAddSubChapter }: ChapterNod
               level={level + 1}
               courseSlug={courseSlug}
               onAddSubChapter={onAddSubChapter}
+              onDeleteChapter={onDeleteChapter}
+              onEditChapter={onEditChapter}
             />
           ))}
         </div>
@@ -127,11 +172,14 @@ function ChapterNode({ chapter, level, courseSlug, onAddSubChapter }: ChapterNod
   )
 }
 
-export function ChapterTree({ courseId, courseSlug }: ChapterTreeProps) {
+export function ChapterTree({ courseSlug, courseId }: ChapterTreeProps) {
   const [chapters, setChapters] = useState<ChapterTreeItemType[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [parentId, setParentId] = useState<string | undefined>(undefined)
+  const [editingChapter, setEditingChapter] = useState<ChapterTreeItemType | null>(null)
 
   const form = useForm<CreateChapterFormValues>({
     resolver: zodResolver(CreateChapterSchema),
@@ -145,11 +193,11 @@ export function ChapterTree({ courseId, courseSlug }: ChapterTreeProps) {
   const fetchChapters = async () => {
     setIsLoading(true)
     try {
-      const data = await getChapterTreeById(courseId)
+      const data = await getChapterTreeBySlug(courseSlug)
       setChapters(data)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load chapters"
-      toast.error(errorMessage)
+      showToast("error", errorMessage)
       console.error(error)
     } finally {
       setIsLoading(false)
@@ -158,7 +206,7 @@ export function ChapterTree({ courseId, courseSlug }: ChapterTreeProps) {
 
   useEffect(() => {
     fetchChapters()
-  }, [courseId])
+  }, [courseSlug])
 
   const handleAddChapter = (parentId?: string) => {
     setParentId(parentId)
@@ -183,18 +231,76 @@ export function ChapterTree({ courseId, courseSlug }: ChapterTreeProps) {
   }
 
   const onSubmit = async (data: CreateChapterFormValues) => {
+    setIsSubmitting(true)
     try {
-      await createChapterById(courseId, {
+      await createChapterBySlug(courseSlug, {
         title: data.title,
         description: data.description,
         parentId: data.parentId,
       })
-      toast.success("Chapter created successfully!")
+      showToast("success", "Chapter created successfully!")
       handleDialogOpenChange(false)
       fetchChapters()
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create chapter"
-      toast.error(errorMessage)
+      showToast("error", errorMessage)
+      console.error(error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleEditChapter = (chapter: ChapterTreeItemType) => {
+    setEditingChapter(chapter)
+    form.reset({
+      title: chapter.title,
+      description: chapter.description || "",
+      parentId: undefined,
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditDialogOpenChange = (open: boolean) => {
+    setIsEditDialogOpen(open)
+    if (!open) {
+      setEditingChapter(null)
+      form.reset({
+        title: "",
+        description: "",
+        parentId: undefined,
+      })
+    }
+  }
+
+  const onEditSubmit = async (data: CreateChapterFormValues) => {
+    if (!editingChapter) return
+
+    setIsSubmitting(true)
+    try {
+      await updateChapterById(courseId, editingChapter.id, {
+        title: data.title,
+        description: data.description,
+      })
+      showToast("success", "Chapter updated successfully!")
+      handleEditDialogOpenChange(false)
+      fetchChapters()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update chapter"
+      showToast("error", errorMessage)
+      console.error(error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteChapter = async (chapterId: string) => {
+    try {
+      await deleteChapterBySlug(courseSlug, chapterId)
+      showToast("success", "Chapter deleted successfully!")
+      fetchChapters()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete chapter"
+      showToast("error", errorMessage)
       console.error(error)
     }
   }
@@ -267,10 +373,73 @@ export function ChapterTree({ courseId, courseSlug }: ChapterTreeProps) {
                         type="button"
                         variant="outline"
                         onClick={() => handleDialogOpenChange(false)}
+                        disabled={isSubmitting}
                       >
                         Cancel
                       </Button>
-                      <Button type="submit">Create Chapter</Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Creating..." : "Create Chapter"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogOpenChange}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Chapter</DialogTitle>
+                  <DialogDescription>
+                    Update chapter information
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Chapter Title *</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="e.g., Introduction to React"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Brief description of this chapter..."
+                              className="min-h-[80px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleEditDialogOpenChange(false)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Updating..." : "Update Chapter"}
+                      </Button>
                     </div>
                   </form>
                 </Form>
@@ -297,6 +466,8 @@ export function ChapterTree({ courseId, courseSlug }: ChapterTreeProps) {
                 level={0}
                 courseSlug={courseSlug}
                 onAddSubChapter={handleAddChapter}
+                onDeleteChapter={handleDeleteChapter}
+                onEditChapter={handleEditChapter}
               />
             ))}
           </div>

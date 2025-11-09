@@ -32,6 +32,12 @@ type LessonData = {
     videoId: string
     embedUrl: string
   } | null
+  files?: {
+    id: string
+    fileUrl: string
+    fileName: string
+    fileSize: number
+  }[]
 }
 
 interface LessonDialogProps {
@@ -74,6 +80,8 @@ export function LessonDialog({
     uploadedVideo?: { videoId: string; embedUrl: string } | null
     uploadedFiles?: { fileUrl: string; fileName: string; fileSize: number }[]
   } | null>(null)
+
+  const isSubmittingRef = useRef(false)
 
   const {
     register,
@@ -251,11 +259,11 @@ export function LessonDialog({
   }
 
   useEffect(() => {
-    if (open) {
+    if (open && !isLoading && !isSubmittingRef.current) {
       if (mode === "edit" && lesson) {
         reset({
           title: lesson.title,
-          isPreview: lesson.isFree || false,
+          isPreview: lesson.isFree ?? false,
           content: lesson.description || "",
           videoId: lesson.videoLesson?.videoId || "",
           embedUrl: lesson.videoLesson?.embedUrl || "",
@@ -268,7 +276,15 @@ export function LessonDialog({
         } else {
           setUploadedVideo(null)
         }
-        setUploadedFiles([])
+        if (lesson.files && lesson.files.length > 0) {
+          setUploadedFiles(lesson.files.map(file => ({
+            fileUrl: file.fileUrl,
+            fileName: file.fileName,
+            fileSize: file.fileSize,
+          })))
+        } else {
+          setUploadedFiles([])
+        }
         setSelectedFiles([])
       } else if (mode === "add") {
         if (draftData) {
@@ -300,28 +316,19 @@ export function LessonDialog({
         }
       }
     }
-  }, [open, reset, mode, lesson, draftData])
+  }, [open, reset, mode, lesson, draftData, isLoading])
 
   const onSubmit = async (data: FormData) => {
     try {
+      isSubmittingRef.current = true
       const submitData = {
         ...data,
-        files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+        files: mode === "edit" ? uploadedFiles : uploadedFiles.length > 0 ? uploadedFiles : undefined,
       }
       await onSave(submitData)
-      reset()
-      setUploadedVideo(null)
-      setSelectedFile(null)
-      setSelectedFiles([])
-      setUploadedFiles([])
-      setDraftData(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-      if (filesInputRef.current) {
-        filesInputRef.current.value = ""
-      }
     } catch (error) {
+    } finally {
+      isSubmittingRef.current = false
     }
   }
 
@@ -339,8 +346,12 @@ export function LessonDialog({
       })
     }
     
+    reset()
+    setUploadedVideo(null)
     setSelectedFile(null)
     setSelectedFiles([])
+    setUploadedFiles([])
+    isSubmittingRef.current = false
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -587,6 +598,24 @@ export function LessonDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Video Preview</DialogTitle>
+          </DialogHeader>
+          {uploadedVideo?.embedUrl && (
+            <div className="aspect-video rounded-lg overflow-hidden border bg-black">
+              <iframe
+                src={uploadedVideo.embedUrl}
+                className="w-full h-full"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

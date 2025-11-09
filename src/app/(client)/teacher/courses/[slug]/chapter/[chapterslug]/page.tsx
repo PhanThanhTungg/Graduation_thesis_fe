@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getCourseById, getMyCourses, getChapterTreeById } from "@/service/course.service";
+import { getCourseBySlugTeacherArea, getChapterTreeBySlug } from "@/service/course.service";
 import { notFound } from "next/navigation";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 import { ChapterTreeItemType } from "@/schema/chapter.schema";
@@ -35,12 +35,7 @@ export default async function ChapterDetailPage({ params }: ChapterDetailPagePro
 
   let course;
   try {
-    const myCourses = await getMyCourses();
-    const found = myCourses.find((c) => c.slug === slug);
-    if (!found) {
-      notFound();
-    }
-    course = await getCourseById(String(found!.id));
+    course = await getCourseBySlugTeacherArea(slug);
   } catch (error) {
     console.error("Failed to fetch course:", error);
     notFound();
@@ -53,7 +48,7 @@ export default async function ChapterDetailPage({ params }: ChapterDetailPagePro
   let chapterTitle = "Chapter";
   let chapterId: string | null = null;
   try {
-    const chapters = await getChapterTreeById(String(course.id));
+    const chapters = await getChapterTreeBySlug(slug);
     const chapter = findChapterBySlug(chapters, chapterslug);
     if (chapter) {
       chapterTitle = chapter.title;

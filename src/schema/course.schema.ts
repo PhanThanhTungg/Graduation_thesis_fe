@@ -20,6 +20,7 @@ export const CourseSchema = z.object({
   rating: z.number(),
   slug: z.string(),
   isPublished: z.boolean().default(true),
+  createdAt: z.date().optional(),
   updatedAt: z.date(),
   countStudent: z.number().optional(),
 }).strip()

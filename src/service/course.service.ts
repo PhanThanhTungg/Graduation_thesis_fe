@@ -1,4 +1,4 @@
-import { get, patch, post } from "@/lib/request";
+import { get, patch, post, del } from "@/lib/request";
 import { CreateCourseBodySchema, CourseType, ExtendedCourseType } from "@/schema/course.schema";
 import { ChapterTreeItemType } from "@/schema/chapter.schema";
 import { z } from "zod";
@@ -65,10 +65,43 @@ export const createCourse = async (
   }
 };
 
-type GetMyCoursesResponse = {
+type GetMyCoursesRawResponse = {
   message: string;
   data: {
-    items: CourseType[];
+    items: Array<{
+      id: number;
+      title: string;
+      thumbnailUrl?: string;
+      price: number;
+      teacher: {
+        id: string;
+        fullName: string;
+      };
+      courseDescription: {
+        headline: string | null;
+        targetKnowledges: string | null;
+        requirement: string | null;
+        suitableParticipant: string | null;
+        detail: string | null;
+      } | null;
+      category: {
+        id: string;
+        title: string;
+        slug: string | null;
+      };
+      rating: number;
+      slug: string;
+      isPublished: boolean;
+      createdAt: string;
+      updatedAt: string;
+      countStudent: number;
+    }>;
+    pagination?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
   };
 };
 
@@ -78,11 +111,12 @@ type GetMyCoursesParams = {
   sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
+  isPublished?: boolean;
 };
 
 export const getMyCourses = async (
   params?: GetMyCoursesParams
-): Promise<CourseType[]> => {
+): Promise<{ courses: ExtendedCourseType[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }> => {
   const queryParams: Record<string, string> = {};
   
   if (params?.keySearch) {
@@ -100,14 +134,75 @@ export const getMyCourses = async (
   if (params?.limit) {
     queryParams.limit = params.limit.toString();
   }
+  if (params?.isPublished !== undefined) {
+    queryParams.isPublished = params.isPublished.toString();
+  }
 
-  const response = await get<GetMyCoursesResponse>(
+  const response = await get<GetMyCoursesRawResponse>(
     "/api/course/teacher-area/my-courses",
     Object.keys(queryParams).length > 0 ? queryParams : undefined
   );
 
   if (response.status === 200) {
-    return (response.payload as GetMyCoursesResponse).data.items;
+    const payload = response.payload as GetMyCoursesRawResponse;
+    const courses = payload.data.items.map((course) => {
+      const courseDescription = course.courseDescription
+        ? {
+            headline: course.courseDescription.headline || undefined,
+            targetKnowledges: course.courseDescription.targetKnowledges
+              ? course.courseDescription.targetKnowledges.split("&&&").filter((item) => item.trim() !== "")
+              : undefined,
+            requirements: course.courseDescription.requirement
+              ? course.courseDescription.requirement.split("&&&").filter((item) => item.trim() !== "")
+              : undefined,
+            suitableParticipants: course.courseDescription.suitableParticipant
+              ? course.courseDescription.suitableParticipant.split("&&&").filter((item) => item.trim() !== "")
+              : undefined,
+            detail: course.courseDescription.detail || undefined,
+          }
+        : {
+            headline: undefined,
+            targetKnowledges: undefined,
+            requirements: undefined,
+            suitableParticipants: undefined,
+            detail: undefined,
+          };
+
+      return {
+        id: course.id,
+        title: course.title,
+        courseDescription,
+        thumbnailUrl: course.thumbnailUrl,
+        price: course.price,
+        teacher: {
+          id: course.teacher.id,
+          fullName: course.teacher.fullName,
+          email: "",
+          role: "teacher" as const,
+          emailVerified: false,
+          avatarUrl: null,
+          status: "active" as const,
+          country: "Vietnam" as const,
+        },
+        rating: course.rating,
+        slug: course.slug,
+        isPublished: course.isPublished,
+        createdAt: course.createdAt ? new Date(course.createdAt) : undefined,
+        updatedAt: new Date(course.updatedAt),
+        countStudent: course.countStudent,
+        category: {
+          id: course.category.id,
+          title: course.category.title,
+          slug: course.category.slug || "",
+          parentId: null,
+        },
+      };
+    });
+    
+    return {
+      courses,
+      pagination: payload.data.pagination,
+    };
   } else {
     throw new Error(
       "payload" in response.payload && "message" in response.payload
@@ -249,28 +344,70 @@ export const getCourseBySlug = async (
   }
 };
 
+type GetCourseByIdRawResponse = {
+  message: string;
+  data: Omit<ExtendedCourseType, 'courseDescription'> & {
+    courseDescription?: {
+      headline?: string;
+      targetKnowledges?: string[];
+      requirement?: string[];
+      suitableParticipant?: string[];
+      detail?: string;
+    };
+  };
+};
+
 type GetCourseByIdResponse = {
   message: string;
   data: ExtendedCourseType;
 };
 
-export const getCourseById = async (
-  id: string
+export const getCourseBySlugTeacherArea = async (
+  slug: string
 ): Promise<ExtendedCourseType> => {
-  const response = await get  <GetCourseByIdResponse>(
-    `/api/course/teacher-area/${id}`,
+  const response = await get<GetCourseByIdRawResponse>(
+    `/api/course/teacher-area/slug/${slug}`,
     {}
   );
 
   if (response.status === 200) {
-    const course = (response.payload as GetCourseByIdResponse).data;
+    const course = (response.payload as GetCourseByIdRawResponse).data;
     return {
       ...course,
       courseDescription: {
         headline: course.courseDescription?.headline,
         targetKnowledges: course.courseDescription?.targetKnowledges || [],
-        requirements: course.courseDescription?.requirements || [],
-        suitableParticipants: course.courseDescription?.suitableParticipants || [],
+        requirements: course.courseDescription?.requirement || [],
+        suitableParticipants: course.courseDescription?.suitableParticipant || [],
+        detail: course.courseDescription?.detail,
+      },
+    };
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get course"
+    );
+  }
+};
+
+export const getCourseById = async (
+  id: string
+): Promise<ExtendedCourseType> => {
+  const response = await get<GetCourseByIdRawResponse>(
+    `/api/course/teacher-area/${id}`,
+    {}
+  );
+
+  if (response.status === 200) {
+    const course = (response.payload as GetCourseByIdRawResponse).data;
+    return {
+      ...course,
+      courseDescription: {
+        headline: course.courseDescription?.headline,
+        targetKnowledges: course.courseDescription?.targetKnowledges || [],
+        requirements: course.courseDescription?.requirement || [],
+        suitableParticipants: course.courseDescription?.suitableParticipant || [],
         detail: course.courseDescription?.detail,
       },
     };
@@ -298,9 +435,35 @@ type UpdateCourseRequest = {
   };
 };
 
-type UpdateCourseResponse = {
+type UpdateCourseRawResponse = {
   message: string;
-  data: ExtendedCourseType;
+  data: {
+    id: number;
+    title: string;
+    thumbnailUrl?: string;
+    price: number;
+    teacher: {
+      id: string;
+      fullName: string;
+    };
+    courseDescription: {
+      headline: string | null;
+      targetKnowledges: string[];
+      requirement: string[];
+      suitableParticipant: string[];
+      detail: string | null;
+    } | null;
+    category: {
+      id: string;
+      title: string;
+      slug: string | null;
+    };
+    rating: number;
+    slug: string;
+    isPublished: boolean;
+    updatedAt: string;
+    countStudent: number;
+  };
 };
 
 export const updateCourseById = async (
@@ -347,28 +510,60 @@ export const updateCourseById = async (
     }),
   };
 
-  const response = await patch<UpdateCourseResponse>(
+  const response = await patch<UpdateCourseRawResponse>(
     `/api/course/teacher-area/${id}`,
     requestData
   );
 
   if (response.status === 200) {
-    const course = (response.payload as UpdateCourseResponse).data;
+    const course = (response.payload as UpdateCourseRawResponse).data;
     return {
-      ...course,
-      courseDescription: {
-        headline: course.courseDescription?.headline,
-        targetKnowledges: course.courseDescription?.targetKnowledges || [],
-        requirements: course.courseDescription?.requirements || [],
-        suitableParticipants: course.courseDescription?.suitableParticipants || [],
-        detail: course.courseDescription?.detail,
+      id: course.id,
+      title: course.title,
+      courseDescription: course.courseDescription
+        ? {
+            headline: course.courseDescription.headline || undefined,
+            targetKnowledges: course.courseDescription.targetKnowledges || [],
+            requirements: course.courseDescription.requirement || [],
+            suitableParticipants: course.courseDescription.suitableParticipant || [],
+            detail: course.courseDescription.detail || undefined,
+          }
+        : {
+            headline: undefined,
+            targetKnowledges: undefined,
+            requirements: undefined,
+            suitableParticipants: undefined,
+            detail: undefined,
+          },
+      thumbnailUrl: course.thumbnailUrl,
+      price: course.price,
+      teacher: {
+        id: course.teacher.id,
+        fullName: course.teacher.fullName,
+        email: "",
+        role: "teacher" as const,
+        emailVerified: false,
+        avatarUrl: null,
+        status: "active" as const,
+        country: "Vietnam" as const,
+      },
+      rating: course.rating,
+      slug: course.slug,
+      isPublished: course.isPublished,
+      updatedAt: new Date(course.updatedAt),
+      countStudent: course.countStudent,
+      category: {
+        id: course.category.id,
+        title: course.category.title,
+        slug: course.category.slug || "",
+        parentId: null,
       },
     };
   } else {
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        :       "Failed to update course"
+        : "Failed to update course"
     );
   }
 };
@@ -378,6 +573,25 @@ type GetChapterTreeByIdResponse = {
   data: {
     items: ChapterTreeItemType[];
   };
+};
+
+export const getChapterTreeBySlug = async (
+  slug: string
+): Promise<ChapterTreeItemType[]> => {
+  const response = await get<GetChapterTreeByIdResponse>(
+    `/api/course/teacher-area/slug/${slug}/chapters`,
+    {}
+  );
+
+  if (response.status === 200) {
+    return (response.payload as GetChapterTreeByIdResponse).data.items;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get chapter tree"
+    );
+  }
 };
 
 export const getChapterTreeById = async (
@@ -408,6 +622,30 @@ type CreateChapterByIdResponse = {
     position: number;
     parentId?: string | null;
   };
+};
+
+export const createChapterBySlug = async (
+  slug: string,
+  data: {
+    title: string;
+    description?: string;
+    parentId?: string;
+  }
+): Promise<CreateChapterByIdResponse["data"]> => {
+  const response = await post<CreateChapterByIdResponse>(
+    `/api/course/teacher-area/slug/${slug}/chapters`,
+    data
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as CreateChapterByIdResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to create chapter"
+    );
+  }
 };
 
 export const createChapterById = async (
@@ -566,6 +804,111 @@ export const getAllCourses = async (
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
         : "Failed to get courses"
+    );
+  }
+};
+
+type UpdateChapterResponse = {
+  message: string;
+  data: {
+    id: string;
+    title: string;
+    slug: string;
+    description?: string | null;
+    position: number;
+    parentId?: string | null;
+  };
+};
+
+export const updateChapterBySlug = async (
+  slug: string,
+  chapterId: string,
+  data: {
+    title?: string;
+    description?: string;
+  }
+): Promise<UpdateChapterResponse["data"]> => {
+  const response = await patch<UpdateChapterResponse>(
+    `/api/course/teacher-area/slug/${slug}/chapters/${chapterId}`,
+    data
+  );
+
+  if (response.status === 200) {
+    return (response.payload as UpdateChapterResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to update chapter"
+    );
+  }
+};
+
+export const updateChapterById = async (
+  courseId: string,
+  chapterId: string,
+  data: {
+    title?: string;
+    description?: string;
+  }
+): Promise<UpdateChapterResponse["data"]> => {
+  const response = await patch<UpdateChapterResponse>(
+    `/api/course/teacher-area/${courseId}/chapters/${chapterId}`,
+    data
+  );
+
+  if (response.status === 200) {
+    return (response.payload as UpdateChapterResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to update chapter"
+    );
+  }
+};
+
+type DeleteChapterResponse = {
+  message: string;
+};
+
+export const deleteChapterBySlug = async (
+  slug: string,
+  chapterId: string
+): Promise<void> => {
+  const response = await del<DeleteChapterResponse>(
+    `/api/course/teacher-area/slug/${slug}/chapters/${chapterId}`
+  );
+
+  if (response.status === 200) {
+    return;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to delete chapter"
+    );
+  }
+};
+
+type DeleteCourseResponse = {
+  message: string;
+};
+
+export const deleteCourse = async (
+  courseId: string
+): Promise<void> => {
+  const response = await del<DeleteCourseResponse>(
+    `/api/course/teacher-area/${courseId}`
+  );
+
+  if (response.status === 200) {
+    return;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to delete course"
     );
   }
 };
