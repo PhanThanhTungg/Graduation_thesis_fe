@@ -44,3 +44,24 @@ export const CreateCourseBodySchema = z.object({
   categoryId: z.uuid("You need to select a valid category"),
   courseDescription: courseDescriptionSchema,
 }).strip()
+
+// Admin course schema
+export const AdminCourseItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  thumbnailUrl: z.string().nullable(),
+  price: z.number(),
+  countStudent: z.number(),
+  isPublished: z.boolean(),
+  teacher: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  category: z.object({
+    id: z.string(),
+    name: z.string(),
+  }).nullable(),
+  createdAt: z.coerce.date(),
+  deletedAt: z.coerce.date().nullable(),
+}).strip()
+export type AdminCourseItemType = z.infer<typeof AdminCourseItemSchema>;
