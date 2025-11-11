@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { string, z } from "zod";
 import { TeacherSchema } from "./user.schema";
 import { CategorySchema } from "./category.schema";
+import { PaginationSchema } from "./helpers.schema";
 
 export const courseDescriptionSchema = z.object({
   headline: z.string().optional(),
@@ -32,6 +33,9 @@ export const extendedCourseSchema = CourseSchema.extend({
 }).strip()
 export type ExtendedCourseType = z.infer<typeof extendedCourseSchema>;
 
+export const DetailCourseSchema = extendedCourseSchema
+export type DetailCourseType = z.infer<typeof DetailCourseSchema>;
+
 export const CreateCourseBodySchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   thumbnailUrl: z
@@ -44,3 +48,19 @@ export const CreateCourseBodySchema = z.object({
   categoryId: z.uuid("You need to select a valid category"),
   courseDescription: courseDescriptionSchema,
 }).strip()
+
+
+export const GetAllCourseResponseSchema = z.object({
+  message: z.string(),
+  data: z.object({
+    items: z.array(extendedCourseSchema),
+    pagination: PaginationSchema
+  })
+}).strip();
+export type GetAllCourseResponseType = z.infer<typeof GetAllCourseResponseSchema>;
+
+export const GetCourseBySlugResponseSchema = z.object({
+  message: z.string(),
+  data: DetailCourseSchema
+}).strip();
+export type GetCourseBySlugResponseType = z.infer<typeof GetCourseBySlugResponseSchema>;
