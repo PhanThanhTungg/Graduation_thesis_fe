@@ -64,3 +64,23 @@ export const GetCourseBySlugResponseSchema = z.object({
   data: DetailCourseSchema
 }).strip();
 export type GetCourseBySlugResponseType = z.infer<typeof GetCourseBySlugResponseSchema>;
+// Admin course schema
+export const AdminCourseItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  thumbnailUrl: z.string().nullable(),
+  price: z.number(),
+  countStudent: z.number(),
+  isPublished: z.boolean(),
+  teacher: z.object({
+    id: z.string(),
+    name: z.string(),
+  }),
+  category: z.object({
+    id: z.string(),
+    name: z.string(),
+  }).nullable(),
+  createdAt: z.coerce.date(),
+  deletedAt: z.coerce.date().nullable(),
+}).strip()
+export type AdminCourseItemType = z.infer<typeof AdminCourseItemSchema>;
