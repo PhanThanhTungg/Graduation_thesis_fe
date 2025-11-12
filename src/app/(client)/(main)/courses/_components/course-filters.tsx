@@ -2,37 +2,27 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
-import { useState } from "react";
-import { mockCategories } from "@/lib/mockData";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CategoryType } from "@/schema/category.schema";
 
-interface FilterSection {
-  title: string;
-  items: { label: string; count: number; value: string }[];
+interface CourseFiltersProps {
+  categories: CategoryType[];
 }
 
-const categories: FilterSection = {
-  title: "Course category",
-  items: mockCategories.map((cat) => ({
-    label: cat.title,
-    count: 15,
-    value: cat.slug,
-  })),
-};
-
-const prices: FilterSection = {
-  title: "Price",
-  items: [
-    { label: "All", count: 15, value: "all" },
-    { label: "Free", count: 15, value: "free" },
-    { label: "Paid", count: 15, value: "paid" },
-  ],
-};
-
-function PriceRangeFilter() {
-  const [priceFrom, setPriceFrom] = useState<string>("");
-  const [priceTo, setPriceTo] = useState<string>("");
-
+function PriceRangeFilter({ 
+  priceFrom, 
+  priceTo, 
+  onPriceFromChange, 
+  onPriceToChange 
+}: { 
+  priceFrom: string; 
+  priceTo: string; 
+  onPriceFromChange: (value: string) => void; 
+  onPriceToChange: (value: string) => void; 
+}) {
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-lg font-semibold text-foreground capitalize">
@@ -44,7 +34,7 @@ function PriceRangeFilter() {
             type="number"
             placeholder="From"
             value={priceFrom}
-            onChange={(e) => setPriceFrom(e.target.value)}
+            onChange={(e) => onPriceFromChange(e.target.value)}
             className="flex-1"
             min="0"
           />
@@ -53,7 +43,7 @@ function PriceRangeFilter() {
             type="number"
             placeholder="To"
             value={priceTo}
-            onChange={(e) => setPriceTo(e.target.value)}
+            onChange={(e) => onPriceToChange(e.target.value)}
             className="flex-1"
             min="0"
           />
@@ -63,50 +53,45 @@ function PriceRangeFilter() {
   );
 }
 
-const levels: FilterSection = {
-  title: "Level",
-  items: [
-    { label: "All levels", count: 15, value: "all" },
-    { label: "Beginner", count: 15, value: "beginner" },
-    { label: "Intermediate", count: 15, value: "intermediate" },
-    { label: "Expert", count: 15, value: "expert" },
-  ],
-};
-
 const reviews = [
-  { stars: 5, count: 1025 },
-  { stars: 4, count: 1025 },
-  { stars: 3, count: 1025 },
-  { stars: 2, count: 1025 },
-  { stars: 1, count: 1025 },
+  { stars: 5 },
+  { stars: 4 },
+  { stars: 3 },
+  { stars: 2 },
+  { stars: 1 },
 ];
 
-function FilterGroup({ section }: { section: FilterSection }) {
-  const [selected, setSelected] = useState<string[]>([]);
-
+function CategoryFilter({ 
+  categories, 
+  selected, 
+  onSelectedChange 
+}: { 
+  categories: CategoryType[]; 
+  selected: string[]; 
+  onSelectedChange: (categoryIds: string[]) => void; 
+}) {
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-lg font-semibold text-foreground capitalize">
-        {section.title}
+        Course Category
       </h3>
       <div className="flex flex-col gap-2.5">
-        {section.items.map((item) => (
+        {categories.map((category) => (
           <label
-            key={item.value}
+            key={category.id}
             className="flex items-center gap-1 text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
           >
             <Checkbox
-              checked={selected.includes(item.value)}
+              checked={selected.includes(category.id)}
               onCheckedChange={(checked) => {
-                setSelected(
+                onSelectedChange(
                   checked
-                    ? [...selected, item.value]
-                    : selected.filter((v) => v !== item.value)
+                    ? [...selected, category.id]
+                    : selected.filter((v) => v !== category.id)
                 );
               }}
             />
-            <span className="flex-1">{item.label}</span>
-            <span>{item.count}</span>
+            <span className="flex-1">{category.title}</span>
           </label>
         ))}
       </div>
@@ -114,9 +99,13 @@ function FilterGroup({ section }: { section: FilterSection }) {
   );
 }
 
-function ReviewFilter() {
-  const [selected, setSelected] = useState<number[]>([]);
-
+function ReviewFilter({ 
+  selected, 
+  onSelectedChange 
+}: { 
+  selected: number[]; 
+  onSelectedChange: (ratings: number[]) => void; 
+}) {
   return (
     <div className="flex flex-col gap-2">
       <h3 className="text-lg font-semibold text-foreground capitalize">
@@ -131,7 +120,7 @@ function ReviewFilter() {
             <Checkbox
               checked={selected.includes(review.stars)}
               onCheckedChange={(checked) => {
-                setSelected(
+                onSelectedChange(
                   checked
                     ? [...selected, review.stars]
                     : selected.filter((v) => v !== review.stars)
@@ -150,9 +139,6 @@ function ReviewFilter() {
                 />
               ))}
             </div>
-            <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-              ({review.count.toLocaleString()})
-            </span>
           </label>
         ))}
       </div>
@@ -160,13 +146,101 @@ function ReviewFilter() {
   );
 }
 
-export default function CourseFilters() {
+export default function CourseFilters({ categories }: CourseFiltersProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL params
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const categoryIds = searchParams.get('categoryIds');
+    return categoryIds ? categoryIds.split(',') : [];
+  });
+
+  const [selectedRatings, setSelectedRatings] = useState<number[]>(() => {
+    const ratings = searchParams.get('ratings');
+    return ratings ? ratings.split(',').map(Number) : [];
+  });
+
+  const [priceFrom, setPriceFrom] = useState<string>(() => {
+    return searchParams.get('priceFrom') || '';
+  });
+
+  const [priceTo, setPriceTo] = useState<string>(() => {
+    return searchParams.get('priceTo') || '';
+  });
+
+  const applyFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Reset to page 1 when filtering
+    params.set('page', '1');
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      params.set('categoryIds', selectedCategories.join(','));
+    } else {
+      params.delete('categoryIds');
+    }
+
+    // Rating filter
+    if (selectedRatings.length > 0) {
+      params.set('ratings', selectedRatings.join(','));
+    } else {
+      params.delete('ratings');
+    }
+
+    // Price filter
+    if (priceFrom) {
+      params.set('priceFrom', priceFrom);
+    } else {
+      params.delete('priceFrom');
+    }
+
+    if (priceTo) {
+      params.set('priceTo', priceTo);
+    } else {
+      params.delete('priceTo');
+    }
+
+    router.push(`/courses?${params.toString()}`);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setSelectedRatings([]);
+    setPriceFrom('');
+    setPriceTo('');
+    router.push('/courses?page=1');
+  };
+
   return (
     <aside className="w-[270px] flex-shrink-0 flex flex-col gap-[30px]">
-      <FilterGroup section={categories} />
-      <PriceRangeFilter />
-      <ReviewFilter />
-      <FilterGroup section={levels} />
+      <CategoryFilter 
+        categories={categories}
+        selected={selectedCategories}
+        onSelectedChange={setSelectedCategories}
+      />
+      
+      <PriceRangeFilter 
+        priceFrom={priceFrom}
+        priceTo={priceTo}
+        onPriceFromChange={setPriceFrom}
+        onPriceToChange={setPriceTo}
+      />
+      
+      <ReviewFilter 
+        selected={selectedRatings}
+        onSelectedChange={setSelectedRatings}
+      />
+
+      <div className="flex flex-col gap-2">
+        <Button onClick={applyFilters} className="w-full">
+          Apply Filters
+        </Button>
+        <Button onClick={clearFilters} variant="outline" className="w-full">
+          Clear Filters
+        </Button>
+      </div>
     </aside>
   );
 }
