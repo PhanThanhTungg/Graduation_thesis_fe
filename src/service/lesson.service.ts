@@ -289,3 +289,140 @@ export const getLessonBySlug = async (
   }
 };
 
+type GetNextLessonResponse = {
+  message: string;
+  data: {
+    lessonSlug: string;
+  };
+};
+
+export const getNextLessonByCourseSlug = async (
+  courseSlug: string
+): Promise<string> => {
+  const response = await get<GetNextLessonResponse>(
+    `/api/lesson/next-by-course/${courseSlug}`,
+    {},
+  );
+  if (response.status === 200) {
+    return (response.payload as GetNextLessonResponse).data.lessonSlug;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get next lesson"
+    );
+  }
+};
+
+type LessonTreeItemDto = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  position: number;
+  isFree: boolean;
+  viewCount: number;
+  videoLesson?: {
+    videoId: string;
+    embedUrl: string;
+    duration: number | null;
+  } | null;
+  progress: "not_started" | "in_progress" | "completed";
+  createdAt: string;
+  updatedAt?: string | null;
+};
+
+type ChapterWithLessonsTreeItemDto = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  position: number;
+  parentId?: string | null;
+  lessons: LessonTreeItemDto[];
+  children: ChapterWithLessonsTreeItemDto[];
+};
+
+type GetLessonChapterTreeResponse = {
+  message: string;
+  data: {
+    items: ChapterWithLessonsTreeItemDto[];
+  };
+};
+
+export const getLessonChapterTree = async (
+  courseSlug: string
+): Promise<ChapterWithLessonsTreeItemDto[]> => {
+  const response = await get<GetLessonChapterTreeResponse>(
+    `/api/lesson/lesson-chapter-tree/${courseSlug}`,
+    undefined
+  );
+
+  if (response.status === 200) {
+    return (response.payload as GetLessonChapterTreeResponse).data.items;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get lesson chapter tree"
+    );
+  }
+};
+
+type GetLessonBySlugForStudentResponse = {
+  message: string;
+  data: {
+    id: string;
+    title: string;
+    slug: string;
+    description?: string | null;
+    position: number;
+    isFree: boolean;
+    viewCount: number;
+    videoLesson?: {
+      id: string;
+      videoId: string;
+      embedUrl: string;
+      duration: number | null;
+    } | null;
+    files?: {
+      id: string;
+      fileUrl: string;
+      fileName: string;
+      fileSize: number;
+    }[];
+    progress: "not_started" | "in_progress" | "completed";
+    chapter: {
+      id: string;
+      title: string;
+      slug: string;
+      course: {
+        id: string;
+        slug: string;
+        title: string;
+      };
+    };
+    createdAt: string;
+    updatedAt?: string | null;
+  };
+};
+
+export const getLessonBySlugForStudent = async (
+  lessonSlug: string
+): Promise<GetLessonBySlugForStudentResponse["data"]> => {
+  const response = await get<GetLessonBySlugForStudentResponse>(
+    `/api/lesson/${lessonSlug}`,
+    undefined
+  );
+
+  if (response.status === 200) {
+    return (response.payload as GetLessonBySlugForStudentResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get lesson"
+    );
+  }
+};
+

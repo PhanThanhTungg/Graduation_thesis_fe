@@ -19,7 +19,7 @@ export function LessonTabs({ activeTab, onTabChange }: LessonTabsProps) {
   ];
 
   return (
-    <div className="border-b bg-white">
+    <div className="border-b border-[--color-border] bg-[--color-card]">
       <div className="flex gap-8 px-6">
         {tabs.map((tab) => (
           <button

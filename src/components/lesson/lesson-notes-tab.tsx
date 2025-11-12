@@ -65,7 +65,7 @@ export function LessonNotesTab({ lessonId }: LessonNotesTabProps) {
   return (
     <div className="p-6 space-y-6">
       {/* Add Note Section */}
-      <div className="bg-gray-50 rounded-lg p-6">
+      <div className="bg-[--color-muted] rounded-lg p-6">
         <h3 className="font-heading text-lg font-semibold mb-4">Add a Note</h3>
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-[--color-muted-foreground]">
@@ -97,7 +97,7 @@ export function LessonNotesTab({ lessonId }: LessonNotesTabProps) {
         </h3>
 
         {notes.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-center py-12 bg-[--color-muted] rounded-lg">
             <BookOpen className="w-12 h-12 mx-auto text-[--color-muted-foreground] mb-3" />
             <p className="text-[--color-muted-foreground]">
               No notes yet. Start taking notes to remember important points!
@@ -108,7 +108,7 @@ export function LessonNotesTab({ lessonId }: LessonNotesTabProps) {
             {notes.map((note) => (
               <div
                 key={note.id}
-                className="bg-white border rounded-lg p-4 hover:shadow-sm transition-shadow"
+                className="bg-[--color-card] border border-[--color-border] rounded-lg p-4 hover:shadow-sm transition-shadow"
               >
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="flex items-center gap-3">
@@ -123,7 +123,7 @@ export function LessonNotesTab({ lessonId }: LessonNotesTabProps) {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleDeleteNote(note.id)}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

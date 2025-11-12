@@ -59,19 +59,19 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[--color-background] flex flex-col">
       {/* Top Navigation */}
-      <div className="bg-white border-b sticky top-0 z-40">
+      <div className="bg-[--color-card] border-b border-[--color-border] sticky top-0 z-40">
         <div className="px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link
-              href={`/courses/${course.slug}`}
+              href={`/course/${course.slug}`}
               className="flex items-center gap-2 text-[--color-muted-foreground] hover:text-foreground transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
               <span className="font-medium">Back to Course</span>
             </Link>
-            <div className="h-6 w-px bg-gray-300" />
+            <div className="h-6 w-px bg-[--color-border]" />
             <h1 className="font-heading text-lg font-semibold line-clamp-1">
               {course.title}
             </h1>
@@ -122,7 +122,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
           </div>
 
           {/* Tabs and Content */}
-          <div className="flex-1 overflow-y-auto bg-white">
+          <div className="flex-1 overflow-y-auto bg-[--color-background]">
             <div className="max-w-6xl mx-auto">
               <LessonTabs activeTab={activeTab} onTabChange={setActiveTab} />
               <div className="pb-8">{renderTabContent()}</div>
@@ -133,7 +133,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         {/* Sidebar */}
         <div
           className={cn(
-            "fixed lg:fixed right-0 top-[73px] bottom-0 w-96 bg-white shadow-lg transform transition-transform duration-300 z-30",
+            "fixed lg:fixed right-0 top-[73px] bottom-0 w-96 bg-[--color-card] border-l border-[--color-border] shadow-lg transform transition-transform duration-300 z-30",
             isSidebarOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
@@ -141,6 +141,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
             courseSlug={course.slug}
             sections={curriculum.sections}
             currentLessonId={currentLesson.id}
+            currentLessonSlug={currentLesson.slug}
             totalDuration={curriculum.totalDuration}
             totalLessons={curriculum.totalLessons}
           />

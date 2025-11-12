@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { getCourseBySlug } from "@/service/course.service";
+import { getNextLessonByCourseSlug } from "@/service/lesson.service";
 
 interface CourseDetailPageProps {
   params: {
@@ -24,7 +25,12 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
     return <NotFound />
   }
 
-  const firstLessonUrl = `/courses/${course.slug}`;
+  let nextLessonSlug: string | null = null;
+  try {
+    nextLessonSlug = await getNextLessonByCourseSlug(params.slug);
+  } catch (_e) {
+    nextLessonSlug = null;
+  }
 
   const breadcrumbData: BreadcrumbProps[] = [
     { url: "/", label: "Home" },
@@ -70,7 +76,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
               className="bg-green hover:bg-green/90 text-secondary text-lg font-bold rounded-3xl px-6"
               asChild
             >
-              <Link href={firstLessonUrl}>Start now</Link>
+              <Link href={nextLessonSlug ? `/course/${course.slug}/learn/${nextLessonSlug}` : `/course/${course.slug}/learn`}>Start now</Link>
             </Button>
           </div>
         </section>

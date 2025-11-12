@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const LessonItemSchema = z.object({
   id: z.number(),
+  slug: z.string().optional(),
   title: z.string(),
   duration: z.string(),
   type: z.enum(["video", "quiz", "assignment", "reading"]),
@@ -14,13 +15,21 @@ export const LessonItemSchema = z.object({
 
 export type LessonItemType = z.infer<typeof LessonItemSchema>;
 
-export const SectionSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  lessons: z.array(LessonItemSchema),
-}).strip();
+export const SectionSchema: z.ZodType<SectionType> = z.lazy(() =>
+  z.object({
+    id: z.number(),
+    title: z.string(),
+    lessons: z.array(LessonItemSchema),
+    children: z.array(SectionSchema).optional(),
+  }).strip()
+);
 
-export type SectionType = z.infer<typeof SectionSchema>;
+export type SectionType = {
+  id: number;
+  title: string;
+  lessons: LessonItemType[];
+  children?: SectionType[];
+};
 
 export const CourseCurriculumSchema = z.object({
   courseId: z.number(),

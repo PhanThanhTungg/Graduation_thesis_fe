@@ -87,7 +87,7 @@ export function LessonAnnouncementsTab({ courseId }: LessonAnnouncementsTabProps
       </div>
 
       {announcements.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
+        <div className="text-center py-12 bg-[--color-muted] rounded-lg">
           <Bell className="w-12 h-12 mx-auto text-[--color-muted-foreground] mb-3" />
           <p className="text-[--color-muted-foreground]">
             No announcements yet. Check back later for updates!
@@ -98,7 +98,7 @@ export function LessonAnnouncementsTab({ courseId }: LessonAnnouncementsTabProps
           {announcements.map((announcement) => (
             <div
               key={announcement.id}
-              className="bg-white border rounded-lg p-6 hover:shadow-sm transition-shadow"
+              className="bg-[--color-card] border border-[--color-border] rounded-lg p-6 hover:shadow-sm transition-shadow"
             >
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex-1">
