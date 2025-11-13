@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronUp, Lock, PlayCircle, FileText, ClipboardList, BookOpen, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,31 +55,16 @@ function getAllParentSectionIds(
   return [];
 }
 
-function getAllSectionIds(sections: SectionType[]): number[] {
-  const ids: number[] = [];
-  for (const section of sections) {
-    ids.push(section.id);
-    if (section.children) {
-      ids.push(...getAllSectionIds(section.children));
-    }
-  }
-  return ids;
-}
-
 function countSectionLessons(section: SectionType): number {
-  let count = section.lessons.length;
-  if (section.children) {
-    count += section.children.reduce((sum, child) => sum + countSectionLessons(child), 0);
-  }
-  return count;
+  const directLessons = section.lessons.length;
+  const childLessons = section.children?.reduce((sum, child) => sum + countSectionLessons(child), 0) ?? 0;
+  return directLessons + childLessons;
 }
 
 function countSectionCompletedLessons(section: SectionType): number {
-  let count = section.lessons.filter((l) => l.isCompleted).length;
-  if (section.children) {
-    count += section.children.reduce((sum, child) => sum + countSectionCompletedLessons(child), 0);
-  }
-  return count;
+  const directCompleted = section.lessons.filter((l) => l.isCompleted).length;
+  const childCompleted = section.children?.reduce((sum, child) => sum + countSectionCompletedLessons(child), 0) ?? 0;
+  return directCompleted + childCompleted;
 }
 
 export function LessonSidebar({
@@ -99,52 +84,45 @@ export function LessonSidebar({
     return [];
   });
 
-  const toggleSection = (sectionId: number, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    setExpandedSections((prev) => {
-      const isCurrentlyExpanded = prev.includes(sectionId);
-      if (isCurrentlyExpanded) {
-        return prev.filter((id) => id !== sectionId);
-      } else {
-        return [...prev, sectionId];
-      }
-    });
-  };
+  const toggleSection = useCallback((sectionId: number) => {
+    setExpandedSections((prev) =>
+      prev.includes(sectionId)
+        ? prev.filter((id) => id !== sectionId)
+        : [...prev, sectionId]
+    );
+  }, []);
 
-  const getLessonIcon = (lesson: LessonItemType) => {
+  const completedLessons = useMemo(
+    () => sections.reduce((total, section) => total + countSectionCompletedLessons(section), 0),
+    [sections]
+  );
+
+  const progressPercentage = useMemo(
+    () => (totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0),
+    [completedLessons, totalLessons]
+  );
+
+  const getLessonIcon = useCallback((lesson: LessonItemType) => {
     if (lesson.isCompleted) {
       return <CheckCircle className="w-4 h-4 text-[--color-green]" />;
     }
     
-    switch (lesson.type) {
-      case "video":
-        return <PlayCircle className="w-4 h-4 text-[--color-muted-foreground]" />;
-      case "quiz":
-        return <ClipboardList className="w-4 h-4 text-[--color-muted-foreground]" />;
-      case "assignment":
-        return <FileText className="w-4 h-4 text-[--color-muted-foreground]" />;
-      case "reading":
-        return <BookOpen className="w-4 h-4 text-[--color-muted-foreground]" />;
-      default:
-        return <PlayCircle className="w-4 h-4 text-[--color-muted-foreground]" />;
-    }
-  };
-
-  const completedLessons = sections.reduce(
-    (total, section) => total + countSectionCompletedLessons(section),
-    0
-  );
-
-  const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+    const iconClass = "w-4 h-4 text-[--color-muted-foreground]";
+    const iconMap = {
+      video: <PlayCircle className={iconClass} />,
+      quiz: <ClipboardList className={iconClass} />,
+      assignment: <FileText className={iconClass} />,
+      reading: <BookOpen className={iconClass} />,
+    };
+    
+    return iconMap[lesson.type] ?? <PlayCircle className={iconClass} />;
+  }, []);
 
   const renderSection = (section: SectionType, level: number = 0) => {
     const isExpanded = expandedSections.includes(section.id);
     const sectionTotalLessons = countSectionLessons(section);
     const sectionCompletedLessons = countSectionCompletedLessons(section);
-    const hasChildren = section.children && section.children.length > 0;
+    const hasChildren = Boolean(section.children?.length);
     const hasLessons = section.lessons.length > 0;
     const canExpand = hasChildren || hasLessons;
 
@@ -153,18 +131,13 @@ export function LessonSidebar({
         {/* Section Header */}
         <button
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (canExpand) {
-              toggleSection(section.id, e);
-            }
-          }}
+          onClick={() => canExpand && toggleSection(section.id)}
           className={cn(
             "w-full p-4 flex items-start justify-between transition-colors",
             canExpand && "hover:bg-[--color-muted] cursor-pointer",
             !canExpand && "cursor-default"
           )}
-          style={{ paddingLeft: `${1 + level * 0.75}rem` }}
+          style={{ paddingLeft: `${1 + level * 0.75}rem` } as React.CSSProperties}
         >
           <div className="flex-1 text-left">
             <h3 className="font-heading font-semibold mb-1">{section.title}</h3>
@@ -173,13 +146,11 @@ export function LessonSidebar({
             </p>
           </div>
           {canExpand && (
-            <>
-              {isExpanded ? (
-                <ChevronUp className="w-5 h-5 text-[--color-muted-foreground] flex-shrink-0 mt-0.5" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-[--color-muted-foreground] flex-shrink-0 mt-0.5" />
-              )}
-            </>
+            isExpanded ? (
+              <ChevronUp className="w-5 h-5 text-[--color-muted-foreground] flex-shrink-0 mt-0.5" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-[--color-muted-foreground] flex-shrink-0 mt-0.5" />
+            )
           )}
         </button>
 
@@ -187,15 +158,12 @@ export function LessonSidebar({
         {isExpanded && (
           <div className="bg-[--color-muted]/30">
             {hasChildren ? (
-              section.children && (
-                <div>
-                  {section.children.map((childSection) => renderSection(childSection, level + 1))}
-                </div>
-              )
-            ) : (
-              hasLessons && (
-                <div>
-                  {section.lessons.map((lesson, index) => {
+              <div>
+                {section.children!.map((childSection) => renderSection(childSection, level + 1))}
+              </div>
+            ) : hasLessons ? (
+              <div>
+                {section.lessons.map((lesson, index) => {
                     const isCurrentLesson = lesson.id === currentLessonId || lesson.slug === currentLessonSlug;
                     const prevLesson = index > 0 ? section.lessons[index - 1] : null;
                     const isLocked = !lesson.isPreview && prevLesson && !prevLesson.isCompleted;
@@ -209,7 +177,7 @@ export function LessonSidebar({
                           isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]",
                           isLocked && "cursor-not-allowed opacity-60"
                         )}
-                        style={{ paddingLeft: `${1.5 + level * 0.75}rem` }}
+                        style={{ paddingLeft: `${1.5 + level * 0.75}rem` } as React.CSSProperties}
                         onClick={(e) => isLocked && e.preventDefault()}
                       >
                         <div className="flex-shrink-0 mt-0.5">
@@ -249,9 +217,8 @@ export function LessonSidebar({
                       </Link>
                     );
                   })}
-                </div>
-              )
-            )}
+              </div>
+            ) : null}
           </div>
         )}
       </div>
