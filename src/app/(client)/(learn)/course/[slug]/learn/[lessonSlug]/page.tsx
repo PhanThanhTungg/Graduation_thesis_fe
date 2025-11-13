@@ -22,12 +22,22 @@ function formatDuration(seconds: number | null | undefined): string {
   return `${minutes} min`;
 }
 
+function hashStringToNumber(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
 function transformChapterTree(
   chapters: Awaited<ReturnType<typeof getLessonChapterTree>>
 ): SectionType[] {
   return chapters.map((chapter) => {
     const lessons: LessonItemType[] = chapter.lessons.map((lesson) => ({
-      id: parseInt(lesson.id) || 0,
+      id: hashStringToNumber(lesson.id),
       slug: lesson.slug,
       title: lesson.title,
       duration: formatDuration(lesson.videoLesson?.duration || null),
@@ -40,7 +50,7 @@ function transformChapterTree(
     }));
 
     const section: SectionType = {
-      id: parseInt(chapter.id) || 0,
+      id: hashStringToNumber(chapter.id),
       title: chapter.title,
       lessons,
     };
@@ -122,7 +132,7 @@ export default async function LessonPage({ params }: PageProps) {
   };
 
   const currentLesson: LessonItemType = {
-    id: parseInt(lesson.id) || 0,
+    id: hashStringToNumber(lesson.id),
     slug: lesson.slug,
     title: lesson.title,
     duration: formatDuration(lesson.videoLesson?.duration || null),

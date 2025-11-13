@@ -96,15 +96,22 @@ export function LessonSidebar({
       const parentIds = getAllParentSectionIds(sections, currentSection.id);
       return [...parentIds, currentSection.id];
     }
-    return sections.length > 0 ? [sections[0].id] : [];
+    return [];
   });
 
-  const toggleSection = (sectionId: number) => {
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    );
+  const toggleSection = (sectionId: number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    setExpandedSections((prev) => {
+      const isCurrentlyExpanded = prev.includes(sectionId);
+      if (isCurrentlyExpanded) {
+        return prev.filter((id) => id !== sectionId);
+      } else {
+        return [...prev, sectionId];
+      }
+    });
   };
 
   const getLessonIcon = (lesson: LessonItemType) => {
@@ -145,7 +152,13 @@ export function LessonSidebar({
       <div key={section.id} className="border-b border-[--color-border]">
         {/* Section Header */}
         <button
-          onClick={() => canExpand && toggleSection(section.id)}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (canExpand) {
+              toggleSection(section.id, e);
+            }
+          }}
           className={cn(
             "w-full p-4 flex items-start justify-between transition-colors",
             canExpand && "hover:bg-[--color-muted] cursor-pointer",
@@ -173,71 +186,71 @@ export function LessonSidebar({
         {/* Content when expanded */}
         {isExpanded && (
           <div className="bg-[--color-muted]/30">
-            {/* Render child sections first */}
-            {hasChildren && section.children && (
-              <div>
-                {section.children.map((childSection) => renderSection(childSection, level + 1))}
-              </div>
-            )}
+            {hasChildren ? (
+              section.children && (
+                <div>
+                  {section.children.map((childSection) => renderSection(childSection, level + 1))}
+                </div>
+              )
+            ) : (
+              hasLessons && (
+                <div>
+                  {section.lessons.map((lesson, index) => {
+                    const isCurrentLesson = lesson.id === currentLessonId || lesson.slug === currentLessonSlug;
+                    const prevLesson = index > 0 ? section.lessons[index - 1] : null;
+                    const isLocked = !lesson.isPreview && prevLesson && !prevLesson.isCompleted;
 
-            {/* Render lessons */}
-            {hasLessons && (
-              <div>
-                {section.lessons.map((lesson, index) => {
-                  const isCurrentLesson = lesson.id === currentLessonId || lesson.slug === currentLessonSlug;
-                  const prevLesson = index > 0 ? section.lessons[index - 1] : null;
-                  const isLocked = !lesson.isPreview && prevLesson && !prevLesson.isCompleted;
-
-                  return (
-                    <Link
-                      key={lesson.id}
-                      href={isLocked ? "#" : `/course/${courseSlug}/learn/${lesson.slug || lesson.id}`}
-                      className={cn(
-                        "flex items-start gap-3 p-4 border-t border-[--color-border] hover:bg-[--color-card] transition-colors",
-                        isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]",
-                        isLocked && "cursor-not-allowed opacity-60"
-                      )}
-                      style={{ paddingLeft: `${1.5 + level * 0.75}rem` }}
-                      onClick={(e) => isLocked && e.preventDefault()}
-                    >
-                      <div className="flex-shrink-0 mt-0.5">
-                        {isLocked ? (
-                          <Lock className="w-4 h-4 text-[--color-muted-foreground]" />
-                        ) : (
-                          getLessonIcon(lesson)
+                    return (
+                      <Link
+                        key={lesson.id}
+                        href={isLocked ? "#" : `/course/${courseSlug}/learn/${lesson.slug || lesson.id}`}
+                        className={cn(
+                          "flex items-start gap-3 p-4 border-t border-[--color-border] hover:bg-[--color-card] transition-colors",
+                          isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]",
+                          isLocked && "cursor-not-allowed opacity-60"
                         )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h4
-                          className={cn(
-                            "text-sm font-medium mb-1",
-                            isCurrentLesson && "text-[--color-orange]",
-                            lesson.isCompleted && "text-[--color-green]"
-                          )}
-                        >
-                          {lesson.title}
-                        </h4>
-                        <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
-                          <span className="capitalize">{lesson.type}</span>
-                          <span>•</span>
-                          <span>{lesson.duration}</span>
-                          {lesson.isPreview && (
-                            <>
-                              <span>•</span>
-                              <span className="text-[--color-orange]">Preview</span>
-                            </>
+                        style={{ paddingLeft: `${1.5 + level * 0.75}rem` }}
+                        onClick={(e) => isLocked && e.preventDefault()}
+                      >
+                        <div className="flex-shrink-0 mt-0.5">
+                          {isLocked ? (
+                            <Lock className="w-4 h-4 text-[--color-muted-foreground]" />
+                          ) : (
+                            getLessonIcon(lesson)
                           )}
                         </div>
-                      </div>
 
-                      {lesson.isCompleted && (
-                        <CheckCircle className="w-5 h-5 text-[--color-green] flex-shrink-0" />
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
+                        <div className="flex-1 min-w-0">
+                          <h4
+                            className={cn(
+                              "text-sm font-medium mb-1",
+                              isCurrentLesson && "text-[--color-orange]",
+                              lesson.isCompleted && "text-[--color-green]"
+                            )}
+                          >
+                            {lesson.title}
+                          </h4>
+                          <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
+                            <span className="capitalize">{lesson.type}</span>
+                            <span>•</span>
+                            <span>{lesson.duration}</span>
+                            {lesson.isPreview && (
+                              <>
+                                <span>•</span>
+                                <span className="text-[--color-orange]">Preview</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {lesson.isCompleted && (
+                          <CheckCircle className="w-5 h-5 text-[--color-green] flex-shrink-0" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )
             )}
           </div>
         )}
