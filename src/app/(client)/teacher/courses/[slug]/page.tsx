@@ -1,8 +1,10 @@
 import { Metadata } from "next";
 import { getAllCategories } from "@/service/category.service";
 import { getCourseBySlugTeacherArea } from "@/service/course.service";
+import { getVouchersByCourseId } from "@/service/voucher.service";
 import { EditCourseInfo } from "@/components/teacher/edit-course-info";
 import { ChapterTree } from "@/components/teacher/chapter-tree";
+import { CourseVouchers } from "@/components/teacher/voucher/course-vouchers";
 import NotFound from "@/app/not-found";
 import { notFound } from "next/navigation";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
@@ -34,6 +36,15 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
     notFound();
   }
 
+  // Fetch vouchers for this course
+  let vouchers: Awaited<ReturnType<typeof getVouchersByCourseId>> = [];
+  try {
+    vouchers = await getVouchersByCourseId(course.id.toString());
+  } catch (error) {
+    console.error("Failed to fetch vouchers:", error);
+    // Don't block page render if vouchers fail to load
+  }
+
   const breadcrumbData: BreadcrumbProps[] = [
     { url: "/teacher", label: "Teacher" },
     { url: "/teacher/courses", label: "Courses" },
@@ -53,6 +64,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
           </div>
           <EditCourseInfo course={course} categories={categories} />
           <ChapterTree courseSlug={course.slug} courseId={course.id.toString()} />
+          <CourseVouchers courseId={course.id.toString()} coursePrice={course.price} vouchers={vouchers} />
         </div>
       </section>
     </>
