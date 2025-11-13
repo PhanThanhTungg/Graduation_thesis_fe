@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, Lock, PlayCircle, FileText, ClipboardList, BookOpen, CheckCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, PlayCircle, FileText, ClipboardList, BookOpen, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionType, LessonItemType } from "@/schema/lesson.schema";
 
@@ -165,27 +165,19 @@ export function LessonSidebar({
               <div>
                 {section.lessons.map((lesson, index) => {
                     const isCurrentLesson = lesson.id === currentLessonId || lesson.slug === currentLessonSlug;
-                    const prevLesson = index > 0 ? section.lessons[index - 1] : null;
-                    const isLocked = !lesson.isPreview && prevLesson && !prevLesson.isCompleted;
 
                     return (
                       <Link
                         key={lesson.id}
-                        href={isLocked ? "#" : `/course/${courseSlug}/learn/${lesson.slug || lesson.id}`}
+                        href={`/course/${courseSlug}/learn/${lesson.slug || lesson.id}`}
                         className={cn(
                           "flex items-start gap-3 p-4 border-t border-[--color-border] hover:bg-[--color-card] transition-colors",
-                          isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]",
-                          isLocked && "cursor-not-allowed opacity-60"
+                          isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]"
                         )}
                         style={{ paddingLeft: `${1.5 + level * 0.75}rem` } as React.CSSProperties}
-                        onClick={(e) => isLocked && e.preventDefault()}
                       >
                         <div className="flex-shrink-0 mt-0.5">
-                          {isLocked ? (
-                            <Lock className="w-4 h-4 text-[--color-muted-foreground]" />
-                          ) : (
-                            getLessonIcon(lesson)
-                          )}
+                          {getLessonIcon(lesson)}
                         </div>
 
                         <div className="flex-1 min-w-0">

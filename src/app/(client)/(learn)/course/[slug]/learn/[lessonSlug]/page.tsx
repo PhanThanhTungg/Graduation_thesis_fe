@@ -13,13 +13,29 @@ interface PageProps {
 }
 
 function formatDuration(seconds: number | null | undefined): string {
-  if (!seconds) return "0 min";
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
+  if (!seconds || seconds === 0) return "0 min";
+  
+  const totalMinutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  
   if (hours > 0) {
-    return `${hours}h ${minutes % 60}min`;
+    if (minutes > 0) {
+      return `${hours}h ${minutes}min`;
+    }
+    return `${hours}h`;
   }
-  return `${minutes} min`;
+  
+  if (totalMinutes === 0 && remainingSeconds > 0) {
+    return `${remainingSeconds} sec`;
+  }
+  
+  if (minutes > 0) {
+    return `${minutes} min`;
+  }
+  
+  return "0 min";
 }
 
 function hashStringToNumber(str: string): number {
