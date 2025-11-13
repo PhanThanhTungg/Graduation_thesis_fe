@@ -2,7 +2,7 @@ import { mockCourses, testimonials, articles } from "@/lib/mockData";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, GraduationCap, TrendingUp, Star, PlayCircle, CheckCircle } from "lucide-react";
+import { BookOpen, Users, GraduationCap, TrendingUp, Star, PlayCircle, CheckCircle, Brain, RefreshCw, Sparkles, Shield, Target, Zap, ArrowRight, Globe, Clock } from "lucide-react";
 import CourseCard from "@/components/custom/course-card";
 import Logo from "@/components/custom/logo";
 import ArticleCard from "@/components/custom/article-card";
@@ -26,20 +26,7 @@ export const metadata: Metadata = {
   category: "education"
 }
 
-export default async function HomePage() {
-  const categories = await getAllCategories();
-  const featuredCourses = mockCourses.slice(0, 6);
-
-  const iconList = [
-    <BookOpen className="size-8 text-green" key="book" />,
-    <Users className="size-8 text-green" key="users" />,
-    <GraduationCap className="size-8 text-green" key="grad" />,
-    <PlayCircle className="size-8 text-green" key="play" />,
-    <TrendingUp className="size-8 text-green" key="trend" />,
-    <Star className="size-8 text-green" key="star" />,
-  ];
-  
-  const getCategoryIcon = (index: number) => iconList[index % iconList.length];
+export default function HomePage() {
 
   return (
     <>
@@ -58,57 +45,9 @@ export default async function HomePage() {
             <h1 className="text-3xl md:text-4xl font-semibold text-black">Aikabis: <br/> Your learning platform</h1>
             <p className="text-muted-foreground">Online training solutions help your business thrive.</p>
             <Button size="lg" className="bg-green text-white w-fit">
-              Get Started
+              <Link href='/courses'>Get Started</Link>
             </Button>
           </div>
-        </div>
-      </section>
-
-      {/* Top Categories */}
-      <section className="py-16 bg-background container-lg">
-        <div className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Top Categories</h2>
-            <p className="text-muted-foreground">Explore our Popular Categories</p>
-          </div>
-          <Button variant="outline" className="hidden md:inline-flex">
-            All Categories
-          </Button>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categories.slice(0, 10).map((category, index) => (
-            <Link
-              key={category.id}
-              href={`/categories/${category.slug}`}
-              className="group h-full"
-            >
-              <div className="bg-card border rounded-lg p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div className="flex justify-center mb-4">
-                  {getCategoryIcon(index)}
-                </div>
-                <h3 className="font-semibold text-foreground mb-2 truncate">{category.title}</h3>
-                <p className="text-sm text-muted-foreground">View Courses</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Courses */}
-      <section className="py-16 bg-muted/30 container-lg">
-        <div className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Featured Courses</h2>
-            <p className="text-muted-foreground">Explore our Popular Courses</p>
-          </div>
-          <Button variant="outline" className="hidden md:inline-flex">
-            All Courses
-          </Button>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredCourses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
         </div>
       </section>
 
@@ -184,37 +123,13 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
-            <Button size="lg" className="bg-green text-white">
-              Start Learning Now
+            <Button size="lg" className="bg-green text-secondary">
+              <Link href="/my-learning">Start Learning Now</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Education WordPress Theme */}
-      <section className="py-16 bg-background container-lg">
-        <div className="bg-gradient-to-r from-peach via-violet to-peach rounded-2xl p-8 md:p-12 text-center relative overflow-hidden">
-          <div className="max-w-3xl mx-auto">
-            <div className="inline-block px-4 py-2 bg-background/80 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
-              AMAZING COURSE
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              C++ Programming for Beginners
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Learn the basics of C++ programming with this beginner-friendly course.
-            </p>
-            <Button size="lg" className="bg-orange hover:bg-orange-500 text-white">
-              Purchase Now
-            </Button>
-          </div>
-          <div className="absolute right-8 top-8">
-            <div className="size-32 bg-yellow rounded-full flex items-center justify-center text-2xl font-bold transform rotate-12">
-              50% OFF
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Student Feedbacks */}
       <section className="py-16 bg-muted/30 container-lg">
@@ -249,21 +164,197 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Latest Articles */}
-      <section className="py-16 bg-background container-lg">
-        <div className="flex justify-between items-center mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Latest Articles</h2>
-            <p className="text-muted-foreground">Explore our Free Articles</p>
+      {/* Core Values Section */}
+      <section className="py-16 md:py-24 bg-background">
+        <div className="container-lg">
+          <div className="text-center mb-16">
+            <div className="inline-block px-4 py-2 bg-green/10 rounded-full text-sm font-medium text-green mb-4">
+              OUR CORE VALUES
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Why Aikabis is Different
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              We combine cutting-edge technology with proven learning methodologies 
+              to create the most effective learning experience
+            </p>
           </div>
-          <Button variant="outline" className="hidden md:inline-flex">
-            All Articles
-          </Button>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Spaced Repetition Learning */}
+            <div className="group relative p-8 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green to-mint opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="relative">
+                <div className="size-14 rounded-xl bg-gradient-to-br from-green to-mint flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <RefreshCw className="size-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Spaced Repetition Learning</h3>
+                <p className="text-muted-foreground mb-4">
+                  Our platform uses scientifically-proven spaced repetition techniques to help you retain knowledge longer. 
+                  Review materials at optimal intervals to maximize memory retention and learning efficiency.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Automated review scheduling</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Personalized learning intervals</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Progress tracking & analytics</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* AI-Powered Learning */}
+            <div className="group relative p-8 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-mint to-peach opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="relative">
+                <div className="size-14 rounded-xl bg-gradient-to-br from-mint to-peach flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Brain className="size-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">AI-Powered Assistance</h3>
+                <p className="text-muted-foreground mb-4">
+                  Learn smarter with our AI assistant that provides instant answers, personalized recommendations, 
+                  and adaptive learning paths tailored to your unique learning style and pace.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>24/7 AI tutor support</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Personalized course recommendations</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Intelligent doubt resolution</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Interactive Learning */}
+            <div className="group relative p-8 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-peach to-orange opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="relative">
+                <div className="size-14 rounded-xl bg-gradient-to-br from-peach to-orange flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Target className="size-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Interactive Exercises</h3>
+                <p className="text-muted-foreground mb-4">
+                  Engage with hands-on projects, coding challenges, and interactive quizzes. 
+                  Apply what you learn immediately to reinforce understanding and build real-world skills.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Real-world projects & case studies</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Interactive coding environments</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Instant feedback & solutions</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Quality Content */}
+            <div className="group relative p-8 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange to-violet opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="relative">
+                <div className="size-14 rounded-xl bg-gradient-to-br from-orange to-violet flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Sparkles className="size-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Premium Quality Content</h3>
+                <p className="text-muted-foreground mb-4">
+                  Every course is carefully crafted by industry experts and reviewed for quality. 
+                  Learn from real professionals with years of experience in their fields.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Industry-leading instructors</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Up-to-date content & curriculum</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>HD video & downloadable resources</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Secure Platform */}
+            <div className="group relative p-8 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet to-green opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="relative">
+                <div className="size-14 rounded-xl bg-gradient-to-br from-violet to-green flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Shield className="size-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Secure & Reliable</h3>
+                <p className="text-muted-foreground mb-4">
+                  Your data and privacy are our top priorities. We use enterprise-grade security 
+                  to protect your information and ensure a safe learning environment.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>SSL encrypted connections</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>GDPR compliant data handling</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>99.9% uptime guarantee</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Global Community */}
+            <div className="group relative p-8 rounded-2xl border bg-card hover:shadow-xl transition-all duration-300 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green to-peach opacity-0 group-hover:opacity-5 transition-opacity" />
+              <div className="relative">
+                <div className="size-14 rounded-xl bg-gradient-to-br from-green to-peach flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Globe className="size-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Global Learning Community</h3>
+                <p className="text-muted-foreground mb-4">
+                  Connect with learners worldwide, join study groups, participate in discussions, 
+                  and build your professional network while learning together.
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Active discussion forums</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Peer-to-peer learning</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="size-4 text-green shrink-0 mt-0.5" />
+                    <span>Networking opportunities</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </>

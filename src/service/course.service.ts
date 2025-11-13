@@ -1,7 +1,9 @@
 import { get, patch, post, del } from "@/lib/request";
-import { CreateCourseBodySchema, CourseType, ExtendedCourseType } from "@/schema/course.schema";
+import { CreateCourseBodySchema, CourseType, ExtendedCourseType, GetAllCourseResponseType, DetailCourseType, GetCourseBySlugResponseType } from "@/schema/course.schema";
 import { ChapterTreeItemType } from "@/schema/chapter.schema";
 import { z } from "zod";
+import { redirect } from "next/navigation";
+import { PaginationType } from "@/schema/helpers.schema";
 
 type CreateCourseBody = z.infer<typeof CreateCourseBodySchema>;
 
@@ -237,112 +239,17 @@ export const updateCourseStatus = async (
   }
 };
 
-type GetCourseBySlugResponse = {
-  message: string;
-  data: {
-    id: string;
-    title: string;
-    thumbnailUrl: string | null;
-    price: number;
-    slug: string;
-    isPublished: boolean;
-    countStudent: number;
-    createdAt: string;
-    updatedAt: string | null;
-    teacher: {
-      id: string;
-      fullName: string;
-      email: string;
-      avatarUrl: string | null;
-      role: string;
-      emailVerified: boolean;
-      status: string;
-      country: string;
-    };
-    courseDescription: {
-      headline: string | null;
-      targetKnowledges: string[];
-      requirement: string[];
-      suitableParticipant: string[];
-      detail: string | null;
-    } | null;
-    category: {
-      id: string;
-      title: string | null;
-      slug: string | null;
-    };
-  };
-};
-
-export const getCourseBySlug = async (
-  slug: string
-): Promise<ExtendedCourseType> => {
-  const response = await get<GetCourseBySlugResponse>(
-    `/api/course/${slug}`,
+export const getCourseBySlug = async (slug: string): Promise<DetailCourseType | null> => {
+  const response = await get<GetCourseBySlugResponseType>(
+    `api/course/${slug}`,
     undefined
-  );
-
-  if (response.status === 200) {
-    const course = (response.payload as GetCourseBySlugResponse).data;
-    const courseDescription = course.courseDescription
-      ? {
-          headline: course.courseDescription.headline || undefined,
-          targetKnowledges: course.courseDescription.targetKnowledges || undefined,
-          requirements: course.courseDescription.requirement || undefined,
-          suitableParticipants: course.courseDescription.suitableParticipant || undefined,
-          detail: course.courseDescription.detail || undefined,
-        }
-      : {
-          headline: undefined,
-          targetKnowledges: undefined,
-          requirements: undefined,
-          suitableParticipants: undefined,
-          detail: undefined,
-        };
-
-    return {
-      id: 1,
-      title: course.title,
-      courseDescription,
-      thumbnailUrl: course.thumbnailUrl || undefined,
-      price: course.price,
-      teacher: {
-        id: course.teacher.id,
-        fullName: course.teacher.fullName,
-        email: course.teacher.email,
-        role: course.teacher.role as "teacher" | "student",
-        emailVerified: course.teacher.emailVerified,
-        avatarUrl: course.teacher.avatarUrl,
-        status: course.teacher.status as "active" | "inactive" | "banned",
-        country: course.teacher.country as any,
-      },
-      rating: 5.0,
-      slug: course.slug,
-      isPublished: course.isPublished,
-      updatedAt: course.updatedAt ? new Date(course.updatedAt) : new Date(),
-      countStudent: course.countStudent,
-      category: course.category
-        ? {
-            id: course.category.id,
-            parentId: null,
-            title: course.category.title || "",
-            slug: course.category.slug || "",
-          }
-        : {
-            id: "",
-            parentId: null,
-            title: "",
-            slug: "",
-          },
-    };
+  )
+  if (response.status === 200 && 'data' in response.payload) {
+    return response.payload.data;
   } else {
-    throw new Error(
-      "payload" in response.payload && "message" in response.payload
-        ? response.payload.message
-        : "Failed to get course"
-    );
+    return null;
   }
-};
+}
 
 type GetCourseByIdRawResponse = {
   message: string;
@@ -672,141 +579,21 @@ export const createChapterById = async (
   }
 };
 
-type GetAllCoursesResponse = {
-  message: string;
-  data: {
-    items: Array<{
-      id: string;
-      title: string;
-      thumbnailUrl: string | null;
-      price: number;
-      slug: string;
-      isPublished: boolean;
-      countStudent: number;
-      createdAt: string;
-      updatedAt: string | null;
-      teacher: {
-        id: string;
-        fullName: string;
-      };
-      courseDescription: {
-        id: string;
-        headline: string | null;
-        targetKnowledges: string | null;
-        requirement: string | null;
-        suitableParticipant: string | null;
-        detail: string | null;
-      } | null;
-      category: {
-        id: string;
-        title: string | null;
-        slug: string | null;
-      };
-    }>;
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  };
-};
-
-type GetAllCoursesParams = {
-  keySearch?: string;
-  sortField?: string;
-  sortOrder?: "asc" | "desc";
-  page?: number;
-  limit?: number;
-};
-
-export const getAllCourses = async (
-  params?: GetAllCoursesParams
-): Promise<{ courses: CourseType[]; pagination: GetAllCoursesResponse["data"]["pagination"] }> => {
-  const queryParams: Record<string, string> = {};
-  
-  if (params?.keySearch) {
-    queryParams.keySearch = params.keySearch;
-  }
-  if (params?.sortField) {
-    queryParams.sortField = params.sortField;
-  }
-  if (params?.sortOrder) {
-    queryParams.sortOrder = params.sortOrder;
-  }
-  if (params?.page) {
-    queryParams.page = params.page.toString();
-  }
-  if (params?.limit) {
-    queryParams.limit = params.limit.toString();
-  }
-
-  const response = await get<GetAllCoursesResponse>(
-    "/api/course",
-    Object.keys(queryParams).length > 0 ? queryParams : undefined
+export const getAllCourses = async (params: Record<string, any>): Promise<{ items: ExtendedCourseType[]; pagination: PaginationType }> => {
+  const response = await get<GetAllCourseResponseType>(
+    '/api/course',
+    params
   );
-
   if (response.status === 200) {
-    const payload = response.payload as GetAllCoursesResponse;
-    const courses: CourseType[] = payload.data.items.map((course, index) => {
-      const courseDescription = course.courseDescription
-        ? {
-            headline: course.courseDescription.headline || undefined,
-            targetKnowledges: course.courseDescription.targetKnowledges
-              ? course.courseDescription.targetKnowledges.split("&&&")
-              : undefined,
-            requirements: course.courseDescription.requirement
-              ? course.courseDescription.requirement.split("&&&")
-              : undefined,
-            suitableParticipants: course.courseDescription.suitableParticipant
-              ? course.courseDescription.suitableParticipant.split("&&&")
-              : undefined,
-            detail: course.courseDescription.detail || undefined,
-          }
-        : {
-            headline: undefined,
-            targetKnowledges: undefined,
-            requirements: undefined,
-            suitableParticipants: undefined,
-            detail: undefined,
-          };
-
-      return {
-        id: index + 1,
-        title: course.title,
-        courseDescription,
-        thumbnailUrl: course.thumbnailUrl || undefined,
-        price: course.price,
-        teacher: {
-          id: course.teacher.id,
-          fullName: course.teacher.fullName,
-          email: "",
-          role: "teacher" as const,
-          emailVerified: false,
-          avatarUrl: null,
-          status: "active" as const,
-          country: "Vietnam" as const,
-        },
-        rating: 5.0,
-        slug: course.slug,
-        isPublished: course.isPublished,
-        updatedAt: course.updatedAt ? new Date(course.updatedAt) : new Date(),
-        countStudent: course.countStudent,
-      };
-    });
-
+    const payload = response.payload as GetAllCourseResponseType;
     return {
-      courses,
-      pagination: payload.data.pagination,
+      items: payload.data.items,
+      pagination: payload.data.pagination
     };
   } else {
-    throw new Error(
-      "payload" in response.payload && "message" in response.payload
-        ? response.payload.message
-        : "Failed to get courses"
-    );
+    redirect('/error-fetch-data')
   }
-};
+}
 
 type UpdateChapterResponse = {
   message: string;

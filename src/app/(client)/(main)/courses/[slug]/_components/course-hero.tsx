@@ -35,16 +35,8 @@ export default function CourseHero({ course }: CourseHeroProps) {
           {/* Course Meta */}
           <div className="flex items-center gap-5 text-sm">
             <div className="flex items-center gap-2">
-              <Clock className="size-4 text-green" />
-              <span>2 Weeks</span>
-            </div>
-            <div className="flex items-center gap-2">
               <Users className="size-4 text-green" />
               <span>{course.countStudent} Students</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User className="size-4 text-green" />
-              <span>All levels</span>
             </div>
             <div className="flex items-center gap-2">
               <BookOpen className="size-4 text-green" />

@@ -1,6 +1,7 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarFallback } from "@/lib/helpers";
 import { TeacherType } from "@/schema/user.schema";
-import { Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
-import Image from "next/image";
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, Globe } from "lucide-react";
 
 interface InstructorTabProps {
   instructor: TeacherType;
@@ -11,15 +12,10 @@ export default function InstructorTab({ instructor }: InstructorTabProps) {
     <div className="bg-card border border-t-0 border-border rounded-bl-[20px] rounded-br-[20px] p-[25px]">
       <div className="flex gap-[25px] mb-6">
         {/* Instructor Avatar */}
-        <div className="relative w-[150px] h-[150px] flex-shrink-0 rounded-full overflow-hidden bg-muted">
-          <Image
-            src={instructor.avatarUrl || "/placeholder-avatar.jpg"}
-            alt={instructor.fullName}
-            fill
-            sizes="150px"
-            className="object-cover"
-          />
-        </div>
+        <Avatar className="size-23">
+          <AvatarImage src={instructor.avatarUrl || ""} />
+          <AvatarFallback>{getAvatarFallback(instructor.fullName)}</AvatarFallback>
+        </Avatar>
 
         {/* Instructor Info */}
         <div className="flex-1">
@@ -27,21 +23,16 @@ export default function InstructorTab({ instructor }: InstructorTabProps) {
             {instructor.fullName}
           </h3>
           <p className="text-base text-foreground leading-relaxed mb-3">
-            LearnPress is a comprehensive WordPress LMS Plugin for WordPress. This is one of the best
-            WordPress LMS Plugins which can be used to easily create & sell courses online.
+            {instructor.headline || "This instructor has not provided a headline yet."}
           </p>
           <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
             <span>📧 {instructor.email}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span>📱 +1234567890</span>
           </div>
         </div>
       </div>
 
       <p className="text-base text-foreground leading-relaxed mb-5">
-        LearnPress is a comprehensive WordPress LMS Plugin for WordPress. This is one of the best WordPress
-        LMS Plugins which can be used to easily create & sell courses online.
+        {instructor.bio || "This instructor has not provided a bio yet."}
       </p>
 
       {/* Social Links */}
@@ -49,35 +40,28 @@ export default function InstructorTab({ instructor }: InstructorTabProps) {
         <span className="text-base text-foreground font-medium">Follow:</span>
         <div className="flex items-center gap-4">
           <a
-            href="#"
+            href={instructor.website || "#"}
+            className="size-5 text-muted-foreground hover:text-orange transition-colors"
+            aria-label="Website"
+          >
+            <Globe className="size-5" />
+          </a>
+          <a
+            href={instructor.facebook || "#"}
             className="size-5 text-muted-foreground hover:text-orange transition-colors"
             aria-label="Facebook"
           >
             <Facebook className="size-5" />
           </a>
           <a
-            href="#"
-            className="size-5 text-muted-foreground hover:text-orange transition-colors"
-            aria-label="Twitter"
-          >
-            <Twitter className="size-5" />
-          </a>
-          <a
-            href="#"
-            className="size-5 text-muted-foreground hover:text-orange transition-colors"
-            aria-label="Instagram"
-          >
-            <Instagram className="size-5" />
-          </a>
-          <a
-            href="#"
+            href={instructor.linkedin || "#"}
             className="size-5 text-muted-foreground hover:text-orange transition-colors"
             aria-label="LinkedIn"
           >
             <Linkedin className="size-5" />
           </a>
           <a
-            href="#"
+            href={instructor.youtube || "#"}
             className="size-5 text-muted-foreground hover:text-orange transition-colors"
             aria-label="YouTube"
           >
