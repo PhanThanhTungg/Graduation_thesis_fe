@@ -79,7 +79,7 @@ export function LessonReviewsTab({ courseId }: LessonReviewsTabProps) {
   return (
     <div className="p-6">
       {/* Rating Overview */}
-      <div className="mb-8 pb-6 border-b">
+      <div className="mb-8 pb-6 border-b border-[--color-border]">
         <h2 className="font-heading text-2xl font-semibold mb-4">Student Reviews</h2>
         <div className="flex items-center gap-6">
           <div className="text-center">
@@ -91,7 +91,7 @@ export function LessonReviewsTab({ courseId }: LessonReviewsTabProps) {
                   className={`w-5 h-5 ${
                     star <= Math.round(averageRating)
                       ? "fill-[--color-star] text-[--color-star]"
-                      : "text-gray-300"
+                      : "text-[--color-muted-foreground]"
                   }`}
                 />
               ))}
@@ -112,7 +112,7 @@ export function LessonReviewsTab({ courseId }: LessonReviewsTabProps) {
                     <span className="text-sm">{rating}</span>
                     <Star className="w-4 h-4 fill-[--color-star] text-[--color-star]" />
                   </div>
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-[--color-muted] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-[--color-star]"
                       style={{ width: `${percentage}%` }}
@@ -131,7 +131,7 @@ export function LessonReviewsTab({ courseId }: LessonReviewsTabProps) {
       {/* Reviews List */}
       <div className="space-y-6">
         {reviews.map((review) => (
-          <div key={review.id} className="pb-6 border-b last:border-0">
+          <div key={review.id} className="pb-6 border-b border-[--color-border] last:border-0">
             <div className="flex items-start gap-4">
               <Avatar className="w-12 h-12">
                 <AvatarImage src={review.userAvatar} alt={review.userName} />
@@ -150,11 +150,11 @@ export function LessonReviewsTab({ courseId }: LessonReviewsTabProps) {
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
                         key={star}
-                        className={`w-4 h-4 ${
-                          star <= review.rating
-                            ? "fill-[--color-star] text-[--color-star]"
-                            : "text-gray-300"
-                        }`}
+                      className={`w-4 h-4 ${
+                        star <= review.rating
+                          ? "fill-[--color-star] text-[--color-star]"
+                          : "text-[--color-muted-foreground]"
+                      }`}
                       />
                     ))}
                   </div>

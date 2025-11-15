@@ -21,7 +21,7 @@ export function LessonOverviewTab({ lesson, courseDescription }: LessonOverviewT
       </div>
 
       {courseDescription && (
-        <div className="pt-6 border-t">
+        <div className="pt-6 border-t border-[--color-border]">
           <h3 className="font-heading text-xl font-semibold mb-3">Course Overview</h3>
           <div className="prose max-w-none">
             <p className="text-[--color-muted-foreground] leading-relaxed">
@@ -31,18 +31,18 @@ export function LessonOverviewTab({ lesson, courseDescription }: LessonOverviewT
         </div>
       )}
 
-      <div className="pt-6 border-t">
+      <div className="pt-6 border-t border-[--color-border]">
         <h3 className="font-heading text-xl font-semibold mb-3">Lesson Details</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-[--color-muted] rounded-lg">
             <p className="text-sm text-[--color-muted-foreground] mb-1">Type</p>
             <p className="font-medium capitalize">{lesson.type}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-[--color-muted] rounded-lg">
             <p className="text-sm text-[--color-muted-foreground] mb-1">Duration</p>
             <p className="font-medium">{lesson.duration}</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-[--color-muted] rounded-lg">
             <p className="text-sm text-[--color-muted-foreground] mb-1">Status</p>
             <p className="font-medium">
               {lesson.isCompleted ? (
@@ -52,7 +52,7 @@ export function LessonOverviewTab({ lesson, courseDescription }: LessonOverviewT
               )}
             </p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-[--color-muted] rounded-lg">
             <p className="text-sm text-[--color-muted-foreground] mb-1">Access</p>
             <p className="font-medium">
               {lesson.isPreview ? (

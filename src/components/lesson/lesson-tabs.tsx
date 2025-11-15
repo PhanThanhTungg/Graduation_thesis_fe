@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { cn } from "@/lib/utils";
 
-export type LessonTabId = "overview" | "notes" | "announcements" | "reviews";
+export type LessonTabId = "overview" | "notes" | "files";
 
 interface LessonTabsProps {
   activeTab: LessonTabId;
@@ -14,12 +14,11 @@ export function LessonTabs({ activeTab, onTabChange }: LessonTabsProps) {
   const tabs: { id: LessonTabId; label: string }[] = [
     { id: "overview", label: "Overview" },
     { id: "notes", label: "Notes" },
-    { id: "announcements", label: "Announcements" },
-    { id: "reviews", label: "Reviews" },
+    { id: "files", label: "Files" },
   ];
 
   return (
-    <div className="border-b bg-white">
+    <div className="border-b border-[--color-border] bg-[--color-card]">
       <div className="flex gap-8 px-6">
         {tabs.map((tab) => (
           <button

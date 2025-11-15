@@ -10,8 +10,7 @@ import {
   LessonTabs,
   LessonOverviewTab,
   LessonNotesTab,
-  LessonAnnouncementsTab,
-  LessonReviewsTab,
+  LessonFilesTab,
   type LessonTabId,
 } from "@/components/lesson";
 import { CourseType } from "@/schema/course.schema";
@@ -49,19 +48,17 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         );
       case "notes":
         return <LessonNotesTab lessonId={currentLesson.id} />;
-      case "announcements":
-        return <LessonAnnouncementsTab courseId={course.id} />;
-      case "reviews":
-        return <LessonReviewsTab courseId={course.id} />;
+      case "files":
+        return <LessonFilesTab files={currentLesson.files} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[--color-background] flex flex-col">
       {/* Top Navigation */}
-      <div className="bg-white border-b sticky top-0 z-40">
+      <div className="bg-[--color-card] border-b border-[--color-border] sticky top-0 z-40">
         <div className="px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link
@@ -71,7 +68,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
               <ChevronLeft className="w-5 h-5" />
               <span className="font-medium">Back to Course</span>
             </Link>
-            <div className="h-6 w-px bg-gray-300" />
+            <div className="h-6 w-px bg-[--color-border]" />
             <h1 className="font-heading text-lg font-semibold line-clamp-1">
               {course.title}
             </h1>
@@ -93,36 +90,29 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         {/* Video and Content Section */}
         <div className={cn("flex-1 flex flex-col overflow-hidden", isSidebarOpen && "lg:mr-96")}>
           {/* Video Player */}
-          <div className="bg-black">
-            <div className="max-w-6xl mx-auto">
-              {currentLesson.type === "video" && currentLesson.embedUrl ? (
+          {currentLesson.type === "video" && currentLesson.embedUrl ? (
+            <div className="bg-black">
+              <div className="max-w-6xl mx-auto">
                 <VideoPlayer
                   embedUrl={typeof currentLesson.embedUrl === "string" ? currentLesson.embedUrl : ""}
                   title={currentLesson.title}
                   onProgress={handleProgress}
                   onComplete={handleComplete}
                 />
-              ) : (
-                <div className="aspect-video flex items-center justify-center bg-gray-900">
-                  <div className="text-center text-white">
-                    <p className="text-xl mb-2">
-                      {currentLesson.type === "quiz"
-                        ? "Quiz"
-                        : currentLesson.type === "assignment"
-                        ? "Assignment"
-                        : "Reading Material"}
-                    </p>
-                    <p className="text-[--color-muted-foreground]">
-                      {currentLesson.title}
-                    </p>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-[--color-card] border-b border-[--color-border]">
+              <div className="max-w-6xl mx-auto px-6 py-8">
+                <div className="text-center text-[--color-muted-foreground]">
+                  <p>This lesson does not have a video</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Tabs and Content */}
-          <div className="flex-1 overflow-y-auto bg-white">
+          <div className="flex-1 overflow-y-auto bg-[--color-background]">
             <div className="max-w-6xl mx-auto">
               <LessonTabs activeTab={activeTab} onTabChange={setActiveTab} />
               <div className="pb-8">{renderTabContent()}</div>
@@ -133,7 +123,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         {/* Sidebar */}
         <div
           className={cn(
-            "fixed lg:fixed right-0 top-[73px] bottom-0 w-96 bg-white shadow-lg transform transition-transform duration-300 z-30",
+            "fixed lg:fixed right-0 top-[73px] bottom-0 w-96 bg-[--color-card] border-l border-[--color-border] shadow-lg transform transition-transform duration-300 z-30",
             isSidebarOpen ? "translate-x-0" : "translate-x-full"
           )}
         >
@@ -141,6 +131,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
             courseSlug={course.slug}
             sections={curriculum.sections}
             currentLessonId={currentLesson.id}
+            currentLessonSlug={currentLesson.slug}
             totalDuration={curriculum.totalDuration}
             totalLessons={curriculum.totalLessons}
           />

@@ -1,6 +1,14 @@
 import { notFound } from "next/navigation";
 import { LessonView } from "./_components";
-import { mockCourses, mockCourseCurriculum } from "@/lib/mockData";
+import { getLessonBySlugForStudent, getLessonChapterTree } from "@/service/lesson.service";
+import { getCourseBySlug } from "@/service/course.service";
+import { CourseCurriculumType } from "@/schema/lesson.schema";
+import {
+  transformChapterTreeWithStats,
+  transformLessonToLessonItem,
+  transformCourseToCourseType,
+  formatDuration,
+} from "../../../../../../../utils/lesson.utils";
 
 interface PageProps {
   params: Promise<{
@@ -11,37 +19,45 @@ interface PageProps {
 
 export default async function LessonPage({ params }: PageProps) {
   const { slug, lessonSlug } = await params;
-  const lessonIdNum = parseInt(lessonSlug);
 
-  // Find the course
-  const course = mockCourses.find((c) => c.slug === slug);
-  if (!course) {
+  let lesson;
+  try {
+    lesson = await getLessonBySlugForStudent(lessonSlug);
+  } catch (error) {
+    console.error("Failed to fetch lesson:", error);
     notFound();
   }
 
-  // Find the curriculum
-  const curriculum = mockCourseCurriculum.find((c) => c.courseId === course.id);
-  if (!curriculum) {
+  if (lesson.chapter.course.slug !== slug) {
     notFound();
   }
 
-  // Find the lesson
-  let currentLesson = null;
-  for (const section of curriculum.sections) {
-    const lesson = section.lessons.find((l) => l.id === lessonIdNum);
-    if (lesson) {
-      currentLesson = lesson;
-      break;
-    }
-  }
+  const [course, chapterTree] = await Promise.all([
+    getCourseBySlug(slug).catch((error) => {
+      console.error("Failed to fetch course:", error);
+      notFound();
+    }),
+    getLessonChapterTree(slug).catch((error) => {
+      console.error("Failed to fetch chapter tree:", error);
+      notFound();
+    }),
+  ]);
 
-  if (!currentLesson) {
-    notFound();
-  }
+  const { sections, totalLessons, totalDuration } = transformChapterTreeWithStats(chapterTree);
+
+  const curriculum: CourseCurriculumType = {
+    courseId: typeof course.id === "number" ? course.id : parseInt(course.id) || 0,
+    sections,
+    totalDuration: formatDuration(totalDuration),
+    totalLessons,
+  };
+
+  const currentLesson = transformLessonToLessonItem(lesson);
+  const courseData = transformCourseToCourseType(course);
 
   return (
     <LessonView
-      course={course}
+      course={courseData}
       curriculum={curriculum}
       currentLesson={currentLesson}
     />
