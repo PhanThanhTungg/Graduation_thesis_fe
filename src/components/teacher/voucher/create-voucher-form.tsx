@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CreateVoucherSchema, CreateVoucherType, DiscountTypeEnum } from "@/schema/voucher.schema";
+import { CreateVoucherSchema, CreateVoucherType } from "@/schema/voucher.schema";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -223,7 +223,7 @@ export function CreateVoucherForm({ courseId, coursePrice, onSuccess }: CreateVo
                   <Input 
                     type="date" 
                     {...field}
-                    onBlur={(e) => {
+                    onBlur={() => {
                       field.onBlur();
                       const validationResult = validateDateRange();
                       if (validationResult !== true) {
@@ -252,7 +252,7 @@ export function CreateVoucherForm({ courseId, coursePrice, onSuccess }: CreateVo
                   <Input 
                     type="date" 
                     {...field}
-                    onBlur={(e) => {
+                    onBlur={() => {
                       field.onBlur();
                       const validationResult = validateDateRange();
                       if (validationResult !== true) {

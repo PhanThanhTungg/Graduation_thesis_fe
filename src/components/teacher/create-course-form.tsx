@@ -229,7 +229,9 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
             <FormField
               control={form.control}
               name="thumbnailUrl"
-              render={({ field: { value, onChange, ...field } }) => (
+              render={({ field }) => {
+                const { value, onChange, ...restField } = field;
+                return (
                 <FormItem>
                   <FormLabel>Thumbnail Image</FormLabel>
                   <FormControl>
@@ -239,7 +241,7 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                           type="file"
                           accept="image/*"
                           onChange={handleThumbnailChange}
-                          {...field}
+                          {...restField}
                           className="hidden"
                           id="thumbnail-upload"
                         />
@@ -273,7 +275,8 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
-              )}
+                );
+              }}
             />
           </CardContent>
         </Card>

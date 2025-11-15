@@ -10,10 +10,11 @@ import { createReview } from "@/service/review.service";
 import { showToast } from "@/lib/toast";
 import { getCookie } from "@/lib/cookie";
 import Link from "next/link";
+import { ExtendedReview } from "@/schema/review.schema";
 
 interface ReviewFormProps {
   courseId: string;
-  onReviewSubmitted?: (review: any) => void;
+  onReviewSubmitted?: (review: ExtendedReview) => void;
 }
 
 export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormProps) {

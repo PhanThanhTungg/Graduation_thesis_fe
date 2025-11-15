@@ -1,5 +1,6 @@
 import BreadcrumbCustom from "@/components/custom/breadcrumb";
 import { Metadata } from "next";
+import Link from "next/link";
 import { Target, Users, Award, BookOpen, Lightbulb, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -298,18 +299,18 @@ export default function AboutPage() {
               of passionate learners and expert educators.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/courses"
                 className="inline-flex items-center justify-center h-12 px-8 bg-green hover:bg-green/90 text-white rounded-full font-medium text-lg transition-colors"
               >
                 Browse Courses
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center h-12 px-8 bg-background hover:bg-muted border border-border text-foreground rounded-full font-medium text-lg transition-colors"
               >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
         </div>

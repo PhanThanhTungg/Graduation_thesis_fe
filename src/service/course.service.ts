@@ -264,11 +264,6 @@ type GetCourseByIdRawResponse = {
   };
 };
 
-type GetCourseByIdResponse = {
-  message: string;
-  data: ExtendedCourseType;
-};
-
 export const getCourseBySlugTeacherArea = async (
   slug: string
 ): Promise<ExtendedCourseType> => {
@@ -579,7 +574,7 @@ export const createChapterById = async (
   }
 };
 
-export const getAllCourses = async (params: Record<string, any>): Promise<{ items: ExtendedCourseType[]; pagination: PaginationType }> => {
+export const getAllCourses = async (params: Record<string, string | number | boolean | undefined>): Promise<{ items: ExtendedCourseType[]; pagination: PaginationType }> => {
   const response = await get<GetAllCourseResponseType>(
     '/api/course',
     params

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UpdateVoucherSchema, UpdateVoucherType, VoucherType, StatusEnum } from "@/schema/voucher.schema";
+import { UpdateVoucherSchema, UpdateVoucherType, VoucherType } from "@/schema/voucher.schema";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -242,7 +242,7 @@ export function EditVoucherForm({ voucher, coursePrice, onSuccess }: EditVoucher
                   <Input 
                     type="date" 
                     {...field}
-                    onBlur={(e) => {
+                    onBlur={() => {
                       field.onBlur();
                       const validationResult = validateDateRange();
                       if (validationResult !== true) {
@@ -271,7 +271,7 @@ export function EditVoucherForm({ voucher, coursePrice, onSuccess }: EditVoucher
                   <Input 
                     type="date" 
                     {...field}
-                    onBlur={(e) => {
+                    onBlur={() => {
                       field.onBlur();
                       const validationResult = validateDateRange();
                       if (validationResult !== true) {

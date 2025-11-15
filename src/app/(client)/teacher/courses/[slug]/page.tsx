@@ -5,7 +5,6 @@ import { getVouchersByCourseId } from "@/service/voucher.service";
 import { EditCourseInfo } from "@/components/teacher/edit-course-info";
 import { ChapterTree } from "@/components/teacher/chapter-tree";
 import { CourseVouchers } from "@/components/teacher/voucher/course-vouchers";
-import NotFound from "@/app/not-found";
 import { notFound } from "next/navigation";
 import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
 

@@ -1,12 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CategoryType } from '@/schema/category.schema';
 import { getAllCategories, deleteCategory } from '@/service/admin/category.service';
-import { ChevronRight, ChevronDown, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
+import { ChevronDown, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CategoryModal } from './CategoryModal';
 import { DeleteConfirmDialog } from './DeleteConfirmDialog';
@@ -177,8 +176,6 @@ export function ListCategory() {
     setIsModalOpen(true);
   };
 
-  const router = useRouter();
-  
   const handleEditCategory = (category: CategoryType) => {
     setModalMode('edit');
     setSelectedCategory(category);
@@ -234,7 +231,7 @@ export function ListCategory() {
           </div>
         ) : (
           <div className="text-center py-8 text-zinc-500 border-2 border-dashed rounded-lg">
-            No categories found. Click "Create New Category" to create one.
+            No categories found. Click &quot;Create New Category&quot; to create one.
           </div>
         )}
       </CardContent>

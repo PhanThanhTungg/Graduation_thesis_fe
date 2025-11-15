@@ -15,6 +15,7 @@ import { createCategory, getAllCategories } from '@/service/admin/category.servi
 import { showToast } from '@/lib/toast';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ControllerRenderProps } from 'react-hook-form';
 
 interface SubMenuProps {
   category: CategoryType;
@@ -59,6 +60,63 @@ const findCategoryById = (categories: CategoryType[], id: string): CategoryType 
     }
   }
   return undefined;
+};
+
+const ParentCategorySelect = ({ 
+  field, 
+  categories 
+}: { 
+  field: ControllerRenderProps<CreateCategoryInput, "parentId">; 
+  categories: CategoryType[];
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <FormItem>
+      <FormLabel className="text-base font-semibold">Parent Category (Optional)</FormLabel>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <Button
+              variant="outline"
+              role="combobox"
+              className={cn(
+                "w-full justify-between text-lg py-6",
+                !field.value && "text-muted-foreground"
+              )}
+            >
+              {field.value
+                ? findCategoryById(categories, field.value)?.title || "Select a parent category"
+                : "Select a parent category"}
+              <ChevronDown className={cn(
+                "ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200",
+                isOpen && "transform rotate-180"
+              )} />
+            </Button>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-[300px] p-0" 
+          align="start"
+          sideOffset={4}
+        >
+          <div className="max-h-[400px] overflow-visible">
+            {categories.map((category) => (
+              <CategoryMenuItem
+                key={category.id}
+                category={category}
+                onSelect={(categoryId) => {
+                  field.onChange(categoryId);
+                  setIsOpen(false);
+                }}
+              />
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+      <FormMessage className="text-base" />
+    </FormItem>
+  );
 };
 
 const CategoryMenuItem = ({ category, onSelect }: CategoryMenuItemProps) => {
@@ -192,55 +250,9 @@ export function CreateCategoryForm() {
             <FormField
               control={form.control}
               name="parentId"
-              render={({ field }) => {
-          const [isOpen, setIsOpen] = useState(false);
-          return (
-            <FormItem>
-              <FormLabel className="text-base font-semibold">Parent Category (Optional)</FormLabel>
-              <Popover open={isOpen} onOpenChange={setIsOpen}>
-                <PopoverTrigger asChild>
-            <FormControl>
-              <Button
-                variant="outline"
-                role="combobox"
-                className={cn(
-                  "w-full justify-between text-lg py-6",
-                  !field.value && "text-muted-foreground"
-                )}
-              >
-                {field.value
-                  ? findCategoryById(categories, field.value)?.title || "Select a parent category"
-                  : "Select a parent category"}
-                <ChevronDown className={cn(
-                  "ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform duration-200",
-                  isOpen && "transform rotate-180"
-                )} />
-              </Button>
-            </FormControl>
-                </PopoverTrigger>
-                <PopoverContent 
-            className="w-[300px] p-0" 
-            align="start"
-            sideOffset={4}
-                >
-            <div className="max-h-[400px] overflow-visible">
-              {categories.map((category) => (
-                <CategoryMenuItem
-                  key={category.id}
-                  category={category}
-                  onSelect={(categoryId) => {
-              field.onChange(categoryId);
-              setIsOpen(false);
-                  }}
-                />
-              ))}
-            </div>
-                </PopoverContent>
-              </Popover>
-              <FormMessage className="text-base" />
-            </FormItem>
-          );
-              }}
+              render={({ field }) => (
+                <ParentCategorySelect field={field} categories={categories} />
+              )}
             />
           </CardContent>
 

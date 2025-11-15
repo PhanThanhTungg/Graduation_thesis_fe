@@ -3,10 +3,27 @@ import { showToast } from "@/lib/toast"
 import { UpdateUserBodyType, UserType, UpdateTeacherProfileType, TeacherType } from "@/schema/user.schema"
 import { SubmitHandler } from "react-hook-form"
 
+interface ApiResponse {
+  role?: string;
+  teacherSetting?: {
+    bio?: string;
+    headline?: string;
+    website?: string;
+    facebook?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
+  [key: string]: unknown;
+}
+
+interface ErrorResponse {
+  message?: string;
+}
+
 export const getMyProfile = async(): Promise<UserType | TeacherType | null> => {
-  const response = await get<any>('/api/profile', undefined)
+  const response = await get<ApiResponse>('/api/profile', undefined)
   if (response.status === 200) {
-    const data = response.payload as any;
+    const data = response.payload as ApiResponse;
     
     if (data.role === 'teacher') {
       const teacherSetting = data.teacherSetting || {};
@@ -55,13 +72,13 @@ export const promoteToTeacher = async(currentUser: UserType): Promise<boolean> =
 
 export const updateTeacherProfile: SubmitHandler<UpdateTeacherProfileType> = async(data): Promise<void> => {
   const cleanedData = Object.fromEntries(
-    Object.entries(data).filter(([_, v]) => v !== "" && v !== null && v !== undefined)
+    Object.entries(data).filter(([, v]) => v !== "" && v !== null && v !== undefined)
   ) as UpdateTeacherProfileType;
   
-  const response = await patch('/api/profile/teacher', cleanedData);
+  const response = await patch<ErrorResponse>('/api/profile/teacher', cleanedData);
   if (response.status === 200) {
     showToast("success", "Teacher profile updated successfully");
   } else {
-    showToast("error", (response.payload as any)?.message || "Failed to update teacher profile");
+    showToast("error", (response.payload as ErrorResponse)?.message || "Failed to update teacher profile");
   }
 }

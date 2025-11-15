@@ -1,4 +1,4 @@
-import { string, z } from "zod";
+import { z } from "zod";
 import { TeacherSchema } from "./user.schema";
 import { CategorySchema } from "./category.schema";
 import { PaginationSchema } from "./helpers.schema";

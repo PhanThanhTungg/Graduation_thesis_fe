@@ -6,9 +6,14 @@ import { useEffect, useState } from "react";
 import { addRecentSearch, clearRecentSearch, getRecentSearches } from "@/lib/helpers";
 import { Button } from "../ui/button";
 
+interface SearchResultItem {
+  id: number;
+  title: string;
+}
+
 export default function SearchPopover() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [searchResult, setSearchResult] = useState<unknown[] | null>(null);
+  const [searchResult, setSearchResult] = useState<SearchResultItem[] | null>(null);
 
   useEffect(() => {
     setRecentSearches(getRecentSearches());

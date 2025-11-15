@@ -251,7 +251,9 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
             <FormField
               control={form.control}
               name="thumbnailUrl"
-              render={({ field: { value, onChange, ...field } }) => (
+              render={({ field }) => {
+                const { value, onChange, ...restField } = field;
+                return (
                 <FormItem>
                   <FormLabel>Thumbnail Image</FormLabel>
                   <FormControl>
@@ -261,7 +263,7 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
                           type="file"
                           accept="image/*"
                           onChange={handleThumbnailChange}
-                          {...field}
+                          {...restField}
                           className="hidden"
                           id="thumbnail-upload-edit"
                         />
@@ -295,7 +297,8 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
-              )}
+                );
+              }}
             />
           </CardContent>
         </Card>

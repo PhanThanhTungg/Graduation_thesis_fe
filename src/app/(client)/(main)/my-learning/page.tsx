@@ -1,5 +1,4 @@
 import CourseCard from "@/components/custom/course-card";
-import { mockCourses } from "@/lib/mockData";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,7 +7,6 @@ export const metadata: Metadata = {
 }
 
 export default async function MyLearningPage() {
-  const courses = mockCourses;
 
   return (
     <>
@@ -16,11 +14,11 @@ export default async function MyLearningPage() {
         <h1 className="text-4xl font-bold">My Learning</h1>
         <p>Your purchased courses in Aikabis Learning Platform</p>
 
-        <div className="mt-8 grid grid-cols-3 gap-6">
+        {/* <div className="mt-8 grid grid-cols-3 gap-6">
           {courses.map(course => (
             <CourseCard key={course.id} course={course} />
           ))}
-        </div>
+        </div> */}
       </section>
     </>
   )

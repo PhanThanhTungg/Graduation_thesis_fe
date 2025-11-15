@@ -326,7 +326,7 @@ export function LessonDialog({
         files: mode === "edit" ? uploadedFiles : uploadedFiles.length > 0 ? uploadedFiles : undefined,
       }
       await onSave(submitData)
-    } catch (error) {
+    } catch {
     } finally {
       isSubmittingRef.current = false
     }

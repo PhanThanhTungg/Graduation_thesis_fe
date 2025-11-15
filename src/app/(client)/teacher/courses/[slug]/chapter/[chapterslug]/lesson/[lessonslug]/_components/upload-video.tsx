@@ -89,10 +89,11 @@ export function UploadVideo({
         }
 
         await updateLesson(lessonId, {
+          title: "",
           videoId,
           embedUrl,
           duration,
-        })
+        } as Parameters<typeof updateLesson>[1])
 
         showToast("success", "Video uploaded and saved successfully")
         setSelectedFile(null)

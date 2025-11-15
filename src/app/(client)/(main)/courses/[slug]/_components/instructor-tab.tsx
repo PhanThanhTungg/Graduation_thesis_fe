@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getAvatarFallback } from "@/lib/helpers";
 import { TeacherType } from "@/schema/user.schema";
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Globe } from "lucide-react";
+import { Facebook, Linkedin, Youtube, Globe } from "lucide-react";
 
 interface InstructorTabProps {
   instructor: TeacherType;

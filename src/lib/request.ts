@@ -67,7 +67,7 @@ type OptionsType = Omit<CustomRequestOptions, 'body'> | undefined;
 
 export const get = <Response>(
   url: string,
-  params: Record<string, any> | undefined,
+  params: Record<string, unknown> | undefined,
   options?: OptionsType,
 ) => {
   if (params) {

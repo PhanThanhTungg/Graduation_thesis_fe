@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Star, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -39,21 +39,20 @@ export default function ReviewsTab({ courseId }: ReviewsTabProps) {
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  const fetchRatingOverview = async () => {
+  const fetchRatingOverview = useCallback(async () => {
     const response = await getRatingOverview(courseId);
     setRatingStats(response.data);
-  };
+  }, [courseId]);
 
-  const fetchReviews = async (rating?: number, limit?: number) => {
+  const fetchReviews = useCallback(async (rating?: number, limit?: number) => {
     setIsLoading(true);
     const response = await getCourseReviews(courseId, rating, limit);
     setReviews(response.data.reviews);
     setTotalReviews(response.data.total);
     setIsLoading(false);
-  };
+  }, [courseId]);
 
-  const handleReviewSubmitted = (newReview: any) => {
-    // Add new review to the top of the list with empty replies array
+  const handleReviewSubmitted = (newReview: ExtendedReview) => {
     const reviewWithReplies = {
       ...newReview,
       replies: [],
@@ -63,7 +62,6 @@ export default function ReviewsTab({ courseId }: ReviewsTabProps) {
     setReviews([reviewWithReplies, ...reviews]);
     setTotalReviews(totalReviews + 1);
     
-    // Refresh rating overview
     fetchRatingOverview();
   };
 
@@ -128,7 +126,7 @@ export default function ReviewsTab({ courseId }: ReviewsTabProps) {
     checkAuth();
     fetchRatingOverview();
     fetchReviews(undefined, 4);
-  }, [courseId]);
+  }, [courseId, fetchRatingOverview, fetchReviews]);
 
   if (isLoading) {
     return (

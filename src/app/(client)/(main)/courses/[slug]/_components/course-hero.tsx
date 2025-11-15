@@ -1,5 +1,5 @@
 import { ExtendedCourseType } from "@/schema/course.schema";
-import { Clock, User, Users, BookOpen, FileQuestion } from "lucide-react";
+import { Users, BookOpen, FileQuestion } from "lucide-react";
 
 interface CourseHeroProps {
   course: ExtendedCourseType;

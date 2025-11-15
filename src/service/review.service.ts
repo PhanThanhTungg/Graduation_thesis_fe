@@ -22,7 +22,7 @@ export const createReview = async (
   );
 
   if (response.status !== 201 && response.status !== 200) {
-    showToast("error", (response.payload as any).message || "Failed to create review");
+    showToast("error", response.payload.message || "Failed to create review");
     return null;
   }
 
@@ -39,7 +39,7 @@ export const updateReview = async (
   );
 
   if (response.status !== 200) {
-    showToast("error", (response.payload as any).message || "Failed to update review");
+    showToast("error", response.payload.message || "Failed to update review");
     return null;
   }
 
@@ -95,7 +95,7 @@ export const createReviewReply = async (
   );
 
   if (response.status !== 201 && response.status !== 200) {
-    showToast("error", (response.payload as any).message || "Failed to create reply");
+    showToast("error", response.payload.message || "Failed to create reply");
     return null;
   }
 
