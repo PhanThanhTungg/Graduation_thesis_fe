@@ -110,6 +110,12 @@ export function transformLessonToLessonItem(
       embedUrl: string;
       duration: number | null;
     } | null;
+    files?: {
+      id: string;
+      fileUrl: string;
+      fileName: string;
+      fileSize: number;
+    }[];
   }
 ): LessonItemType {
   return {
@@ -124,6 +130,7 @@ export function transformLessonToLessonItem(
     videoId: lesson.videoLesson?.videoId,
     embedUrl: lesson.videoLesson?.embedUrl,
     content: lesson.description || undefined,
+    files: lesson.files,
   };
 }
 

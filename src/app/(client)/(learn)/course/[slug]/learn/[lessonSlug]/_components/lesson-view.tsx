@@ -10,8 +10,7 @@ import {
   LessonTabs,
   LessonOverviewTab,
   LessonNotesTab,
-  LessonAnnouncementsTab,
-  LessonReviewsTab,
+  LessonFilesTab,
   type LessonTabId,
 } from "@/components/lesson";
 import { CourseType } from "@/schema/course.schema";
@@ -49,10 +48,8 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         );
       case "notes":
         return <LessonNotesTab lessonId={currentLesson.id} />;
-      case "announcements":
-        return <LessonAnnouncementsTab courseId={course.id} />;
-      case "reviews":
-        return <LessonReviewsTab courseId={course.id} />;
+      case "files":
+        return <LessonFilesTab files={currentLesson.files} />;
       default:
         return null;
     }

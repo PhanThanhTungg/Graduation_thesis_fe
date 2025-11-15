@@ -12,6 +12,12 @@ export const LessonItemSchema = z.object({
   videoId: z.string().optional(),
   embedUrl: z.union([z.url(), z.instanceof(File)]).optional(),
   content: z.string().optional(),
+  files: z.array(z.object({
+    id: z.string(),
+    fileUrl: z.string(),
+    fileName: z.string(),
+    fileSize: z.number(),
+  })).optional(),
 }).strip();
 
 export type LessonItemType = z.infer<typeof LessonItemSchema>;
