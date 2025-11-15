@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { CourseTabs, OverviewTab, CurriculumTab, InstructorTab, FAQsTab, ReviewsTab, CommentForm, type TabId } from "./";
-import { TeacherType } from "@/schema/user.schema";
+import { CourseTabs, OverviewTab, CurriculumTab, InstructorTab, FAQsTab, ReviewsTab, type TabId } from "./";
 import { ExtendedCourseType } from "@/schema/course.schema";
 
 interface CourseContentProps {
@@ -23,7 +22,7 @@ export default function CourseContent({ course }: CourseContentProps) {
       case "faqs":
         return <FAQsTab />;
       case "reviews":
-        return <ReviewsTab />;
+        return <ReviewsTab courseId={course.id.toString()} />;
     }
   };
 
@@ -34,9 +33,6 @@ export default function CourseContent({ course }: CourseContentProps) {
 
       {/* Tab Content */}
       {renderTabContent()}
-
-      {/* Comment Form */}
-      <CommentForm />
     </>
   );
 }
