@@ -426,3 +426,30 @@ export const getLessonBySlugForStudent = async (
   }
 };
 
+type PingStatusLessonResponse = {
+  message: string;
+  data: {
+    progress: "not_started" | "in_progress" | "completed";
+  };
+};
+
+export const pingStatusLesson = async (
+  lessonSlug: string,
+  progress: "not_started" | "in_progress" | "completed"
+): Promise<PingStatusLessonResponse["data"]> => {
+  const response = await post<PingStatusLessonResponse>(
+    `/api/lesson/ping/status-lesson/${lessonSlug}`,
+    { progress }
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as PingStatusLessonResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to update lesson status"
+    );
+  }
+};
+

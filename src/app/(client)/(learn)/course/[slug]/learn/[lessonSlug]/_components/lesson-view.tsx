@@ -65,7 +65,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         <div className="px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link
-              href={`/course/${course.slug}`}
+              href={`/courses/${course.slug}`}
               className="flex items-center gap-2 text-[--color-muted-foreground] hover:text-foreground transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -93,33 +93,26 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
         {/* Video and Content Section */}
         <div className={cn("flex-1 flex flex-col overflow-hidden", isSidebarOpen && "lg:mr-96")}>
           {/* Video Player */}
-          <div className="bg-black">
-            <div className="max-w-6xl mx-auto">
-              {currentLesson.type === "video" && currentLesson.embedUrl ? (
+          {currentLesson.type === "video" && currentLesson.embedUrl ? (
+            <div className="bg-black">
+              <div className="max-w-6xl mx-auto">
                 <VideoPlayer
                   embedUrl={typeof currentLesson.embedUrl === "string" ? currentLesson.embedUrl : ""}
                   title={currentLesson.title}
                   onProgress={handleProgress}
                   onComplete={handleComplete}
                 />
-              ) : (
-                <div className="aspect-video flex items-center justify-center bg-gray-900">
-                  <div className="text-center text-white">
-                    <p className="text-xl mb-2">
-                      {currentLesson.type === "quiz"
-                        ? "Quiz"
-                        : currentLesson.type === "assignment"
-                        ? "Assignment"
-                        : "Reading Material"}
-                    </p>
-                    <p className="text-[--color-muted-foreground]">
-                      {currentLesson.title}
-                    </p>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-[--color-card] border-b border-[--color-border]">
+              <div className="max-w-6xl mx-auto px-6 py-8">
+                <div className="text-center text-[--color-muted-foreground]">
+                  <p>This lesson does not have a video</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Tabs and Content */}
           <div className="flex-1 overflow-y-auto bg-[--color-background]">

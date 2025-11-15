@@ -8,6 +8,7 @@ export const LessonItemSchema = z.object({
   type: z.enum(["video", "quiz", "assignment", "reading"]),
   isPreview: z.boolean().default(false),
   isCompleted: z.boolean().default(false),
+  progress: z.enum(["not_started", "in_progress", "completed"]).optional(),
   videoId: z.string().optional(),
   embedUrl: z.union([z.url(), z.instanceof(File)]).optional(),
   content: z.string().optional(),

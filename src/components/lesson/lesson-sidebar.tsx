@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, PlayCircle, FileText, ClipboardList, BookOpen, CheckCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, PlayCircle, FileText, ClipboardList, BookOpen, CheckCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionType, LessonItemType } from "@/schema/lesson.schema";
+import { pingStatusLesson } from "@/service/lesson.service";
+import { showToast } from "@/lib/toast";
 
 interface LessonSidebarProps {
   courseSlug: string;
@@ -69,20 +71,43 @@ function countSectionCompletedLessons(section: SectionType): number {
 
 export function LessonSidebar({
   courseSlug,
-  sections,
+  sections: initialSections,
   currentLessonId,
   currentLessonSlug,
   totalDuration,
   totalLessons,
 }: LessonSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<number[]>(() => {
-    const currentSection = findSectionWithLesson(sections, currentLessonId, currentLessonSlug);
+    const currentSection = findSectionWithLesson(initialSections, currentLessonId, currentLessonSlug);
     if (currentSection) {
-      const parentIds = getAllParentSectionIds(sections, currentSection.id);
+      const parentIds = getAllParentSectionIds(initialSections, currentSection.id);
       return [...parentIds, currentSection.id];
     }
     return [];
   });
+
+  const [sections, setSections] = useState<SectionType[]>(initialSections);
+  const [loadingLessons, setLoadingLessons] = useState<Set<number>>(new Set());
+  const [hoveredCompletedLesson, setHoveredCompletedLesson] = useState<number | null>(null);
+
+  useEffect(() => {
+    setSections(initialSections);
+  }, [initialSections]);
+
+  const updateLessonStatus = useCallback((lessonId: number, progress: "not_started" | "in_progress" | "completed") => {
+    const updateSection = (section: SectionType): SectionType => {
+      const updatedLessons = section.lessons.map((lesson) =>
+        lesson.id === lessonId ? { ...lesson, isCompleted: progress === "completed", progress } : lesson
+      );
+      const updatedChildren = section.children?.map(updateSection);
+      return {
+        ...section,
+        lessons: updatedLessons,
+        children: updatedChildren,
+      };
+    };
+    setSections((prev) => prev.map(updateSection));
+  }, []);
 
   const toggleSection = useCallback((sectionId: number) => {
     setExpandedSections((prev) =>
@@ -103,10 +128,6 @@ export function LessonSidebar({
   );
 
   const getLessonIcon = useCallback((lesson: LessonItemType) => {
-    if (lesson.isCompleted) {
-      return <CheckCircle className="w-4 h-4 text-[--color-green]" />;
-    }
-    
     const iconClass = "w-4 h-4 text-[--color-muted-foreground]";
     const iconMap = {
       video: <PlayCircle className={iconClass} />,
@@ -117,6 +138,33 @@ export function LessonSidebar({
     
     return iconMap[lesson.type] ?? <PlayCircle className={iconClass} />;
   }, []);
+
+  const handleToggleLessonStatus = useCallback(async (e: React.MouseEvent, lesson: LessonItemType) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!lesson.slug) return;
+
+    setLoadingLessons((prev) => new Set(prev).add(lesson.id));
+
+    try {
+      const targetProgress: "not_started" | "in_progress" | "completed" = lesson.isCompleted 
+        ? "in_progress" 
+        : "completed";
+      
+      const result = await pingStatusLesson(lesson.slug!, targetProgress);
+      updateLessonStatus(lesson.id, result.progress);
+      showToast("success", result.progress === "completed" ? "Lesson marked as completed" : "Lesson marked as in progress");
+    } catch (error) {
+      showToast("error", error instanceof Error ? error.message : "Failed to update lesson status");
+    } finally {
+      setLoadingLessons((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(lesson.id);
+        return newSet;
+      });
+    }
+  }, [updateLessonStatus]);
 
   const renderSection = (section: SectionType, level: number = 0) => {
     const isExpanded = expandedSections.includes(section.id);
@@ -165,17 +213,10 @@ export function LessonSidebar({
               <div>
                 {section.lessons.map((lesson, index) => {
                     const isCurrentLesson = lesson.id === currentLessonId || lesson.slug === currentLessonSlug;
-
-                    return (
-                      <Link
-                        key={lesson.id}
-                        href={`/course/${courseSlug}/learn/${lesson.slug || lesson.id}`}
-                        className={cn(
-                          "flex items-start gap-3 p-4 border-t border-[--color-border] hover:bg-[--color-card] transition-colors",
-                          isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]"
-                        )}
-                        style={{ paddingLeft: `${1.5 + level * 0.75}rem` } as React.CSSProperties}
-                      >
+                    const isLoading = loadingLessons.has(lesson.id);
+                    const canAccess = lesson.progress === "in_progress" || lesson.progress === "completed";
+                    const lessonContent = (
+                      <>
                         <div className="flex-shrink-0 mt-0.5">
                           {getLessonIcon(lesson)}
                         </div>
@@ -185,7 +226,7 @@ export function LessonSidebar({
                             className={cn(
                               "text-sm font-medium mb-1",
                               isCurrentLesson && "text-[--color-orange]",
-                              lesson.isCompleted && "text-[--color-green]"
+                              !canAccess && "opacity-50"
                             )}
                           >
                             {lesson.title}
@@ -202,11 +243,82 @@ export function LessonSidebar({
                             )}
                           </div>
                         </div>
+                      </>
+                    );
 
-                        {lesson.isCompleted && (
-                          <CheckCircle className="w-5 h-5 text-[--color-green] flex-shrink-0" />
+                    return (
+                      <div
+                        key={lesson.id}
+                        className={cn(
+                          "flex items-start gap-3 p-4 border-t border-[--color-border] transition-colors group",
+                          canAccess && "hover:bg-[--color-card]",
+                          isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]",
+                          !canAccess && "opacity-60 cursor-not-allowed"
                         )}
-                      </Link>
+                        style={{ paddingLeft: `${1.5 + level * 0.75}rem` } as React.CSSProperties}
+                      >
+                        {canAccess ? (
+                          <Link
+                            href={`/course/${courseSlug}/learn/${lesson.slug || lesson.id}`}
+                            className="flex items-start gap-3 flex-1 min-w-0"
+                          >
+                            {lessonContent}
+                          </Link>
+                        ) : (
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            {lessonContent}
+                          </div>
+                        )}
+
+                        {canAccess && (
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {lesson.isCompleted ? (
+                              <button
+                                type="button"
+                                onClick={(e) => handleToggleLessonStatus(e, lesson)}
+                                onMouseEnter={() => setHoveredCompletedLesson(lesson.id)}
+                                onMouseLeave={() => setHoveredCompletedLesson(null)}
+                                disabled={isLoading}
+                                className={cn(
+                                  "px-2 py-1 text-xs font-medium rounded transition-all border-2",
+                                  hoveredCompletedLesson === lesson.id
+                                    ? "text-destructive border-destructive hover:bg-destructive hover:text-white"
+                                    : "text-green border-green hover:bg-green hover:text-white",
+                                  isLoading && "cursor-not-allowed opacity-70"
+                                )}
+                                title="Mark as incomplete"
+                              >
+                                {isLoading ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : hoveredCompletedLesson === lesson.id ? (
+                                  "Undo"
+                                ) : (
+                                  "Completed"
+                                )}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(e) => handleToggleLessonStatus(e, lesson)}
+                                disabled={isLoading}
+                                className={cn(
+                                  "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
+                                  "opacity-0 group-hover:opacity-100",
+                                  "bg-green text-white hover:bg-green/90",
+                                  isLoading && "opacity-100 cursor-not-allowed"
+                                )}
+                                title="Mark as complete"
+                              >
+                                {isLoading ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  "Complete"
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
               </div>
