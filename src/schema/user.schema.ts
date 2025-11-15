@@ -183,3 +183,10 @@ export type GetAllUsersParams = {
   page?: number;
   limit?: number;
 };
+
+export const ShortUserSchema = z.object({
+  id: z.string(),
+  fullName: z.string(),
+  email: z.email(),
+  avatarUrl: z.url().nullable(),
+}).strip();
