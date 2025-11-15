@@ -35,6 +35,7 @@ export const CourseCurriculumSchema = z.object({
   courseId: z.number(),
   sections: z.array(SectionSchema),
   totalDuration: z.string(),
+  totalLessons: z.number(),
 }).strip();
 
 export type CourseCurriculumType = z.infer<typeof CourseCurriculumSchema>;
