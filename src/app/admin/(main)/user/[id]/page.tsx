@@ -358,10 +358,11 @@ export default function UserDetailPage() {
                   <Card key={course.id} className="overflow-hidden">
                     <div className="aspect-video bg-muted relative">
                       {course.thumbnailUrl ? (
-                        <img
+                        <Image
                           src={course.thumbnailUrl}
                           alt={course.title}
                           className="w-full h-full object-cover"
+                          fill
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full">
