@@ -6,7 +6,6 @@ export async function getCookie(name: string): Promise<string | undefined> {
       const cookieStore = await cookies();
       return cookieStore.get(name)?.value;
     } catch (err) {
-      console.error("Cannot read cookies on server:", err);
       return undefined;
     }
   }

@@ -29,12 +29,10 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
 
   const handleProgress = (progress: number) => {
     // In real app, save progress to backend
-    console.log("Progress:", progress);
   };
 
   const handleComplete = () => {
     // In real app, mark lesson as complete in backend
-    console.log("Lesson completed");
   };
 
   const renderTabContent = () => {

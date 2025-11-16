@@ -20,7 +20,6 @@ export default function SearchPopover() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value)
     if (e.target.value.length > 0) {
       setSearchResult([{
         id: 1,

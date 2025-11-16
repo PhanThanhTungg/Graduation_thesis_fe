@@ -40,24 +40,28 @@ const request = async <Response>(
       body, 
     });
 
-    const payload: Response = await res.json();
+    let payload: Response;
+    const contentType = res.headers.get('content-type');
+    
+    if (contentType && contentType.includes('application/json')) {
+      payload = await res.json();
+    } else {
+      const text = await res.text();
+      payload = {
+        message: text || `Request failed with status ${res.status}`
+      } as Response;
+    }
 
-    // Intercept response here
-    console.log({
-      status: res.status,
-      payload
-    })
     return {
       status: res.status,
       payload
     }
   } catch (error) {
-    console.log("API Error", error)
     return {
       status: 500,
       payload: {
-        message: error instanceof Error ? error.message : "An unknown error"
-      }
+        message: error instanceof Error ? error.message : "An unknown error occurred"
+      } as Response
     }
   }
 }

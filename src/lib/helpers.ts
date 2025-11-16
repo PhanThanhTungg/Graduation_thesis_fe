@@ -52,29 +52,43 @@ export const formatNumberWithDots = (number: number): string => {
 
 // Add recent search to local storage
 export const addRecentSearch = (search: string): void => {
-  if (!search) return;
-  const recentSearches = localStorage.getItem("recentSearches");
-  const recentSearchesArray = recentSearches ? JSON.parse(recentSearches) : [];
-  recentSearchesArray.unshift(search);
-  if (recentSearchesArray.length > 5) {
-    recentSearchesArray.length = 5;
+  if (typeof window === 'undefined' || !search) return;
+  try {
+    const recentSearches = localStorage.getItem("recentSearches");
+    const recentSearchesArray = recentSearches ? JSON.parse(recentSearches) : [];
+    recentSearchesArray.unshift(search);
+    if (recentSearchesArray.length > 5) {
+      recentSearchesArray.length = 5;
+    }
+    localStorage.setItem("recentSearches", JSON.stringify(recentSearchesArray));
+  } catch (error) {
+    // Silently fail if localStorage is not available
   }
-  localStorage.setItem("recentSearches", JSON.stringify(recentSearchesArray));
 };
 
 // Get recent searches from local storage
 export const getRecentSearches = (): string[] => {
-  const recentSearches = localStorage.getItem("recentSearches");
-  const recentSearchesArray = recentSearches ? JSON.parse(recentSearches) : [];
-  if (recentSearchesArray.length > 5) {
-    recentSearchesArray.length = 5;
+  if (typeof window === 'undefined') return [];
+  try {
+    const recentSearches = localStorage.getItem("recentSearches");
+    const recentSearchesArray = recentSearches ? JSON.parse(recentSearches) : [];
+    if (recentSearchesArray.length > 5) {
+      recentSearchesArray.length = 5;
+    }
+    return recentSearchesArray;
+  } catch (error) {
+    return [];
   }
-  return recentSearchesArray;
 };
 
 // Delete recent search from local storage
 export const clearRecentSearch = (): void => {
-  localStorage.removeItem("recentSearches");
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem("recentSearches");
+  } catch (error) {
+    // Silently fail if localStorage is not available
+  }
 };
 
 // Generate slug from string

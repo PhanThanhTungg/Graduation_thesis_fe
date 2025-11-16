@@ -11,7 +11,6 @@ export async function GET (req: NextRequest, { params }: { params: Promise<{ nam
     }
     return new Response(JSON.stringify( data.value ), { status: 200 });
   } catch (error) {
-    console.error("Error retrieving cookie:", error);
     return new Response(JSON.stringify({ message: "Error retrieving cookie." }), { status: 500 });
   }
 }
@@ -23,7 +22,6 @@ export async function POST (req: NextRequest, { params }: { params: Promise<{ na
       req.json(),
       cookies()
     ]);
-    console.log("Request data:", requestData.value);
     cookieStore.set({
       name,
       value: JSON.stringify(requestData.value),
