@@ -2,7 +2,6 @@ import { LoginForm } from "./_components";
 import Link from "next/link";
 
 export default function LoginPage() {
-  let a;
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-foreground via-background to-mint/10">
       <div className="container-md py-12">
