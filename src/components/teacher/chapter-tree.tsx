@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { IconPlus, IconFolder, IconFolderOpen, IconChevronRight, IconChevronDown, IconTrash, IconEdit } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
@@ -204,9 +204,13 @@ export function ChapterTree({ courseSlug, courseId }: ChapterTreeProps) {
     }
   }
 
-  useEffect(() => {
+  const memoizedFetchChapters = useCallback(() => {
     fetchChapters()
   }, [courseSlug])
+
+  useEffect(() => {
+    memoizedFetchChapters()
+  }, [memoizedFetchChapters])
 
   const handleAddChapter = (parentId?: string) => {
     setParentId(parentId)

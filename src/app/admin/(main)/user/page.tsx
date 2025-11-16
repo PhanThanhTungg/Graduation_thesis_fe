@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { UserDataTable } from "./listUsers"
 import {
   getAllUsers,
@@ -39,10 +39,13 @@ export default function UserPage() {
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
+  const memoizedFetchUsers = useCallback(() => {
     fetchUsers()
   }, [filters])
+
+  useEffect(() => {
+    memoizedFetchUsers()
+  }, [memoizedFetchUsers])
 
   const handlePaginationChange = (page: number, limit: number) => {
     setFilters((prev) => ({ ...prev, page, limit }))

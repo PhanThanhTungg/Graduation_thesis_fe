@@ -1,4 +1,4 @@
-import CourseCard from "@/components/custom/course-card";
+// import CourseCard from "@/components/custom/course-card";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, PlayCircle, FileText, ClipboardList, BookOpen, CheckCircle, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, PlayCircle, FileText, ClipboardList, BookOpen, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionType, LessonItemType } from "@/schema/lesson.schema";
 import { pingStatusLesson } from "@/service/lesson.service";
@@ -211,7 +211,7 @@ export function LessonSidebar({
               </div>
             ) : hasLessons ? (
               <div>
-                {section.lessons.map((lesson, index) => {
+                {section.lessons.map((lesson) => {
                     const isCurrentLesson = lesson.id === currentLessonId || lesson.slug === currentLessonSlug;
                     const isLoading = loadingLessons.has(lesson.id);
                     const canAccess = lesson.progress === "in_progress" || lesson.progress === "completed";

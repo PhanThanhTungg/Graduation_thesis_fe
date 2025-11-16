@@ -9,7 +9,7 @@ import {
   LessonSidebar,
   LessonTabs,
   LessonOverviewTab,
-  LessonNotesTab,
+  // LessonNotesTab,
   LessonFilesTab,
   type LessonTabId,
 } from "@/components/lesson";
@@ -47,7 +47,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
           />
         );
       case "notes":
-        return <LessonNotesTab lessonId={currentLesson.id} />;
+        // return <LessonNotesTab lessonId={currentLesson.id} />;
       case "files":
         return <LessonFilesTab files={currentLesson.files} />;
       default:

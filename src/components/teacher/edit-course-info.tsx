@@ -301,7 +301,7 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
               control={form.control}
               name="thumbnailUrl"
               render={({ field }) => {
-                const { value, onChange, ...restField } = field;
+                const { ...restField } = field;
                 return (
                 <FormItem>
                   <FormLabel>Thumbnail Image</FormLabel>
@@ -312,7 +312,10 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
                           type="file"
                           accept="image/*"
                           onChange={handleThumbnailChange}
-                          {...restField}
+                          onBlur={restField.onBlur}
+                          name={restField.name}
+                          ref={restField.ref}
+                          value={restField.value as string}
                           className="hidden"
                           id="thumbnail-upload"
                         />

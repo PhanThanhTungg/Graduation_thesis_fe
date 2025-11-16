@@ -30,7 +30,7 @@ export default function UserMenu({ user }: UserMenuProps) {
       showToast("success", "Logged out successfully");
       router.push("/");
       router.refresh();
-    } catch (error) {
+    } catch {
       showToast("error", "Failed to logout");
     }
   };

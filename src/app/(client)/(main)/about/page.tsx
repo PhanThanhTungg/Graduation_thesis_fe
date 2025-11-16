@@ -2,6 +2,7 @@ import BreadcrumbCustom from "@/components/custom/breadcrumb";
 import { Metadata } from "next";
 import Link from "next/link";
 import { Target, Users, Award, BookOpen, Lightbulb, TrendingUp } from "lucide-react";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -271,9 +272,11 @@ export default function AboutPage() {
               className="group text-center"
             >
               <div className="relative mb-6 overflow-hidden rounded-2xl">
-                <img
+                <Image
                   src={member.image}
                   alt={member.name}
+                  width={400}
+                  height={400}
                   className="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
