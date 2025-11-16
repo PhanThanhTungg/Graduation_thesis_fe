@@ -1,18 +1,20 @@
 import { getCookie } from "./cookie";
 
-type CustomRequestOptions = Omit<RequestInit, 'method'> & {
+type CustomRequestOptions = Omit<RequestInit, "method"> & {
   baseUrl: string | undefined;
-}
+};
 
-export const isNextClient = typeof window !== 'undefined';
+export const isNextClient = typeof window !== "undefined";
 
 const request = async <Response>(
-  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
   url: string,
-  options: CustomRequestOptions | undefined
+  options: CustomRequestOptions | undefined,
 ) => {
   const baseUrl = options?.baseUrl || process.env.NEXT_PUBLIC_API_URL;
-  const fullUrl = url.startsWith('/') ? `${baseUrl}${url.slice(1)}` : `${baseUrl}${url}`;
+  const fullUrl = url.startsWith("/")
+    ? `${baseUrl}${url.slice(1)}`
+    : `${baseUrl}${url}`;
 
   let body: FormData | string | undefined = undefined;
   if (options?.body instanceof FormData) {
@@ -21,53 +23,60 @@ const request = async <Response>(
     body = JSON.stringify(options.body);
   }
 
-  const baseHeaders: Record<string, string> = body instanceof FormData ? {} : { 'Content-Type': 'application/json' };
+  const baseHeaders: Record<string, string> =
+    body instanceof FormData ? {} : { "Content-Type": "application/json" };
   let accessToken: string | undefined = undefined;
-  if (url.includes('/admin/')) {
-    accessToken = await getCookie('admin_access_token');
+  if (url.includes("/admin/")) {
+    accessToken = await getCookie("admin_access_token");
   } else {
-    accessToken = await getCookie('client_access_token');
+    accessToken = await getCookie("client_access_token");
   }
-  
+
   try {
     const res = await fetch(fullUrl, {
       headers: {
         ...baseHeaders,
         ...options?.headers,
-        Authorization: `Bearer ${accessToken}`
+        Authorization: `Bearer ${accessToken}`,
       },
       method,
-      body, 
+      body,
     });
 
     let payload: Response;
-    const contentType = res.headers.get('content-type');
-    
-    if (contentType && contentType.includes('application/json')) {
+    const contentType = res.headers.get("content-type");
+
+    if (contentType && contentType.includes("application/json")) {
       payload = await res.json();
     } else {
       const text = await res.text();
       payload = {
-        message: text || `Request failed with status ${res.status}`
+        message: text || `Request failed with status ${res.status}`,
       } as Response;
     }
 
+    console.log({
+      status: res.status,
+      payload,
+    });
+
     return {
       status: res.status,
-      payload
-    }
+      payload,
+    };
   } catch (error) {
     return {
       status: 500,
       payload: {
-        message: error instanceof Error ? error.message : "An unknown error occurred"
-      } as Response
-    }
+        message:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      } as Response,
+    };
   }
-}
+};
 
 type BodyType = FormData | Record<string, unknown> | undefined;
-type OptionsType = Omit<CustomRequestOptions, 'body'> | undefined;
+type OptionsType = Omit<CustomRequestOptions, "body"> | undefined;
 
 export const get = <Response>(
   url: string,
@@ -78,35 +87,38 @@ export const get = <Response>(
     const queryString = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        value.forEach(v => queryString.append(key, v.toString()));
+        value.forEach((v) => queryString.append(key, v.toString()));
       } else if (value !== null && value !== undefined) {
         queryString.append(key, String(value));
       }
     });
     url += `?${queryString.toString()}`;
   }
-  return request<Response>('GET', url, options);
-}
+  return request<Response>("GET", url, options);
+};
 
 export const post = <Response>(
   url: string,
   body: BodyType,
   options?: OptionsType,
 ) => {
-  return request<Response>('POST', url, { ...options, body } as CustomRequestOptions);
-}
+  return request<Response>("POST", url, {
+    ...options,
+    body,
+  } as CustomRequestOptions);
+};
 
 export const patch = <Response>(
   url: string,
   body: BodyType,
-  options?: OptionsType
-) => {
-  return request<Response>('PATCH', url, { ...options, body } as CustomRequestOptions);
-}
-
-export const del = <Response>(
-  url: string,
   options?: OptionsType,
 ) => {
-  return request<Response>('DELETE', url, options as CustomRequestOptions);
-}
+  return request<Response>("PATCH", url, {
+    ...options,
+    body,
+  } as CustomRequestOptions);
+};
+
+export const del = <Response>(url: string, options?: OptionsType) => {
+  return request<Response>("DELETE", url, options as CustomRequestOptions);
+};
