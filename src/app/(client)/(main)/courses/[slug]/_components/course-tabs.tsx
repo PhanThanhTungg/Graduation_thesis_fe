@@ -1,7 +1,6 @@
 "use client"
 
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 const tabs = [
   { id: "overview", label: "Overview" },

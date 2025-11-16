@@ -46,9 +46,9 @@ export const sendVerificationEmail = async () => {
     {}
   );
   if (response.status === 201 || response.status === 200) {
-    showToast('success', (response.payload as any)?.message || 'Verification email sent');
+    showToast('success', response.payload.message || 'Verification email sent');
   } else {
-    showToast('error', (response.payload as any)?.message || 'Failed to send verification email');
+    showToast('error', response.payload.message || 'Failed to send verification email');
   }
 }
 
@@ -59,11 +59,11 @@ export const verifyEmail = async (token: string) => {
   );
   const ok = response.status === 200 || response.status === 201;
   if (ok) {
-    showToast('success', (response.payload as any)?.message || 'Email verified successfully');
+    showToast('success', response.payload.message || 'Email verified successfully');
   } else {
-    showToast('error', (response.payload as any)?.message || 'Email verification failed');
+    showToast('error', response.payload.message || 'Email verification failed');
   }
-  return { ok, message: (response.payload as any)?.message };
+  return { ok, message: response.payload.message };
 }
 
 export const forgotPassword = async (email: string) => {
@@ -73,11 +73,11 @@ export const forgotPassword = async (email: string) => {
   );
   const ok = response.status === 201;
   if (ok) {
-    showToast('success', (response.payload as any)?.message || 'Reset link sent to your email');
+    showToast('success', response.payload.message || 'Reset link sent to your email');
   } else {
-    showToast('error', (response.payload as any)?.message || 'Failed to send reset link');
+    showToast('error', response.payload.message || 'Failed to send reset link');
   }
-  return { ok, message: (response.payload as any)?.message };
+  return { ok, message: response.payload.message };
 }
 
 export const resetPassword = async (token: string, newPassword: string) => {
@@ -87,9 +87,9 @@ export const resetPassword = async (token: string, newPassword: string) => {
   );
   const ok = response.status === 200 || response.status === 201;
   if (ok) {
-    showToast('success', (response.payload as any)?.message || 'Password reset successfully');
+    showToast('success', response.payload.message || 'Password reset successfully');
   } else {
-    showToast('error', (response.payload as any)?.message || 'Failed to reset password');
+    showToast('error', response.payload.message || 'Failed to reset password');
   }
-  return { ok, message: (response.payload as any)?.message };
+  return { ok, message: response.payload.message };
 }

@@ -1,5 +1,5 @@
 import { LoginForm } from "./_components";
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -8,7 +8,9 @@ export default function LoginPage() {
         <div className="flex flex-col items-center space-y-6">
           <Link href="/admin/login" className="flex items-center space-x-2">
             <div className="size-10 bg-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-heading text-xl font-bold">A</span>
+              <span className="text-white font-heading text-xl font-bold">
+                A
+              </span>
             </div>
             <span className="font-heading text-2xl font-bold">Aikabis</span>
           </Link>
@@ -16,17 +18,23 @@ export default function LoginPage() {
           <LoginForm />
 
           <p className="text-center text-sm text-muted-foreground max-w-md">
-            By continuing, you agree to our{' '}
-            <Link href="/terms" className="text-green hover:text-green/80 transition-colors">
+            By continuing, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="text-green hover:text-green/80 transition-colors"
+            >
               Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-green hover:text-green/80 transition-colors">
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-green hover:text-green/80 transition-colors"
+            >
               Privacy Policy
             </Link>
           </p>
         </div>
       </div>
     </main>
-  )
+  );
 }

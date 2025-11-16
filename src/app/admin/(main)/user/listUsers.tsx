@@ -49,7 +49,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserListItem } from "@/service/admin/user.service"
-import { toast } from "sonner"
 
 type UserDataTableProps = {
   data: UserListItem[]

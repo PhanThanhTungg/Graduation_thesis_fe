@@ -10,7 +10,7 @@ export async function GET (req: NextRequest, { params }: { params: Promise<{ nam
       return new Response(JSON.stringify({ message: `Cookie with name ${name} not found.` }), { status: 404 });
     }
     return new Response(JSON.stringify( data.value ), { status: 200 });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ message: "Error retrieving cookie." }), { status: 500 });
   }
 }
@@ -22,7 +22,6 @@ export async function POST (req: NextRequest, { params }: { params: Promise<{ na
       req.json(),
       cookies()
     ]);
-    console.log("Request data:", requestData.value);
     cookieStore.set({
       name,
       value: JSON.stringify(requestData.value),
@@ -32,7 +31,7 @@ export async function POST (req: NextRequest, { params }: { params: Promise<{ na
     })
 
     return new Response(JSON.stringify({ message: `Cookie with name ${name} set successfully.` }), { status: 200 });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ message: "Error setting cookie." }), { status: 500 });
   }
 }

@@ -12,11 +12,11 @@ interface Note {
   createdAt: Date;
 }
 
-interface LessonNotesTabProps {
-  lessonId: number;
-}
+// interface LessonNotesTabProps {
+//   lessonId: number;
+// }
 
-export function LessonNotesTab({ lessonId }: LessonNotesTabProps) {
+export function LessonNotesTab() {
   const [notes, setNotes] = useState<Note[]>([
     {
       id: 1,

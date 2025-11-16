@@ -23,7 +23,6 @@ export function TeacherCoursesList({
   initialCourses = [], 
   initialPagination,
   categories, 
-  onCourseUpdated, 
   onAddCourseRef 
 }: TeacherCoursesListProps) {
   const [courses, setCourses] = useState<ExtendedCourseType[]>(initialCourses)
@@ -288,7 +287,7 @@ export function TeacherCoursesList({
             <>
               <div className="text-6xl mb-4">📚</div>
               <p className="text-lg font-medium text-foreground mb-2">No courses yet</p>
-              <p className="text-sm text-muted-foreground">Click "Create Course" button to get started!</p>
+              <p className="text-sm text-muted-foreground">Click &quot;Create Course&quot; button to get started!</p>
             </>
           ) : (
             <>

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
@@ -25,7 +24,6 @@ export function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const { executeRecaptcha } = useGoogleReCaptcha()
-  const router = useRouter()
 
   const form = useForm<UserRegisterType>({
     resolver: zodResolver(UserRegisterSchema),

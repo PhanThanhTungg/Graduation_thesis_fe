@@ -82,11 +82,7 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  useEffect(() => {
-    loadLessons()
-  }, [chapterId, debouncedSearch, sortField, sortOrder, page, limit])
-
-  const loadLessons = async () => {
+  const loadLessons = useCallback(async () => {
     try {
       setIsLoading(true)
       const data = await getLessonsByChapterId(chapterId, {
@@ -104,7 +100,11 @@ export function LessonManagement({ chapterId, courseSlug, chapterSlug }: LessonM
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [chapterId, debouncedSearch, sortField, sortOrder, page, limit])
+
+  useEffect(() => {
+    loadLessons()
+  }, [loadLessons])
 
   const handleCreateLesson = async (data: FormData) => {
     try {

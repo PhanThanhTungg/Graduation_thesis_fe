@@ -30,6 +30,7 @@ import { showToast } from "@/lib/toast"
 import { createCourse, getCourseById } from "@/service/course.service"
 import { uploadImages } from "@/service/upload.service"
 import { CategoryTreeSelect } from "@/components/custom/category-tree-select"
+import Image from "next/image"
 
 type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
 
@@ -229,7 +230,9 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
             <FormField
               control={form.control}
               name="thumbnailUrl"
-              render={({ field: { value, onChange, ...field } }) => (
+              render={({ field }) => {
+                const { ...restField } = field;
+                return (
                 <FormItem>
                   <FormLabel>Thumbnail Image</FormLabel>
                   <FormControl>
@@ -239,7 +242,9 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                           type="file"
                           accept="image/*"
                           onChange={handleThumbnailChange}
-                          {...field}
+                          onBlur={restField.onBlur}
+                          name={restField.name}
+                          ref={restField.ref}
                           className="hidden"
                           id="thumbnail-upload"
                         />
@@ -259,7 +264,7 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                       </div>
                       {thumbnailPreview && (
                         <div className="relative w-full max-w-md">
-                          <img
+                          <Image
                             src={thumbnailPreview}
                             alt="Thumbnail preview"
                             className="rounded-lg border"
@@ -273,7 +278,8 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
-              )}
+                );
+              }}
             />
           </CardContent>
         </Card>

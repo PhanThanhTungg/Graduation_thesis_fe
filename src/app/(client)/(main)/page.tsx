@@ -1,13 +1,9 @@
-import { mockCourses, testimonials, articles } from "@/lib/mockData";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, GraduationCap, TrendingUp, Star, PlayCircle, CheckCircle, Brain, RefreshCw, Sparkles, Shield, Target, Zap, ArrowRight, Globe, Clock } from "lucide-react";
-import CourseCard from "@/components/custom/course-card";
+import { CheckCircle, Brain, RefreshCw, Sparkles, Shield, Target, Globe } from "lucide-react";
 import Logo from "@/components/custom/logo";
-import ArticleCard from "@/components/custom/article-card";
 import { Metadata } from "next";
-import { getAllCategories } from "@/service/category.service";
 
 export const metadata: Metadata = {
   title: "Aikabis - Your learning platform",
@@ -137,7 +133,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-bold mb-2">Student Feedbacks</h2>
           <p className="text-muted-foreground">What student say about Aikabis</p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {testimonials.map((testimonial) => (
             <div key={testimonial.id} className="bg-card border rounded-lg p-6">
               <div className="flex gap-1 mb-4">
@@ -161,7 +157,7 @@ export default function HomePage() {
               </div>
             </div>
           ))}
-        </div>
+        </div> */}
       </section>
 
       {/* Core Values Section */}

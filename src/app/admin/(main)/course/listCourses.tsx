@@ -6,7 +6,6 @@ import { AdminCourseItemType } from "@/schema/course.schema"
 import { CourseCardAdmin } from "@/components/admin/course-card-admin"
 import { DeleteConfirmationDialog } from "@/components/custom/delete-confirmation-dialog"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Search, Filter, ArrowUpDown, Loader2 } from "lucide-react"
@@ -79,8 +78,7 @@ export function ListCourses() {
           setTotalPages(1)
           setTotalItems(0)
         }
-      } catch (error) {
-        console.error("Error fetching courses:", error)
+      } catch {
         setCourses([])
       } finally {
         setIsLoading(false)
@@ -126,8 +124,7 @@ export function ListCourses() {
         setTotalPages(result.pagination.totalPages)
         setTotalItems(result.pagination.total)
       }
-    } catch (error) {
-      console.error("Error deleting course:", error)
+    } catch {
       toast.error("Failed to delete course")
     } finally {
       setDeletingId(null)

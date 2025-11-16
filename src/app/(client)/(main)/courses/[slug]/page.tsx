@@ -17,7 +17,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   let course;
   try {
     course = await getCourseBySlug(params.slug);
-  } catch (error) {
+  } catch {
     return <NotFound />
   }
 
@@ -28,7 +28,7 @@ export default async function CourseDetailPage({ params }: CourseDetailPageProps
   let nextLessonSlug: string | null = null;
   try {
     nextLessonSlug = await getNextLessonByCourseSlug(params.slug);
-  } catch (_e) {
+  } catch {
     nextLessonSlug = null;
   }
 

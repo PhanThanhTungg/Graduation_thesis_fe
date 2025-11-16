@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
                 Request Sent Successfully!
               </AlertTitle>
               <AlertDescription className="text-foreground">
-                We've sent a password reset link to <strong>{email}</strong>.
+                We have sent a password reset link to <strong>{email}</strong>.
                 Please check your inbox and follow the instructions to reset
                 your password.
               </AlertDescription>
@@ -106,7 +106,7 @@ export default function ForgotPasswordPage() {
 
           {isSubmitted && (
             <div className="text-center text-sm text-muted-foreground">
-              Didn't receive the email?{" "}
+              Did not receive the email?{" "}
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="text-primary hover:underline underline-offset-4 font-medium transition-colors"

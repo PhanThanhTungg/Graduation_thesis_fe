@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronDown, ChevronUp, Clock, PlayCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, PlayCircle } from "lucide-react";
 import { useState } from "react";
 
 interface Lesson {
@@ -101,7 +101,7 @@ export default function CurriculumTab() {
               {/* Lessons List */}
               {isExpanded && section.lessons.length > 0 && (
                 <div className="bg-muted/30">
-                  {section.lessons.map((lesson, index) => (
+                  {section.lessons.map((lesson) => (
                     <div
                       key={lesson.id}
                       className="px-5 py-3 flex items-center gap-3 border-t border-border hover:bg-muted/50 transition-colors"

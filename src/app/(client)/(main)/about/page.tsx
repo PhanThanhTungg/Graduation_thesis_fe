@@ -1,6 +1,8 @@
 import BreadcrumbCustom from "@/components/custom/breadcrumb";
 import { Metadata } from "next";
+import Link from "next/link";
 import { Target, Users, Award, BookOpen, Lightbulb, TrendingUp } from "lucide-react";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -270,9 +272,11 @@ export default function AboutPage() {
               className="group text-center"
             >
               <div className="relative mb-6 overflow-hidden rounded-2xl">
-                <img
+                <Image
                   src={member.image}
                   alt={member.name}
+                  width={400}
+                  height={400}
                   className="w-full aspect-square object-cover transition-transform duration-300 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -298,18 +302,18 @@ export default function AboutPage() {
               of passionate learners and expert educators.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/courses"
                 className="inline-flex items-center justify-center h-12 px-8 bg-green hover:bg-green/90 text-white rounded-full font-medium text-lg transition-colors"
               >
                 Browse Courses
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center h-12 px-8 bg-background hover:bg-muted border border-border text-foreground rounded-full font-medium text-lg transition-colors"
               >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
         </div>

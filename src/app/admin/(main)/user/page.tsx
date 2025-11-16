@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { UserDataTable } from "./listUsers"
 import {
   getAllUsers,
@@ -26,23 +26,22 @@ export default function UserPage() {
     sortOrder: "desc",
   })
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true)
     try {
       const data = await getAllUsers(filters)
       setUsers(data.items)
       setPagination(data.pagination)
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while fetching users")
-      console.error(error)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [filters])
 
   useEffect(() => {
     fetchUsers()
-  }, [filters])
+  }, [fetchUsers])
 
   const handlePaginationChange = (page: number, limit: number) => {
     setFilters((prev) => ({ ...prev, page, limit }))
@@ -75,9 +74,8 @@ export default function UserPage() {
       setUsers((prev) =>
         prev.map((user) => (user.id === userId ? { ...user, status } : user))
       )
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while updating user status")
-      console.error(error)
     }
   }
 

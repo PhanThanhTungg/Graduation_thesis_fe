@@ -40,7 +40,6 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     handleSubmit,
     control,
     formState: { errors, isDirty },
-    watch,
   } = useForm<UpdateUserBodyType>({
     resolver: zodResolver(UpdateUserBodySchema),
     defaultValues: {

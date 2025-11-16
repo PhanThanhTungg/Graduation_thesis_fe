@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useState, useEffect } from "react"
-import { IconPlus, IconTrash, IconUpload, IconEdit, IconX, IconCheck } from "@tabler/icons-react"
+import { IconPlus, IconTrash, IconUpload, IconEdit, IconX } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -300,7 +300,9 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
             <FormField
               control={form.control}
               name="thumbnailUrl"
-              render={({ field: { value, onChange, ...field } }) => (
+              render={({ field }) => {
+                const { ...restField } = field;
+                return (
                 <FormItem>
                   <FormLabel>Thumbnail Image</FormLabel>
                   <FormControl>
@@ -310,7 +312,10 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
                           type="file"
                           accept="image/*"
                           onChange={handleThumbnailChange}
-                          {...field}
+                          onBlur={restField.onBlur}
+                          name={restField.name}
+                          ref={restField.ref}
+                          value={restField.value as string}
                           className="hidden"
                           id="thumbnail-upload"
                         />
@@ -342,7 +347,8 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
                   </FormControl>
                   <FormMessage />
                 </FormItem>
-              )}
+                );
+              }}
             />
           </CardContent>
         </Card>

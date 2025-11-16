@@ -30,6 +30,7 @@ import { showToast } from "@/lib/toast"
 import { updateCourseById } from "@/service/course.service"
 import { uploadImages } from "@/service/upload.service"
 import { CategoryTreeSelect } from "@/components/custom/category-tree-select"
+import Image from "next/image"
 
 type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
 
@@ -251,7 +252,9 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
             <FormField
               control={form.control}
               name="thumbnailUrl"
-              render={({ field: { value, onChange, ...field } }) => (
+              render={({ field }) => {
+                const {  ...restField } = field;
+                return (
                 <FormItem>
                   <FormLabel>Thumbnail Image</FormLabel>
                   <FormControl>
@@ -261,7 +264,10 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
                           type="file"
                           accept="image/*"
                           onChange={handleThumbnailChange}
-                          {...field}
+                          onBlur={restField.onBlur}
+                          name={restField.name}
+                          ref={restField.ref}
+                          value={restField.value as string}
                           className="hidden"
                           id="thumbnail-upload-edit"
                         />
@@ -281,7 +287,7 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
                       </div>
                       {thumbnailPreview && (
                         <div className="relative w-full max-w-md">
-                          <img
+                          <Image
                             src={thumbnailPreview}
                             alt="Thumbnail preview"
                             className="rounded-lg border"
@@ -295,7 +301,8 @@ export function EditCourseForm({ course, categories, onSuccess }: EditCourseForm
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
-              )}
+                );
+              }}
             />
           </CardContent>
         </Card>

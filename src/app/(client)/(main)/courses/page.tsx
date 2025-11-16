@@ -27,8 +27,7 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
   const page = Number(params.page) || 1;
   const limit = 6;
 
-  // Build filter params
-  const filterParams: Record<string, any> = {
+  const filterParams: Record<string, string | number> = {
     page,
     limit,
   };

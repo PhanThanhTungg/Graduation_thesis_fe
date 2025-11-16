@@ -9,7 +9,7 @@ import {
   LessonSidebar,
   LessonTabs,
   LessonOverviewTab,
-  LessonNotesTab,
+  // LessonNotesTab,
   LessonFilesTab,
   type LessonTabId,
 } from "@/components/lesson";
@@ -27,14 +27,12 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
   const [activeTab, setActiveTab] = useState<LessonTabId>("overview");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const handleProgress = (progress: number) => {
+  const handleProgress = () => {
     // In real app, save progress to backend
-    console.log("Progress:", progress);
   };
 
   const handleComplete = () => {
     // In real app, mark lesson as complete in backend
-    console.log("Lesson completed");
   };
 
   const renderTabContent = () => {
@@ -47,7 +45,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
           />
         );
       case "notes":
-        return <LessonNotesTab lessonId={currentLesson.id} />;
+        // return <LessonNotesTab lessonId={currentLesson.id} />;
       case "files":
         return <LessonFilesTab files={currentLesson.files} />;
       default:

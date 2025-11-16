@@ -46,14 +46,14 @@ export default async function LessonPage({ params }: PageProps) {
   const { sections, totalLessons, totalDuration } = transformChapterTreeWithStats(chapterTree);
 
   const curriculum: CourseCurriculumType = {
-    courseId: typeof course.id === "number" ? course.id : parseInt(course.id) || 0,
+    courseId: typeof course?.id === "number" ? course?.id : parseInt(course?.id || "0") || 0,
     sections,
     totalDuration: formatDuration(totalDuration),
     totalLessons,
   };
 
   const currentLesson = transformLessonToLessonItem(lesson);
-  const courseData = transformCourseToCourseType(course);
+  const courseData = transformCourseToCourseType(course!);
 
   return (
     <LessonView
