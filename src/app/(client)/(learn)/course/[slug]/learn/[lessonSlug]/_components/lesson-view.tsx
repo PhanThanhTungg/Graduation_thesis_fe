@@ -27,7 +27,7 @@ export function LessonView({ course, curriculum, currentLesson }: LessonViewProp
   const [activeTab, setActiveTab] = useState<LessonTabId>("overview");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const handleProgress = (progress: number) => {
+  const handleProgress = () => {
     // In real app, save progress to backend
   };
 

@@ -10,7 +10,7 @@ export async function GET (req: NextRequest, { params }: { params: Promise<{ nam
       return new Response(JSON.stringify({ message: `Cookie with name ${name} not found.` }), { status: 404 });
     }
     return new Response(JSON.stringify( data.value ), { status: 200 });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ message: "Error retrieving cookie." }), { status: 500 });
   }
 }

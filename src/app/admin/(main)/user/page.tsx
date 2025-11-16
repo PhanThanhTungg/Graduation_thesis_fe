@@ -32,7 +32,7 @@ export default function UserPage() {
       const data = await getAllUsers(filters)
       setUsers(data.items)
       setPagination(data.pagination)
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while fetching users")
     } finally {
       setIsLoading(false)
@@ -74,7 +74,7 @@ export default function UserPage() {
       setUsers((prev) =>
         prev.map((user) => (user.id === userId ? { ...user, status } : user))
       )
-    } catch (error) {
+    } catch {
       toast.error("An error occurred while updating user status")
     }
   }

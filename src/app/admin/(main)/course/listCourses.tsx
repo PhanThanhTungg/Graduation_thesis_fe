@@ -78,7 +78,7 @@ export function ListCourses() {
           setTotalPages(1)
           setTotalItems(0)
         }
-      } catch (error) {
+      } catch {
         setCourses([])
       } finally {
         setIsLoading(false)
@@ -124,7 +124,7 @@ export function ListCourses() {
         setTotalPages(result.pagination.totalPages)
         setTotalItems(result.pagination.total)
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete course")
     } finally {
       setDeletingId(null)

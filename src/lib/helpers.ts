@@ -61,7 +61,7 @@ export const addRecentSearch = (search: string): void => {
       recentSearchesArray.length = 5;
     }
     localStorage.setItem("recentSearches", JSON.stringify(recentSearchesArray));
-  } catch (error) {
+  } catch{
     // Silently fail if localStorage is not available
   }
 };
@@ -76,7 +76,7 @@ export const getRecentSearches = (): string[] => {
       recentSearchesArray.length = 5;
     }
     return recentSearchesArray;
-  } catch (error) {
+  } catch {
     return [];
   }
 };
@@ -86,7 +86,7 @@ export const clearRecentSearch = (): void => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.removeItem("recentSearches");
-  } catch (error) {
+  } catch {
     // Silently fail if localStorage is not available
   }
 };

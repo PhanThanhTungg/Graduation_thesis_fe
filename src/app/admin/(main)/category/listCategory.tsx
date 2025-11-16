@@ -45,7 +45,7 @@ export function ListCategory() {
       await deleteCategoryApi(categoryToDelete.id);
       setIsDeleteDialogOpen(false);
       setCategoryToDelete(null);
-    } catch (error) {
+    } catch {
       setIsDeleting(false);
     }
   };
