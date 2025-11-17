@@ -1,94 +1,157 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { BookOpen, Trash2, Edit2, X, Check, Loader2 } from "lucide-react";
+import { AddNoteForm } from "./add-note-form";
+import { getNotesByLessonId, createNote, updateNote, deleteNote } from "@/service/note.service";
+import { NoteType, CreateNoteBodyType, UpdateNoteBodyType } from "@/schema/note.schema";
+import { formatTimeMinute, formatTimeAgo } from "@/lib/helpers";
+import { showToast } from "@/lib/toast";
 
-interface Note {
-  id: number;
-  timestamp: string;
-  content: string;
-  createdAt: Date;
+interface LessonNotesTabProps {
+  lessonId: number | string;
 }
 
-// interface LessonNotesTabProps {
-//   lessonId: number;
-// }
+export function LessonNotesTab({ lessonId }: LessonNotesTabProps) {
+  const [notes, setNotes] = useState<NoteType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [editMinutes, setEditMinutes] = useState("");
+  const [editSeconds, setEditSeconds] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
-export function LessonNotesTab() {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: 1,
-      timestamp: "05:30",
-      content: "Important point about LearnPress installation process. Make sure to backup database before proceeding.",
-      createdAt: new Date("2024-01-15"),
-    },
-    {
-      id: 2,
-      timestamp: "12:45",
-      content: "Configuration settings for the plugin are crucial for proper functionality.",
-      createdAt: new Date("2024-01-15"),
-    },
-  ]);
-  const [newNote, setNewNote] = useState("");
-  const [currentTimestamp] = useState("00:00"); // In real app, this would come from video player
-
-  const handleAddNote = () => {
-    if (!newNote.trim()) return;
-
-    const note: Note = {
-      id: Date.now(),
-      timestamp: currentTimestamp,
-      content: newNote,
-      createdAt: new Date(),
+  // Fetch notes on mount
+  useEffect(() => {
+    const fetchNotes = async () => {
+      setIsLoading(true);
+      const result = await getNotesByLessonId(String(lessonId));
+      
+      if (result) {
+        setNotes(result.notes);
+      }
+      setIsLoading(false);
     };
 
-    setNotes([note, ...notes]);
-    setNewNote("");
+    fetchNotes();
+  }, [lessonId]);
+
+  const handleAddNote = async (data: CreateNoteBodyType) => {
+    const result = await createNote(data);
+
+    if (result) {
+      // Add new note to state without re-fetching
+      const newNote: NoteType = {
+        id: result.id,
+        userId: result.userId,
+        lessonId: result.lessonId,
+        content: result.content,
+        timestamp: result.timestamp,
+        createdAt: result.createdAt,
+      };
+      setNotes((prev) => [newNote, ...prev]);
+      showToast("success", "Note added successfully");
+    }
   };
 
-  const handleDeleteNote = (noteId: number) => {
-    setNotes(notes.filter((note) => note.id !== noteId));
+  const handleStartEdit = (note: NoteType) => {
+    setEditingNoteId(note.id);
+    setEditContent(note.content);
+    const minutes = Math.floor(note.timestamp / 60);
+    const seconds = note.timestamp % 60;
+    setEditMinutes(minutes.toString());
+    setEditSeconds(seconds.toString());
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setEditContent("");
+    setEditMinutes("");
+    setEditSeconds("");
   };
+
+  const handleSaveEdit = async (noteId: string) => {
+    if (!editContent.trim()) {
+      showToast("warning", "Note content cannot be empty");
+      return;
+    }
+
+    const min = parseInt(editMinutes) || 0;
+    const sec = parseInt(editSeconds) || 0;
+    const timestamp = min * 60 + sec;
+
+    setIsSaving(true);
+    const updateData: UpdateNoteBodyType = {
+      content: editContent.trim(),
+      timestamp,
+    };
+
+    const result = await updateNote(noteId, updateData);
+    setIsSaving(false);
+
+    if (result) {
+      // Update note in state without re-fetching
+      setNotes((prev) =>
+        prev.map((note) =>
+          note.id === noteId
+            ? { ...note, content: result.content, timestamp: result.timestamp }
+            : note
+        )
+      );
+      showToast("success", "Note updated successfully");
+      handleCancelEdit();
+    }
+  };
+
+  const handleDeleteClick = (noteId: string) => {
+    setNoteToDelete(noteId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!noteToDelete) return;
+
+    const success = await deleteNote(noteToDelete);
+
+    if (success) {
+      // Remove note from state without re-fetching
+      setNotes((prev) => prev.filter((note) => note.id !== noteToDelete));
+      showToast("success", "Note deleted successfully");
+    }
+    
+    setDeleteDialogOpen(false);
+    setNoteToDelete(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-orange" />
+          <p className="text-muted-foreground">Loading notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Add Note Section */}
-      <div className="bg-[--color-muted] rounded-lg p-6">
-        <h3 className="font-heading text-lg font-semibold mb-4">Add a Note</h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-[--color-muted-foreground]">
-            <BookOpen className="w-4 h-4" />
-            <span>At timestamp: {currentTimestamp}</span>
-          </div>
-          <Textarea
-            placeholder="Write your note here..."
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            rows={4}
-            className="resize-none"
-          />
-          <div className="flex justify-end">
-            <Button
-              onClick={handleAddNote}
-              className="bg-[--color-orange] hover:bg-[--color-orange]/90 text-white"
-            >
-              Add Note
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Add Note Form */}
+      <AddNoteForm lessonId={String(lessonId)} onSubmit={handleAddNote} />
 
       {/* Notes List */}
       <div>
@@ -97,9 +160,9 @@ export function LessonNotesTab() {
         </h3>
 
         {notes.length === 0 ? (
-          <div className="text-center py-12 bg-[--color-muted] rounded-lg">
-            <BookOpen className="w-12 h-12 mx-auto text-[--color-muted-foreground] mb-3" />
-            <p className="text-[--color-muted-foreground]">
+          <div className="text-center py-12 bg-muted rounded-lg">
+            <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+            <p className="text-muted-foreground">
               No notes yet. Start taking notes to remember important points!
             </p>
           </div>
@@ -108,34 +171,150 @@ export function LessonNotesTab() {
             {notes.map((note) => (
               <div
                 key={note.id}
-                className="bg-[--color-card] border border-[--color-border] rounded-lg p-4 hover:shadow-sm transition-shadow"
+                className="bg-card border border-border rounded-lg p-4 hover:shadow-sm transition-shadow"
               >
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center px-3 py-1 bg-[--color-orange]/10 text-[--color-orange] text-sm font-medium rounded">
-                      {note.timestamp}
-                    </span>
-                    <span className="text-sm text-[--color-muted-foreground]">
-                      {formatDate(note.createdAt)}
-                    </span>
+                {editingNoteId === note.id ? (
+                  // Edit Mode
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Timestamp</Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          placeholder="MM"
+                          value={editMinutes}
+                          onChange={(e) => setEditMinutes(e.target.value)}
+                          className="w-20 text-center"
+                          disabled={isSaving}
+                        />
+                        <span className="text-muted-foreground">:</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="59"
+                          placeholder="SS"
+                          value={editSeconds}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            if (val >= 60) {
+                              setEditSeconds("59");
+                            } else {
+                              setEditSeconds(e.target.value);
+                            }
+                          }}
+                          className="w-20 text-center"
+                          disabled={isSaving}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Content</Label>
+                      <Textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={4}
+                        className="resize-none"
+                        disabled={isSaving}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCancelEdit}
+                        disabled={isSaving}
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveEdit(note.id)}
+                        disabled={isSaving}
+                        className="bg-orange hover:bg-orange/90"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-4 h-4 mr-1" />
+                            Save
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleDeleteNote(note.id)}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-[--color-muted-foreground] leading-relaxed">
-                  {note.content}
-                </p>
+                ) : (
+                  // View Mode
+                  <>
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="inline-flex items-center justify-center px-3 py-1 bg-orange/10 text-orange text-sm font-medium rounded">
+                          {formatTimeMinute(note.timestamp)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {formatTimeAgo(note.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleStartEdit(note)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteClick(note.id)}
+                          className="text-destructive hover:text-destructive/90"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      {note.content}
+                    </p>
+                  </>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Note</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this note? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

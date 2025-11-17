@@ -2,11 +2,17 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronUp, PlayCircle, FileText, ClipboardList, BookOpen, Loader2 } from "lucide-react";
+import { PlayCircle, FileText, ClipboardList, BookOpen, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionType, LessonItemType } from "@/schema/lesson.schema";
 import { pingStatusLesson } from "@/service/lesson.service";
 import { showToast } from "@/lib/toast";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface LessonSidebarProps {
   courseSlug: string;
@@ -109,14 +115,6 @@ export function LessonSidebar({
     setSections((prev) => prev.map(updateSection));
   }, []);
 
-  const toggleSection = useCallback((sectionId: number) => {
-    setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId]
-    );
-  }, []);
-
   const completedLessons = useMemo(
     () => sections.reduce((total, section) => total + countSectionCompletedLessons(section), 0),
     [sections]
@@ -128,7 +126,7 @@ export function LessonSidebar({
   );
 
   const getLessonIcon = useCallback((lesson: LessonItemType) => {
-    const iconClass = "w-4 h-4 text-[--color-muted-foreground]";
+    const iconClass = "w-4 h-4 text-muted-foreground";
     const iconMap = {
       video: <PlayCircle className={iconClass} />,
       quiz: <ClipboardList className={iconClass} />,
@@ -167,44 +165,53 @@ export function LessonSidebar({
   }, [updateLessonStatus]);
 
   const renderSection = (section: SectionType, level: number = 0) => {
-    const isExpanded = expandedSections.includes(section.id);
     const sectionTotalLessons = countSectionLessons(section);
     const sectionCompletedLessons = countSectionCompletedLessons(section);
     const hasChildren = Boolean(section.children?.length);
     const hasLessons = section.lessons.length > 0;
     const canExpand = hasChildren || hasLessons;
 
+    if (!canExpand) {
+      return (
+        <div key={section.id} className="border-b border-border">
+          <div
+            className="w-full p-4 flex items-start justify-between"
+            style={{ paddingLeft: `${1 + level * 0.75}rem` } as React.CSSProperties}
+          >
+            <div className="flex-1 text-left">
+              <h3 className="font-heading font-semibold mb-1">{section.title}</h3>
+              <p className="text-sm text-muted-foreground">
+                {sectionCompletedLessons}/{sectionTotalLessons} lessons
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div key={section.id} className="border-b border-[--color-border]">
+      <AccordionItem
+        key={section.id}
+        value={`section-${section.id}`}
+        className="border-b border-border"
+      >
         {/* Section Header */}
-        <button
-          type="button"
-          onClick={() => canExpand && toggleSection(section.id)}
+        <AccordionTrigger
           className={cn(
-            "w-full p-4 flex items-start justify-between transition-colors",
-            canExpand && "hover:bg-[--color-muted] cursor-pointer",
-            !canExpand && "cursor-default"
+            "w-full px-4 py-4 flex items-start justify-between transition-colors hover:bg-muted hover:no-underline"
           )}
           style={{ paddingLeft: `${1 + level * 0.75}rem` } as React.CSSProperties}
         >
           <div className="flex-1 text-left">
             <h3 className="font-heading font-semibold mb-1">{section.title}</h3>
-            <p className="text-sm text-[--color-muted-foreground]">
+            <p className="text-sm text-muted-foreground">
               {sectionCompletedLessons}/{sectionTotalLessons} lessons
             </p>
           </div>
-          {canExpand && (
-            isExpanded ? (
-              <ChevronUp className="w-5 h-5 text-[--color-muted-foreground] flex-shrink-0 mt-0.5" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-[--color-muted-foreground] flex-shrink-0 mt-0.5" />
-            )
-          )}
-        </button>
+        </AccordionTrigger>
 
         {/* Content when expanded */}
-        {isExpanded && (
-          <div className="bg-[--color-muted]/30">
+        <AccordionContent className="bg-muted/30 px-0 py-0">
             {hasChildren ? (
               <div>
                 {section.children!.map((childSection) => renderSection(childSection, level + 1))}
@@ -217,7 +224,7 @@ export function LessonSidebar({
                     const canAccess = lesson.progress === "in_progress" || lesson.progress === "completed";
                     const lessonContent = (
                       <>
-                        <div className="flex-shrink-0 mt-0.5">
+                        <div className={`flex-shrink-0 mt-0.5 ${isCurrentLesson ? "text-green" : ""}`}>
                           {getLessonIcon(lesson)}
                         </div>
 
@@ -225,20 +232,20 @@ export function LessonSidebar({
                           <h4
                             className={cn(
                               "text-sm font-medium mb-1",
-                              isCurrentLesson && "text-[--color-orange]",
+                              isCurrentLesson && "text-green font-semibold",
                               !canAccess && "opacity-50"
                             )}
                           >
                             {lesson.title}
                           </h4>
-                          <div className="flex items-center gap-2 text-xs text-[--color-muted-foreground]">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span className="capitalize">{lesson.type}</span>
                             <span>•</span>
                             <span>{lesson.duration}</span>
                             {lesson.isPreview && (
                               <>
                                 <span>•</span>
-                                <span className="text-[--color-orange]">Preview</span>
+                                <span className="text-orange">Preview</span>
                               </>
                             )}
                           </div>
@@ -250,9 +257,9 @@ export function LessonSidebar({
                       <div
                         key={lesson.id}
                         className={cn(
-                          "flex items-start gap-3 p-4 border-t border-[--color-border] transition-colors group",
-                          canAccess && "hover:bg-[--color-card]",
-                          isCurrentLesson && "bg-[--color-orange]/10 dark:bg-[--color-orange]/20 border-l-4 border-l-[--color-orange]",
+                          "flex items-start gap-3 p-4 border-t border-border transition-colors group",
+                          canAccess && "hover:bg-card",
+                          isCurrentLesson && "bg-green-foreground border-l-4 border-l-green",
                           !canAccess && "opacity-60 cursor-not-allowed"
                         )}
                         style={{ paddingLeft: `${1.5 + level * 0.75}rem` } as React.CSSProperties}
@@ -323,33 +330,32 @@ export function LessonSidebar({
                   })}
               </div>
             ) : null}
-          </div>
-        )}
-      </div>
+        </AccordionContent>
+      </AccordionItem>
     );
   };
 
   return (
-    <div className="h-full flex flex-col bg-[--color-card]">
+    <div className="h-full flex flex-col bg-card">
       {/* Header */}
-      <div className="p-6 border-b border-[--color-border]">
+      <div className="p-6 border-b border-primary">
         <h2 className="font-heading text-xl font-semibold mb-4">Course Content</h2>
         
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-[--color-muted-foreground]">Your progress</span>
+            <span className="text-muted-foreground">Your progress</span>
             <span className="font-medium">
               {completedLessons}/{totalLessons} lessons
             </span>
           </div>
-          <div className="w-full h-2 bg-[--color-muted] rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-[--color-green] transition-all duration-300"
+              className="h-full bg-green transition-all duration-300"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
-          <div className="flex items-center justify-between text-sm text-[--color-muted-foreground]">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>{Math.round(progressPercentage)}% Complete</span>
             <span>{totalDuration}</span>
           </div>
@@ -358,7 +364,16 @@ export function LessonSidebar({
 
       {/* Curriculum List */}
       <div className="flex-1 overflow-y-auto">
-        {sections.map((section) => renderSection(section, 0))}
+        <Accordion
+          type="multiple"
+          value={expandedSections.map((id) => `section-${id}`)}
+          onValueChange={(values) => {
+            const sectionIds = values.map((v) => parseInt(v.replace('section-', '')));
+            setExpandedSections(sectionIds);
+          }}
+        >
+          {sections.map((section) => renderSection(section, 0))}
+        </Accordion>
       </div>
     </div>
   );

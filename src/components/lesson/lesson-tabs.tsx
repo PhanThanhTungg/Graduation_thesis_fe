@@ -3,7 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export type LessonTabId = "overview" | "notes" | "files";
+export type LessonTabId = "overview" | "notes" | "documents" | "files" | "quiz";
 
 interface LessonTabsProps {
   activeTab: LessonTabId;
@@ -14,11 +14,12 @@ export function LessonTabs({ activeTab, onTabChange }: LessonTabsProps) {
   const tabs: { id: LessonTabId; label: string }[] = [
     { id: "overview", label: "Overview" },
     { id: "notes", label: "Notes" },
-    { id: "files", label: "Files" },
+    { id: "documents", label: "Documents" },
+    { id: "quiz", label: "Quiz" },
   ];
 
   return (
-    <div className="border-b border-[--color-border] bg-[--color-card]">
+    <div className="border-b border-border bg-card">
       <div className="flex gap-8 px-6">
         {tabs.map((tab) => (
           <button
@@ -27,13 +28,13 @@ export function LessonTabs({ activeTab, onTabChange }: LessonTabsProps) {
             className={cn(
               "py-4 font-medium text-sm transition-colors relative",
               activeTab === tab.id
-                ? "text-[--color-orange]"
-                : "text-[--color-muted-foreground] hover:text-foreground"
+                ? "text-orange"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             {tab.label}
             {activeTab === tab.id && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[--color-orange]" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange" />
             )}
           </button>
         ))}
