@@ -6,8 +6,8 @@ import Script from "next/script";
 
 // Declare player.js types
 interface BunnyPlayer {
-  on: (event: string, callback: (data?: any) => void) => void;
-  off: (event: string, callback?: (data?: any) => void) => void;
+  on: (event: string, callback: (data?: { seconds: number; duration: number }) => void) => void;
+  off: (event: string, callback?: (data?: { seconds: number; duration: number }) => void) => void;
   ready: () => void;
   play: () => void;
   pause: () => void;
@@ -53,10 +53,12 @@ export function VideoPlayer({ embedUrl, title }: VideoPlayerProps) {
           console.log("Bunny Stream player ready");
 
           // Listen to timeupdate event
-          player.on("timeupdate", (data: { seconds: number; duration: number }) => {
+          player.on("timeupdate", (data?: { seconds: number; duration: number }) => {
             // Emit current timestamp to event bus (in seconds)
-            const timestamp = Math.floor(data.seconds);
-            eventBus.emit("video:timeupdate", timestamp);
+            if (data) {
+              const timestamp = Math.floor(data.seconds);
+              eventBus.emit("video:timeupdate", timestamp);
+            }
           });
 
           // Optional: Listen to other events for debugging
@@ -110,9 +112,11 @@ export function VideoPlayer({ embedUrl, title }: VideoPlayerProps) {
       player.on("ready", () => {
         console.log("Bunny Stream player ready");
 
-        player.on("timeupdate", (data: { seconds: number; duration: number }) => {
-          const timestamp = Math.floor(data.seconds);
-          eventBus.emit("video:timeupdate", timestamp);
+        player.on("timeupdate", (data?: { seconds: number; duration: number }) => {
+          if (data) {
+            const timestamp = Math.floor(data.seconds);
+            eventBus.emit("video:timeupdate", timestamp);
+          }
         });
       });
     }

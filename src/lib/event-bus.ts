@@ -1,4 +1,4 @@
-type Listener<T = any> = (data: T) => void;
+type Listener<T = unknown> = (data: T) => void;
 
 interface ListenersMap {
   [event: string]: Listener[];
@@ -7,19 +7,19 @@ interface ListenersMap {
 const listeners: ListenersMap = {};
 
 const eventBus = {
-  on<T = any>(event: string, callback: Listener<T>) {
+  on<T = unknown>(event: string, callback: Listener<T>) {
     if (!listeners[event]) {
       listeners[event] = [];
     }
     listeners[event].push(callback as Listener);
   },
 
-  off<T = any>(event: string, callback: Listener<T>) {
+  off<T = unknown>(event: string, callback: Listener<T>) {
     if (!listeners[event]) return;
     listeners[event] = listeners[event].filter(cb => cb !== callback);
   },
 
-  emit<T = any>(event: string, data: T) {
+  emit<T = unknown>(event: string, data: T) {
     if (!listeners[event]) return;
     listeners[event].forEach(callback => callback(data));
   }

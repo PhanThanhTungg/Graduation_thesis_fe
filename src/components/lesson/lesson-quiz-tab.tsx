@@ -91,8 +91,9 @@ interface LessonQuizTabProps {
 }
 
 export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
+  console.log(lessonId)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [showResult, setShowResult] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -101,7 +102,7 @@ export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
   const hasAnswer = answers[currentQuestion.id] !== undefined && answers[currentQuestion.id] !== "";
 
-  const handleAnswerChange = (questionId: string, answer: any) => {
+  const handleAnswerChange = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: answer,
@@ -240,7 +241,7 @@ export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
             <div className="space-y-3">
               {currentQuestion.type === "single select" && (
                 <RadioGroup
-                  value={answers[currentQuestion.id] || ""}
+                  value={(answers[currentQuestion.id] as string) || ""}
                   onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
                 >
                   {currentQuestion.options?.map((option) => (
@@ -267,7 +268,8 @@ export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
               {currentQuestion.type === "multiple select" && (
                 <div className="space-y-3">
                   {currentQuestion.options?.map((option) => {
-                    const isChecked = (answers[currentQuestion.id] || []).includes(option.name);
+                    const currentAnswers = answers[currentQuestion.id] as string[] | undefined;
+                    const isChecked = (currentAnswers || []).includes(option.name);
                     return (
                       <div
                         key={option.name}
@@ -280,13 +282,13 @@ export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
                           id={`${currentQuestion.id}-${option.name}`}
                           checked={isChecked}
                           onCheckedChange={(checked) => {
-                            const currentAnswers = answers[currentQuestion.id] || [];
+                            const existingAnswers = (answers[currentQuestion.id] as string[]) || [];
                             if (checked) {
-                              handleAnswerChange(currentQuestion.id, [...currentAnswers, option.name]);
+                              handleAnswerChange(currentQuestion.id, [...existingAnswers, option.name]);
                             } else {
                               handleAnswerChange(
                                 currentQuestion.id,
-                                currentAnswers.filter((a: string) => a !== option.name)
+                                existingAnswers.filter((a) => a !== option.name)
                               );
                             }
                           }}
@@ -306,7 +308,7 @@ export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
 
               {currentQuestion.type === "true false" && (
                 <RadioGroup
-                  value={answers[currentQuestion.id] || ""}
+                  value={(answers[currentQuestion.id] as string) || ""}
                   onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
                 >
                   {[
@@ -335,7 +337,7 @@ export function LessonQuizTab({ lessonId }: LessonQuizTabProps) {
               {currentQuestion.type === "open-ended" && (
                 <Textarea
                   placeholder="Enter your answer..."
-                  value={answers[currentQuestion.id] || ""}
+                  value={(answers[currentQuestion.id] as string) || ""}
                   onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
                   className="min-h-32"
                 />

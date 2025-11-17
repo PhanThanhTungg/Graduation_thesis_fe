@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { FileText, File, FileImage, FileArchive, FileCode, Download, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -156,7 +157,7 @@ function FilePreview({ file }: FilePreviewProps) {
           });
           
           text = await response.text();
-        } catch (noCorsError) {
+        } catch {
           // If both fail, show error with helpful message
           throw new Error(
             `Cannot load file due to CORS restrictions.\n\n` +
@@ -251,13 +252,18 @@ function FilePreview({ file }: FilePreviewProps) {
       {expanded && (
         <div className="border-t border-border">
           {isImageFile(file.fileName) && (
-            <div className="p-4 bg-background">
-              <img
-                src={file.fileUrl}
-                alt={file.fileName}
-                className="max-w-full h-auto rounded-lg mx-auto"
-                style={{ maxHeight: "600px" }}
-              />
+            <div className="p-4 bg-background flex justify-center">
+              <div className="relative w-full max-w-4xl" style={{ maxHeight: "600px" }}>
+                <Image
+                  src={file.fileUrl}
+                  alt={file.fileName}
+                  width={1200}
+                  height={600}
+                  className="rounded-lg object-contain w-full h-auto"
+                  style={{ maxHeight: "600px" }}
+                  unoptimized
+                />
+              </div>
             </div>
           )}
 
@@ -347,7 +353,7 @@ function FilePreview({ file }: FilePreviewProps) {
                   title={file.fileName}
                 />
                 <div className="mt-4 p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
-                  <p>Preview powered by Microsoft Office Online. If preview doesn't load, try downloading the file.</p>
+                  <p>Preview powered by Microsoft Office Online. If preview doesn&apos;t load, try downloading the file.</p>
                 </div>
               </div>
             </div>
