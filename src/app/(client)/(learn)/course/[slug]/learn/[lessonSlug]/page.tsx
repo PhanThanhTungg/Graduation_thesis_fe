@@ -60,6 +60,7 @@ export default async function LessonPage({ params }: PageProps) {
       course={courseData}
       curriculum={curriculum}
       currentLesson={currentLesson}
+      lessonId={lesson.id}
     />
   );
 }
