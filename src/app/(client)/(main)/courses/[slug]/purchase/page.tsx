@@ -89,7 +89,7 @@ export default async function PurchasePage({ params }: PurchasePageProps) {
         </article>
         <CheckoutClient
           course={{
-            id: course.id,
+            id: course.id + "",
             slug: course.slug,
             title: course.title,
             price: course.price,
