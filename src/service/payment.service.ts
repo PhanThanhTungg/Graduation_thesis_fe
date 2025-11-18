@@ -1,4 +1,4 @@
-import { post } from "@/lib/request";
+import { get, post } from "@/lib/request";
 
 type CreatePaypalOrderResponse = {
   message: string;
@@ -64,4 +64,28 @@ export const capturePaypalOrder = async (
       ? response.payload.message
       : "Failed to capture payment",
   );
+};
+
+type CheckPurchaseResponse = {
+  message: string;
+  data: {
+    hasPurchased: boolean;
+    orderId: string | null;
+  };
+};
+
+export const checkPurchase = async (courseId: string) => {
+  const response = await get<CheckPurchaseResponse>(
+    "/api/payment/client/check-purchase",
+    { courseId },
+  );
+
+  if (response.status === 200) {
+    return (response.payload as CheckPurchaseResponse).data;
+  }
+
+  return {
+    hasPurchased: false,
+    orderId: null,
+  };
 };

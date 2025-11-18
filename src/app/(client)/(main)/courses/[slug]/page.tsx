@@ -3,11 +3,9 @@ import BreadcrumbCustom, {
   BreadcrumbProps,
 } from "@/components/custom/breadcrumb";
 import NotFound from "@/app/not-found";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
 import { getCourseBySlug } from "@/service/course.service";
-import { getNextLessonByCourseSlug } from "@/service/lesson.service";
+import CourseActionButton from "./_components/course-action-button";
 
 interface CourseDetailPageProps {
   params: {
@@ -27,13 +25,6 @@ export default async function CourseDetailPage({
 
   if (!course) {
     return <NotFound />;
-  }
-
-  let nextLessonSlug: string | null = null;
-  try {
-    nextLessonSlug = await getNextLessonByCourseSlug(params.slug);
-  } catch {
-    nextLessonSlug = null;
   }
 
   const breadcrumbData: BreadcrumbProps[] = [
@@ -75,21 +66,10 @@ export default async function CourseDetailPage({
             </span>
 
             {/* CTA Button */}
-            <Button
-              size="lg"
-              className="bg-green hover:bg-green/90 text-secondary text-lg font-bold rounded-3xl px-6"
-              asChild
-            >
-              <Link
-                href={
-                  nextLessonSlug
-                    ? `/course/${course.slug}/learn/${nextLessonSlug}`
-                    : `/courses/${course.slug}/purchase`
-                }
-              >
-                Start now
-              </Link>
-            </Button>
+            <CourseActionButton
+              courseId={course.id + ""}
+              courseSlug={course.slug}
+            />
           </div>
         </section>
       </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { showToast } from "@/lib/toast";
 import {
   createPaypalOrder,
   capturePaypalOrder,
+  checkPurchase,
 } from "@/service/payment.service";
 import { useRouter } from "next/navigation";
 import { getNextLessonByCourseSlug } from "@/service/lesson.service";
@@ -43,8 +44,25 @@ export default function CheckoutClient({
     orderId: string;
     paypalOrderId?: string;
   } | null>(null);
+  const [hasPurchased, setHasPurchased] = useState<boolean | null>(null);
+  const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
 
-  const alreadyOwned = Boolean(nextLessonSlug);
+  useEffect(() => {
+    const checkPurchaseStatus = async () => {
+      try {
+        const result = await checkPurchase(course.id);
+        setHasPurchased(result.hasPurchased);
+      } catch {
+        setHasPurchased(false);
+      } finally {
+        setIsCheckingPurchase(false);
+      }
+    };
+
+    checkPurchaseStatus();
+  }, [course.id]);
+
+  const alreadyOwned = hasPurchased === true;
   const isFree = priceInfo.finalPrice <= 0;
 
   const summaryItems = useMemo(() => {
@@ -201,7 +219,11 @@ export default function CheckoutClient({
         </p>
       </div>
 
-      {alreadyOwned && (
+      {isCheckingPurchase ? (
+        <div className="rounded-xl border bg-card px-4 py-3 text-sm text-muted-foreground">
+          Checking purchase status...
+        </div>
+      ) : alreadyOwned ? (
         <div className="rounded-xl border border-green/40 bg-green-foreground px-4 py-3 text-sm leading-relaxed">
           You already own this course. Continue learning anytime.
           <Button
@@ -212,7 +234,7 @@ export default function CheckoutClient({
             Go to lessons
           </Button>
         </div>
-      )}
+      ) : null}
 
       <section className="space-y-3">
         <label className="text-sm font-medium text-foreground">
@@ -274,6 +296,7 @@ export default function CheckoutClient({
               options={{
                 clientId: paypalClientId,
                 currency: "USD",
+                locale: "en_US",
               }}
             >
               <PayPalButtons
