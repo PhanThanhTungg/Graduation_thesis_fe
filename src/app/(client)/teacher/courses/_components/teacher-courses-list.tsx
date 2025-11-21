@@ -1,208 +1,227 @@
-"use client"
+"use client";
 
-import { ExtendedCourseType } from "@/schema/course.schema"
-import { CategoryType } from "@/schema/category.schema"
-import { useEffect, useState } from "react"
-import { CourseCard } from "@/components/teacher/course-card"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Search, ChevronLeft, ChevronRight } from "lucide-react"
-import { updateCourseById, deleteCourse, getMyCourses } from "@/service/course.service"
-import { showToast } from "@/lib/toast"
+import { ExtendedCourseType } from "@/schema/course.schema";
+import { CategoryType } from "@/schema/category.schema";
+import { useEffect, useState } from "react";
+import { CourseCard } from "@/components/teacher/course-card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  updateCourseById,
+  deleteCourse,
+  getMyCourses,
+} from "@/service/course.service";
+import { showToast } from "@/lib/toast";
 
 interface TeacherCoursesListProps {
-  initialCourses?: ExtendedCourseType[]
-  initialPagination?: { page: number; limit: number; total: number; totalPages: number }
-  categories?: CategoryType[]
-  onCourseUpdated?: () => void
-  onAddCourseRef?: (ref: (course: ExtendedCourseType) => void) => void
+  initialCourses?: ExtendedCourseType[];
+  initialPagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  categories?: CategoryType[];
+  onCourseUpdated?: () => void;
+  onAddCourseRef?: (ref: (course: ExtendedCourseType) => void) => void;
 }
 
-export function TeacherCoursesList({ 
-  initialCourses = [], 
+export function TeacherCoursesList({
+  initialCourses = [],
   initialPagination,
-  categories, 
-  onAddCourseRef 
+  categories,
+  onAddCourseRef,
 }: TeacherCoursesListProps) {
-  const [courses, setCourses] = useState<ExtendedCourseType[]>(initialCourses)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState("newest")
-  const [publishFilter, setPublishFilter] = useState<"all" | "published" | "unpublished">("all")
-  const [currentPage, setCurrentPage] = useState(initialPagination?.page || 1)
-  const [itemsPerPage, setItemsPerPage] = useState(initialPagination?.limit || 6)
-  const [pagination, setPagination] = useState(initialPagination)
-  const [isLoading, setIsLoading] = useState(false)
-  const [updatingId, setUpdatingId] = useState<number | null>(null)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [courses, setCourses] = useState<ExtendedCourseType[]>(initialCourses);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+  const [publishFilter, setPublishFilter] = useState<
+    "all" | "published" | "unpublished"
+  >("all");
+  const [currentPage, setCurrentPage] = useState(initialPagination?.page || 1);
+  const [itemsPerPage, setItemsPerPage] = useState(
+    initialPagination?.limit || 6,
+  );
+  const [pagination, setPagination] = useState(initialPagination);
+  const [isLoading, setIsLoading] = useState(false);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (initialCourses.length > 0) {
-      setCourses(initialCourses)
+      setCourses(initialCourses);
     }
     if (initialPagination) {
-      setPagination(initialPagination)
-      setCurrentPage(initialPagination.page)
-      setItemsPerPage(initialPagination.limit)
+      setPagination(initialPagination);
+      setCurrentPage(initialPagination.page);
+      setItemsPerPage(initialPagination.limit);
     }
-  }, [initialCourses, initialPagination])
+  }, [initialCourses, initialPagination]);
 
   useEffect(() => {
     if (onAddCourseRef) {
       const addCourse = (course: ExtendedCourseType) => {
-        setCourses(prevCourses => [course, ...prevCourses])
+        setCourses((prevCourses) => [course, ...prevCourses]);
         if (pagination) {
           setPagination({
             ...pagination,
             total: pagination.total + 1,
-            totalPages: Math.ceil((pagination.total + 1) / pagination.limit)
-          })
+            totalPages: Math.ceil((pagination.total + 1) / pagination.limit),
+          });
         }
-      }
-      onAddCourseRef(addCourse)
+      };
+      onAddCourseRef(addCourse);
     }
-  }, [onAddCourseRef, pagination])
+  }, [onAddCourseRef, pagination]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery)
-    }, 500)
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
 
-    return () => clearTimeout(timer)
-  }, [searchQuery])
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const getSortParams = (sortBy: string) => {
     switch (sortBy) {
       case "newest":
-        return { sortField: "createdAt", sortOrder: "desc" as const }
+        return { sortField: "createdAt", sortOrder: "desc" as const };
       case "oldest":
-        return { sortField: "createdAt", sortOrder: "asc" as const }
+        return { sortField: "createdAt", sortOrder: "asc" as const };
       case "price-high":
-        return { sortField: "price", sortOrder: "desc" as const }
+        return { sortField: "price", sortOrder: "desc" as const };
       case "price-low":
-        return { sortField: "price", sortOrder: "asc" as const }
+        return { sortField: "price", sortOrder: "asc" as const };
       case "students":
-        return { sortField: "countStudent", sortOrder: "desc" as const }
+        return { sortField: "countStudent", sortOrder: "desc" as const };
       case "rating":
-        return { sortField: "rating", sortOrder: "desc" as const }
+        return { sortField: "rating", sortOrder: "desc" as const };
       default:
-        return { sortField: "createdAt", sortOrder: "desc" as const }
+        return { sortField: "createdAt", sortOrder: "desc" as const };
     }
-  }
+  };
 
   useEffect(() => {
-    setCurrentPage(1)
-  }, [debouncedSearchQuery, sortBy, itemsPerPage, publishFilter])
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, sortBy, itemsPerPage, publishFilter]);
 
   useEffect(() => {
     const fetchCourses = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
-        const sortParams = getSortParams(sortBy)
-        const isPublished = publishFilter === "all" 
-          ? undefined 
-          : publishFilter === "published"
+        const sortParams = getSortParams(sortBy);
+        const isPublished =
+          publishFilter === "all" ? undefined : publishFilter === "published";
         const result = await getMyCourses({
           keySearch: debouncedSearchQuery || undefined,
           ...sortParams,
           page: currentPage,
           limit: itemsPerPage,
           isPublished,
-        })
-        setCourses(result.courses)
+        });
+        setCourses(result.courses);
         if (result.pagination) {
-          setPagination(result.pagination)
+          setPagination(result.pagination);
         }
       } catch (error) {
-        showToast("error", "Failed to load courses")
-        console.error(error)
+        showToast("error", "Failed to load courses");
+        console.error(error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchCourses()
-  }, [debouncedSearchQuery, sortBy, currentPage, itemsPerPage, publishFilter])
+    fetchCourses();
+  }, [debouncedSearchQuery, sortBy, currentPage, itemsPerPage, publishFilter]);
 
   const handleTogglePublish = async (courseId: number, newStatus: boolean) => {
-    setUpdatingId(courseId)
-    
+    setUpdatingId(courseId);
+
     try {
       const updatedCourse = await updateCourseById(String(courseId), {
         isPublished: newStatus,
-      })
-      
-      setCourses(prevCourses => 
-        prevCourses.map(c => 
-          c.id === courseId ? updatedCourse : c
-        )
-      )
-      
+      });
+
+      setCourses((prevCourses) =>
+        prevCourses.map((c) => (c.id === courseId ? updatedCourse : c)),
+      );
+
       showToast(
         "success",
-        newStatus 
-          ? "Course published successfully!" 
-          : "Course unpublished successfully!"
-      )
+        newStatus
+          ? "Course published successfully!"
+          : "Course unpublished successfully!",
+      );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update course status"
-      showToast("error", errorMessage)
-      console.error(error)
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to update course status";
+      showToast("error", errorMessage);
+      console.error(error);
     } finally {
-      setUpdatingId(null)
+      setUpdatingId(null);
     }
-  }
+  };
 
   const handleCourseUpdated = (updatedCourse: ExtendedCourseType) => {
-    setCourses(prevCourses => 
-      prevCourses.map(c => 
-        c.id === updatedCourse.id ? updatedCourse : c
-      )
-    )
-  }
+    setCourses((prevCourses) =>
+      prevCourses.map((c) => (c.id === updatedCourse.id ? updatedCourse : c)),
+    );
+  };
 
   const handleCourseDeleted = async (courseId: number) => {
-    setDeletingId(courseId)
-    
+    setDeletingId(courseId);
+
     try {
-      await deleteCourse(String(courseId))
-      
-      setCourses(prevCourses => 
-        prevCourses.filter(c => c.id !== courseId)
-      )
-      
+      await deleteCourse(String(courseId));
+
+      setCourses((prevCourses) => prevCourses.filter((c) => c.id !== courseId));
+
       if (pagination) {
         setPagination({
           ...pagination,
           total: pagination.total - 1,
-          totalPages: Math.ceil((pagination.total - 1) / pagination.limit)
-        })
+          totalPages: Math.ceil((pagination.total - 1) / pagination.limit),
+        });
       }
-      
-      showToast("success", "Course deleted successfully!")
-      
+
+      showToast("success", "Course deleted successfully!");
+
       if (courses.length === 1 && currentPage > 1) {
-        setCurrentPage(currentPage - 1)
+        setCurrentPage(currentPage - 1);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete course"
-      showToast("error", errorMessage)
-      console.error(error)
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete course";
+      showToast("error", errorMessage);
+      console.error(error);
     } finally {
-      setDeletingId(null)
+      setDeletingId(null);
     }
-  }
+  };
 
-  const totalPages = pagination?.totalPages || 1
-  const total = pagination?.total || 0
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = Math.min(startIndex + itemsPerPage, total)
+  const totalPages = pagination?.totalPages || 1;
+  const total = pagination?.total || 0;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, total);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-lg border border-violet/20 shadow-sm">
-        <div className="relative flex-1">
+    <div className="space-y-6" suppressHydrationWarning>
+      <div
+        className="flex flex-col sm:flex-row gap-4 bg-card p-4 rounded-lg border border-violet/20 shadow-sm"
+        suppressHydrationWarning
+      >
+        <div className="relative flex-1" suppressHydrationWarning>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-violet w-4 h-4" />
           <Input
             placeholder="Search courses..."
@@ -211,8 +230,13 @@ export function TeacherCoursesList({
             className="pl-10 border-violet/30 focus:border-violet focus:ring-violet/20"
           />
         </div>
-        
-        <Select value={publishFilter} onValueChange={(value) => setPublishFilter(value as "all" | "published" | "unpublished")}>
+
+        <Select
+          value={publishFilter}
+          onValueChange={(value) =>
+            setPublishFilter(value as "all" | "published" | "unpublished")
+          }
+        >
           <SelectTrigger className="w-full sm:w-[180px] border-violet/30 focus:border-violet focus:ring-violet/20">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -237,7 +261,10 @@ export function TeacherCoursesList({
           </SelectContent>
         </Select>
 
-        <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(Number(value))}>
+        <Select
+          value={itemsPerPage.toString()}
+          onValueChange={(value) => setItemsPerPage(Number(value))}
+        >
           <SelectTrigger className="w-full sm:w-[150px] border-violet/30 focus:border-violet focus:ring-violet/20">
             <SelectValue placeholder="Items per page" />
           </SelectTrigger>
@@ -250,9 +277,9 @@ export function TeacherCoursesList({
         </Select>
       </div>
 
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-2 text-sm" suppressHydrationWarning>
         <span className="font-medium text-green">
-          {total} {total === 1 ? 'course' : 'courses'}
+          {total} {total === 1 ? "course" : "courses"}
         </span>
         {total > 0 && (
           <span className="text-muted-foreground">
@@ -283,16 +310,26 @@ export function TeacherCoursesList({
         </ul>
       ) : (
         <div className="text-center py-16 bg-gradient-to-br from-violet/5 via-peach/5 to-mint/10 rounded-2xl border-2 border-dashed border-violet/30">
-          {!debouncedSearchQuery && publishFilter === "all" && sortBy === "newest" ? (
+          {!debouncedSearchQuery &&
+          publishFilter === "all" &&
+          sortBy === "newest" ? (
             <>
               <div className="text-6xl mb-4">📚</div>
-              <p className="text-lg font-medium text-foreground mb-2">No courses yet</p>
-              <p className="text-sm text-muted-foreground">Click &quot;Create Course&quot; button to get started!</p>
+              <p className="text-lg font-medium text-foreground mb-2">
+                No courses yet
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Click &quot;Create Course&quot; button to get started!
+              </p>
             </>
           ) : (
             <>
-              <p className="text-muted-foreground text-lg">🔍 No courses found matching your search.</p>
-              <p className="text-sm text-muted-foreground mt-2">Try adjusting your filters</p>
+              <p className="text-muted-foreground text-lg">
+                🔍 No courses found matching your search.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Try adjusting your filters
+              </p>
             </>
           )}
         </div>
@@ -303,14 +340,14 @@ export function TeacherCoursesList({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1 || isLoading}
             className="border-green/30 hover:bg-green/10 hover:text-green hover:border-green disabled:opacity-50"
           >
             <ChevronLeft className="w-4 h-4" />
             Previous
           </Button>
-          
+
           <div className="flex items-center gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <Button
@@ -319,9 +356,11 @@ export function TeacherCoursesList({
                 size="sm"
                 onClick={() => setCurrentPage(page)}
                 disabled={isLoading}
-                className={currentPage === page 
-                  ? "w-10 bg-green hover:bg-green/90 text-white border-green" 
-                  : "w-10 border-green/30 hover:bg-green/10 hover:text-green hover:border-green"}
+                className={
+                  currentPage === page
+                    ? "w-10 bg-green hover:bg-green/90 text-white border-green"
+                    : "w-10 border-green/30 hover:bg-green/10 hover:text-green hover:border-green"
+                }
               >
                 {page}
               </Button>
@@ -331,7 +370,9 @@ export function TeacherCoursesList({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
             disabled={currentPage === totalPages || isLoading}
             className="border-green/30 hover:bg-green/10 hover:text-green hover:border-green disabled:opacity-50"
           >
@@ -341,5 +382,5 @@ export function TeacherCoursesList({
         </div>
       )}
     </div>
-  )
+  );
 }

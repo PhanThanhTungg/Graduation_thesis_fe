@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useState } from "react"
-import { IconPlus, IconTrash, IconUpload } from "@tabler/icons-react"
-import { Button } from "@/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { IconPlus, IconTrash, IconUpload } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -20,28 +20,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { CreateCourseBodySchema, ExtendedCourseType } from "@/schema/course.schema"
-import { CategoryType } from "@/schema/category.schema"
-import { z } from "zod"
-import { showToast } from "@/lib/toast"
-import { createCourse, getCourseById } from "@/service/course.service"
-import { uploadImages } from "@/service/upload.service"
-import { CategoryTreeSelect } from "@/components/custom/category-tree-select"
-import Image from "next/image"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  CreateCourseBodySchema,
+  ExtendedCourseType,
+} from "@/schema/course.schema";
+import { CategoryType } from "@/schema/category.schema";
+import { z } from "zod";
+import { showToast } from "@/lib/toast";
+import { createCourse, getCourseById } from "@/service/course.service";
+import { uploadImages } from "@/service/upload.service";
+import { CategoryTreeSelect } from "@/components/custom/category-tree-select";
+import Image from "next/image";
 
-type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
+type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>;
 
 interface CreateCourseFormProps {
-  categories: CategoryType[]
-  onSuccess?: (course: ExtendedCourseType) => void
+  categories: CategoryType[];
+  onSuccess?: (course: ExtendedCourseType) => void;
 }
 
-export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
+export function CreateCourseForm({
+  categories,
+  onSuccess,
+}: CreateCourseFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
 
   const form = useForm<CreateCourseFormValues>({
     resolver: zodResolver(CreateCourseBodySchema),
@@ -58,55 +64,60 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
       },
     },
     mode: "onChange",
-  })
+  });
 
   // Handle file upload preview
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-      form.setValue("thumbnailUrl", file, { shouldValidate: true })
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      form.setValue("thumbnailUrl", file, { shouldValidate: true });
     }
-  }
+  };
 
   // Array field helpers
-  const addArrayField = (fieldName: "targetKnowledges" | "requirements" | "suitableParticipants") => {
-    const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
+  const addArrayField = (
+    fieldName: "targetKnowledges" | "requirements" | "suitableParticipants",
+  ) => {
+    const currentValues =
+      form.getValues(`courseDescription.${fieldName}`) || [];
     form.setValue(`courseDescription.${fieldName}`, [...currentValues, ""], {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const removeArrayField = (
     fieldName: "targetKnowledges" | "requirements" | "suitableParticipants",
-    index: number
+    index: number,
   ) => {
-    const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
-    const newValues = currentValues.filter((_, i) => i !== index)
+    const currentValues =
+      form.getValues(`courseDescription.${fieldName}`) || [];
+    const newValues = currentValues.filter((_, i) => i !== index);
     form.setValue(`courseDescription.${fieldName}`, newValues, {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const updateArrayField = (
     fieldName: "targetKnowledges" | "requirements" | "suitableParticipants",
     index: number,
-    value: string
+    value: string,
   ) => {
-    const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
-    const newValues = [...currentValues]
-    newValues[index] = value
+    const currentValues =
+      form.getValues(`courseDescription.${fieldName}`) || [];
+    const newValues = [...currentValues];
+    newValues[index] = value;
     form.setValue(`courseDescription.${fieldName}`, newValues, {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const onSubmit = async (data: CreateCourseFormValues) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       let thumbnailUrl: string | undefined = undefined;
 
@@ -130,24 +141,25 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
       if (!createdCourse || !createdCourse.id) {
         throw new Error("Failed to get course ID from response");
       }
-      
+
       const fullCourse = await getCourseById(String(createdCourse.id));
 
       showToast("success", "Course created successfully!");
       form.reset();
       setThumbnailPreview(null);
-      
+
       if (onSuccess) {
         onSuccess(fullCourse);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create course";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create course";
       showToast("error", errorMessage);
       console.error(error);
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -219,7 +231,8 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
                       />
                     </FormControl>
                     <FormDescription>
-                      Choose the main category for your course (only leaf categories can be selected)
+                      Choose the main category for your course (only leaf
+                      categories can be selected)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -230,54 +243,60 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
             <FormField
               control={form.control}
               name="thumbnailUrl"
-              render={({ field }) => {
-                const { ...restField } = field;
+              render={({ field: { value, onChange, ...restField } }) => {
                 return (
-                <FormItem>
-                  <FormLabel>Thumbnail Image</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleThumbnailChange}
-                          onBlur={restField.onBlur}
-                          name={restField.name}
-                          ref={restField.ref}
-                          className="hidden"
-                          id="thumbnail-upload"
-                        />
-                        <label htmlFor="thumbnail-upload">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="cursor-pointer"
-                            asChild
-                          >
-                            <span>
-                              <IconUpload className="mr-2 h-4 w-4" />
-                              Upload Thumbnail
-                            </span>
-                          </Button>
-                        </label>
-                      </div>
-                      {thumbnailPreview && (
-                        <div className="relative w-full max-w-md">
-                          <Image
-                            src={thumbnailPreview}
-                            alt="Thumbnail preview"
-                            className="rounded-lg border"
+                  <FormItem>
+                    <FormLabel>Thumbnail Image</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleThumbnailChange(e);
+                              }
+                            }}
+                            onBlur={restField.onBlur}
+                            name={restField.name}
+                            ref={restField.ref}
+                            className="hidden"
+                            id="thumbnail-upload"
                           />
+                          <label htmlFor="thumbnail-upload">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="cursor-pointer"
+                              asChild
+                            >
+                              <span>
+                                <IconUpload className="mr-2 h-4 w-4" />
+                                Upload Thumbnail
+                              </span>
+                            </Button>
+                          </label>
                         </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Upload an image for your course (optional)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
+                        {thumbnailPreview && (
+                          <div className="relative w-full max-w-md">
+                            <Image
+                              src={thumbnailPreview}
+                              alt="Thumbnail preview"
+                              width={400}
+                              height={300}
+                              className="rounded-lg border"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Upload an image for your course (optional)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 );
               }}
             />
@@ -334,28 +353,39 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
               <FormDescription>
                 What will students learn from this course?
               </FormDescription>
-              {form.watch("courseDescription.targetKnowledges")?.map((_, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={form.watch(`courseDescription.targetKnowledges.${index}`)}
-                    onChange={(e) =>
-                      updateArrayField("targetKnowledges", index, e.target.value)
-                    }
-                    placeholder={`Target knowledge ${index + 1}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => removeArrayField("targetKnowledges", index)}
-                    disabled={
-                      form.watch("courseDescription.targetKnowledges")?.length === 1
-                    }
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+              {form
+                .watch("courseDescription.targetKnowledges")
+                ?.map((_, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={form.watch(
+                        `courseDescription.targetKnowledges.${index}`,
+                      )}
+                      onChange={(e) =>
+                        updateArrayField(
+                          "targetKnowledges",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      placeholder={`Target knowledge ${index + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        removeArrayField("targetKnowledges", index)
+                      }
+                      disabled={
+                        form.watch("courseDescription.targetKnowledges")
+                          ?.length === 1
+                      }
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               <Button
                 type="button"
                 variant="outline"
@@ -377,7 +407,9 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
               {form.watch("courseDescription.requirements")?.map((_, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
-                    value={form.watch(`courseDescription.requirements.${index}`)}
+                    value={form.watch(
+                      `courseDescription.requirements.${index}`,
+                    )}
                     onChange={(e) =>
                       updateArrayField("requirements", index, e.target.value)
                     }
@@ -414,28 +446,39 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
               <FormDescription>
                 Who is this course best suited for?
               </FormDescription>
-              {form.watch("courseDescription.suitableParticipants")?.map((_, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={form.watch(`courseDescription.suitableParticipants.${index}`)}
-                    onChange={(e) =>
-                      updateArrayField("suitableParticipants", index, e.target.value)
-                    }
-                    placeholder={`Target audience ${index + 1}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => removeArrayField("suitableParticipants", index)}
-                    disabled={
-                      form.watch("courseDescription.suitableParticipants")?.length === 1
-                    }
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+              {form
+                .watch("courseDescription.suitableParticipants")
+                ?.map((_, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={form.watch(
+                        `courseDescription.suitableParticipants.${index}`,
+                      )}
+                      onChange={(e) =>
+                        updateArrayField(
+                          "suitableParticipants",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      placeholder={`Target audience ${index + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        removeArrayField("suitableParticipants", index)
+                      }
+                      disabled={
+                        form.watch("courseDescription.suitableParticipants")
+                          ?.length === 1
+                      }
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               <Button
                 type="button"
                 variant="outline"
@@ -461,5 +504,5 @@ export function CreateCourseForm({ categories, onSuccess }: CreateCourseFormProp
         </div>
       </form>
     </Form>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ExtendedCourseType } from "@/schema/course.schema";
 import { CategoryType } from "@/schema/category.schema";
@@ -25,17 +25,31 @@ interface CourseCardProps {
 function formatTimeAgo(input: string | number | Date): string {
   const targetDate = input instanceof Date ? input : new Date(input);
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - targetDate.getTime()) / 1000);
-  
+  const diffInSeconds = Math.floor(
+    (now.getTime() - targetDate.getTime()) / 1000,
+  );
+
   if (diffInSeconds < 60) return "just now";
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)} months ago`;
+  if (diffInSeconds < 3600)
+    return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  if (diffInSeconds < 2592000)
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  if (diffInSeconds < 31536000)
+    return `${Math.floor(diffInSeconds / 2592000)} months ago`;
   return `${Math.floor(diffInSeconds / 31536000)} years ago`;
 }
 
-export function CourseCard({ course, categories, onTogglePublish, onCourseUpdated, onCourseDeleted, isUpdating = false, isDeleting = false }: CourseCardProps) {
+export function CourseCard({
+  course,
+  categories,
+  onTogglePublish,
+  onCourseUpdated,
+  onCourseDeleted,
+  isUpdating = false,
+  isDeleting = false,
+}: CourseCardProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handlePublishToggle = (e: React.MouseEvent) => {
@@ -69,6 +83,7 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
                 src={course.thumbnailUrl}
                 alt={course.title}
                 fill
+                sizes="128px"
                 className="object-cover group-hover:scale-110 transition-transform duration-500"
               />
             ) : (
@@ -78,7 +93,7 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
                 </span>
               </div>
             )}
-            
+
             {/* Category Badge */}
             {course.category && (
               <Badge className="absolute top-1 left-1 bg-green/90 hover:bg-green text-xs">
@@ -90,11 +105,11 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
           {/* Content */}
           <div className="flex-1 flex flex-col gap-2 min-w-0 relative">
             {/* Delete, Edit và Published button ở góc phải trên */}
-            <div 
+            <div
               className="absolute top-0 right-0 flex items-center gap-2"
               onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
+                e.preventDefault();
+                e.stopPropagation();
               }}
             >
               {onCourseDeleted && (
@@ -106,7 +121,11 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
                     disabled={isDeleting}
                     className="h-7 text-xs border-destructive/50 text-destructive hover:bg-destructive/10 hover:border-destructive"
                   >
-                    {isDeleting ? "⏳" : <Trash2 className="w-3 h-3 text-destructive" />}
+                    {isDeleting ? (
+                      "⏳"
+                    ) : (
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    )}
                   </Button>
                   <DeleteConfirmationDialog
                     open={deleteDialogOpen}
@@ -130,20 +149,29 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
                     variant="outline"
                     size="sm"
                     disabled={isUpdating}
-                    className={course.isPublished 
-                      ? "h-7 text-xs border-green text-green hover:bg-green/10 hover:border-green" 
-                      : "h-7 text-xs border-orange/50 text-orange hover:bg-orange/10 hover:border-orange"}
+                    className={
+                      course.isPublished
+                        ? "h-7 text-xs border-green text-green hover:bg-green/10 hover:border-green"
+                        : "h-7 text-xs border-orange/50 text-orange hover:bg-orange/10 hover:border-orange"
+                    }
                   >
-                    {isUpdating ? "⏳" : course.isPublished ? "✓ Published" : "○ Publish"}
+                    {isUpdating
+                      ? "⏳"
+                      : course.isPublished
+                        ? "✓ Published"
+                        : "○ Publish"}
                   </Button>
                 </div>
               )}
               {!onTogglePublish && (
-                <Badge 
-                  variant="outline" 
-                  className={course.countStudent > 500 
-                    ? "font-normal border-orange/50 text-orange bg-orange/5" 
-                    : "font-normal border-mint/50 text-green bg-mint/20"}>
+                <Badge
+                  variant="outline"
+                  className={
+                    course.countStudent > 500
+                      ? "font-normal border-orange/50 text-orange bg-orange/5"
+                      : "font-normal border-mint/50 text-green bg-mint/20"
+                  }
+                >
                   {course.countStudent > 500 ? "🔥 Best Seller" : "✨ New"}
                 </Badge>
               )}
@@ -177,10 +205,12 @@ export function CourseCard({ course, categories, onTogglePublish, onCourseUpdate
                 <Users className="w-4 h-4" />
                 <span>{course.countStudent}</span>
               </div>
-              
+
               <div className="flex items-center gap-1 text-star">
                 <Star className="w-4 h-4 fill-current" />
-                <span className="text-foreground font-medium">{course.rating}</span>
+                <span className="text-foreground font-medium">
+                  {course.rating}
+                </span>
               </div>
 
               <div className="flex items-center gap-1 text-muted-foreground text-xs">
