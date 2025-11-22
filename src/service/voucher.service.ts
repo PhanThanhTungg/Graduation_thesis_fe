@@ -1,5 +1,9 @@
 import { get, post, patch, del } from "@/lib/request";
-import { VoucherType, CreateVoucherType, UpdateVoucherType } from "@/schema/voucher.schema";
+import {
+  VoucherType,
+  CreateVoucherType,
+  UpdateVoucherType,
+} from "@/schema/voucher.schema";
 
 type GetVouchersByCourseIdResponse = {
   message: string;
@@ -10,11 +14,11 @@ type GetVouchersByCourseIdResponse = {
 };
 
 export const getVouchersByCourseId = async (
-  courseId: string
+  courseId: string,
 ): Promise<VoucherType[]> => {
   const response = await get<GetVouchersByCourseIdResponse>(
     `/api/voucher/course/${courseId}`,
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
@@ -23,7 +27,7 @@ export const getVouchersByCourseId = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get vouchers"
+        : "Failed to get vouchers",
     );
   }
 };
@@ -33,12 +37,10 @@ type GetVoucherByIdResponse = {
   data: VoucherType;
 };
 
-export const getVoucherById = async (
-  id: string
-): Promise<VoucherType> => {
+export const getVoucherById = async (id: string): Promise<VoucherType> => {
   const response = await get<GetVoucherByIdResponse>(
     `/api/voucher/${id}`,
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
@@ -47,7 +49,7 @@ export const getVoucherById = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get voucher"
+        : "Failed to get voucher",
     );
   }
 };
@@ -63,7 +65,7 @@ type GetMyVouchersResponse = {
 export const getMyVouchers = async (): Promise<VoucherType[]> => {
   const response = await get<GetMyVouchersResponse>(
     "/api/voucher/teacher-area/my-vouchers",
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
@@ -72,7 +74,7 @@ export const getMyVouchers = async (): Promise<VoucherType[]> => {
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get my vouchers"
+        : "Failed to get my vouchers",
     );
   }
 };
@@ -83,11 +85,11 @@ type CreateVoucherResponse = {
 };
 
 export const createVoucher = async (
-  data: CreateVoucherType
+  data: CreateVoucherType,
 ): Promise<VoucherType> => {
   const response = await post<CreateVoucherResponse>(
     "/api/voucher/teacher-area",
-    data
+    data,
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -96,7 +98,7 @@ export const createVoucher = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to create voucher"
+        : "Failed to create voucher",
     );
   }
 };
@@ -108,11 +110,11 @@ type UpdateVoucherResponse = {
 
 export const updateVoucher = async (
   id: string,
-  data: UpdateVoucherType
+  data: UpdateVoucherType,
 ): Promise<VoucherType> => {
   const response = await patch<UpdateVoucherResponse>(
     `/api/voucher/teacher-area/${id}`,
-    data
+    data,
   );
 
   if (response.status === 200) {
@@ -121,7 +123,7 @@ export const updateVoucher = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update voucher"
+        : "Failed to update voucher",
     );
   }
 };
@@ -132,7 +134,7 @@ type DeleteVoucherResponse = {
 
 export const deleteVoucher = async (id: string): Promise<void> => {
   const response = await del<DeleteVoucherResponse>(
-    `/api/voucher/teacher-area/${id}`
+    `/api/voucher/teacher-area/${id}`,
   );
 
   if (response.status === 200) {
@@ -141,7 +143,7 @@ export const deleteVoucher = async (id: string): Promise<void> => {
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to delete voucher"
+        : "Failed to delete voucher",
     );
   }
 };
@@ -160,20 +162,20 @@ type ApplyVoucherResponse = {
 
 export const applyVoucher = async (
   code: string,
-  courseId: string
+  courseId: string,
 ): Promise<ApplyVoucherResponse["data"]> => {
-  const response = await post<ApplyVoucherResponse>(
-    "/api/voucher/apply",
-    { code, courseId }
-  );
+  const response = await post<ApplyVoucherResponse>("/api/voucher/apply", {
+    code,
+    courseId,
+  });
 
-  if (response.status === 200) {
+  if (response.status === 200 || response.status === 201) {
     return (response.payload as ApplyVoucherResponse).data;
   } else {
     throw new Error(
-      "payload" in response.payload && "message" in response.payload
+      response?.payload?.message
         ? response.payload.message
-        : "Failed to apply voucher"
+        : "Failed to apply voucher",
     );
   }
 };

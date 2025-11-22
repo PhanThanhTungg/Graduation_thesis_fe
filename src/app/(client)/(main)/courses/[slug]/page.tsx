@@ -18,7 +18,8 @@ export default async function CourseDetailPage({
 }: CourseDetailPageProps) {
   let course;
   try {
-    course = await getCourseBySlug(params.slug);
+    const { slug } = await params;
+    course = await getCourseBySlug(slug);
   } catch {
     return <NotFound />;
   }

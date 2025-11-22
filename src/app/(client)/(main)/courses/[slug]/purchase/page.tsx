@@ -17,7 +17,8 @@ interface PurchasePageProps {
 export default async function PurchasePage({ params }: PurchasePageProps) {
   let course;
   try {
-    course = await getCourseBySlug(params.slug);
+    const { slug } = await params;
+    course = await getCourseBySlug(slug);
   } catch {
     return <NotFound />;
   }
