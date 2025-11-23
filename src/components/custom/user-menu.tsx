@@ -11,30 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getAvatarFallback } from "@/lib/helpers";
 import { UserType } from "@/schema/user.schema";
+import { clientLogout } from "@/service/auth.service";
 import { User, Heart, Bell, HelpCircle, LogOut, BookCheck } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { showToast } from "@/lib/toast";
 
 interface UserMenuProps {
   user: UserType;
 }
 
 export default function UserMenu({ user }: UserMenuProps) {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    try {
-      document.cookie = "client_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      localStorage.removeItem("user");
-      showToast("success", "Logged out successfully");
-      router.push("/");
-      router.refresh();
-    } catch {
-      showToast("error", "Failed to logout");
-    }
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -98,7 +83,7 @@ export default function UserMenu({ user }: UserMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
-            onClick={handleLogout}
+            onClick={clientLogout}
             className="cursor-pointer"
           >
             <LogOut className="mr-2" />

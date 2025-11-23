@@ -1,7 +1,8 @@
-import { getCookie } from "./cookie";
+// import { clientRefreshToken } from "@/service/auth.service";
+import { getAllCookiesString, getCookie } from "./cookie";
 
 type CustomRequestOptions = Omit<RequestInit, "method"> & {
-  baseUrl: string | undefined;
+  baseUrl?: string | undefined;
 };
 
 export const isNextClient = typeof window !== "undefined";
@@ -23,25 +24,48 @@ const request = async <Response>(
     body = JSON.stringify(options.body);
   }
 
-  const baseHeaders: Record<string, string> =
-    body instanceof FormData ? {} : { "Content-Type": "application/json" };
   let accessToken: string | undefined = undefined;
+  let cookieString: string = "";
   if (url.includes("/admin/")) {
-    accessToken = await getCookie("admin_access_token");
+    [accessToken, cookieString] = await Promise.all([
+      getCookie("admin_access_token"),
+      getAllCookiesString(),
+    ]);
   } else {
-    accessToken = await getCookie("client_access_token");
+    [accessToken, cookieString] = await Promise.all([
+      getCookie("client_access_token"),
+      getAllCookiesString(),
+    ]);
   }
 
-  try {
-    const res = await fetch(fullUrl, {
+  const baseHeaders: Record<string, string> =
+    body instanceof FormData ? {} : { "Content-Type": "application/json" };
+  if (cookieString) {
+    baseHeaders["Cookie"] = cookieString;
+  }
+
+  const makeRequest = async (token?: string) => {
+    return await fetch(fullUrl, {
+      credentials: "include",
       headers: {
         ...baseHeaders,
         ...options?.headers,
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token || accessToken || ""}`,
       },
       method,
       body,
     });
+  };
+
+  try {
+    const res = await makeRequest();
+
+    // If access token expired, try to refresh token and retry request
+    // if (res.status === 401 && !url.includes("/auth/refresh")) {
+    //   const newAccessToken = await clientRefreshToken();
+
+    //   res = await makeRequest(newAccessToken);
+    // }
 
     let payload: Response;
     const contentType = res.headers.get("content-type");
@@ -65,6 +89,9 @@ const request = async <Response>(
       payload,
     };
   } catch (error) {
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
     return {
       status: 500,
       payload: {
