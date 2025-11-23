@@ -1,5 +1,12 @@
 import { get, patch, post, del } from "@/lib/request";
-import { CreateCourseBodySchema, CourseType, ExtendedCourseType, GetAllCourseResponseType, DetailCourseType, GetCourseBySlugResponseType } from "@/schema/course.schema";
+import {
+  CreateCourseBodySchema,
+  CourseType,
+  ExtendedCourseType,
+  GetAllCourseResponseType,
+  DetailCourseType,
+  GetCourseBySlugResponseType,
+} from "@/schema/course.schema";
 import { ChapterTreeItemType } from "@/schema/chapter.schema";
 import { z } from "zod";
 import { redirect } from "next/navigation";
@@ -31,7 +38,7 @@ type CreateCourseResponse = {
 };
 
 export const createCourse = async (
-  data: CreateCourseBody
+  data: CreateCourseBody,
 ): Promise<CreateCourseResponse> => {
   const requestData: CreateCourseRequest = {
     title: data.title,
@@ -53,7 +60,7 @@ export const createCourse = async (
 
   const response = await post<CreateCourseResponse>(
     "/api/course/teacher-area",
-    requestData
+    requestData,
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -62,7 +69,7 @@ export const createCourse = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to create course"
+        : "Failed to create course",
     );
   }
 };
@@ -117,10 +124,18 @@ type GetMyCoursesParams = {
 };
 
 export const getMyCourses = async (
-  params?: GetMyCoursesParams
-): Promise<{ courses: ExtendedCourseType[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }> => {
+  params?: GetMyCoursesParams,
+): Promise<{
+  courses: ExtendedCourseType[];
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> => {
   const queryParams: Record<string, string> = {};
-  
+
   if (params?.keySearch) {
     queryParams.keySearch = params.keySearch;
   }
@@ -142,7 +157,7 @@ export const getMyCourses = async (
 
   const response = await get<GetMyCoursesRawResponse>(
     "/api/course/teacher-area/my-courses",
-    Object.keys(queryParams).length > 0 ? queryParams : undefined
+    Object.keys(queryParams).length > 0 ? queryParams : undefined,
   );
 
   if (response.status === 200) {
@@ -152,13 +167,19 @@ export const getMyCourses = async (
         ? {
             headline: course.courseDescription.headline || undefined,
             targetKnowledges: course.courseDescription.targetKnowledges
-              ? course.courseDescription.targetKnowledges.split("&&&").filter((item) => item.trim() !== "")
+              ? course.courseDescription.targetKnowledges
+                  .split("&&&")
+                  .filter((item) => item.trim() !== "")
               : undefined,
             requirements: course.courseDescription.requirement
-              ? course.courseDescription.requirement.split("&&&").filter((item) => item.trim() !== "")
+              ? course.courseDescription.requirement
+                  .split("&&&")
+                  .filter((item) => item.trim() !== "")
               : undefined,
             suitableParticipants: course.courseDescription.suitableParticipant
-              ? course.courseDescription.suitableParticipant.split("&&&").filter((item) => item.trim() !== "")
+              ? course.courseDescription.suitableParticipant
+                  .split("&&&")
+                  .filter((item) => item.trim() !== "")
               : undefined,
             detail: course.courseDescription.detail || undefined,
           }
@@ -200,7 +221,7 @@ export const getMyCourses = async (
         },
       };
     });
-    
+
     return {
       courses,
       pagination: payload.data.pagination,
@@ -209,7 +230,7 @@ export const getMyCourses = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get courses"
+        : "Failed to get courses",
     );
   }
 };
@@ -221,11 +242,11 @@ type UpdateCourseStatusResponse = {
 
 export const updateCourseStatus = async (
   courseId: number,
-  isPublished: boolean
+  isPublished: boolean,
 ): Promise<CourseType> => {
   const response = await patch<UpdateCourseStatusResponse>(
     `/api/course/teacher-area/${courseId}`,
-    { isPublished }
+    { isPublished },
   );
 
   if (response.status === 200) {
@@ -234,26 +255,28 @@ export const updateCourseStatus = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update course status"
+        : "Failed to update course status",
     );
   }
 };
 
-export const getCourseBySlug = async (slug: string): Promise<DetailCourseType | null> => {
+export const getCourseBySlug = async (
+  slug: string,
+): Promise<DetailCourseType | null> => {
   const response = await get<GetCourseBySlugResponseType>(
     `api/course/${slug}`,
-    undefined
-  )
-  if (response.status === 200 && 'data' in response.payload) {
+    undefined,
+  );
+  if (response.status === 200 && "data" in response.payload) {
     return response.payload.data;
   } else {
     return null;
   }
-}
+};
 
 type GetCourseByIdRawResponse = {
   message: string;
-  data: Omit<ExtendedCourseType, 'courseDescription'> & {
+  data: Omit<ExtendedCourseType, "courseDescription"> & {
     courseDescription?: {
       headline?: string;
       targetKnowledges?: string[];
@@ -265,11 +288,11 @@ type GetCourseByIdRawResponse = {
 };
 
 export const getCourseBySlugTeacherArea = async (
-  slug: string
+  slug: string,
 ): Promise<ExtendedCourseType> => {
   const response = await get<GetCourseByIdRawResponse>(
     `/api/course/teacher-area/slug/${slug}`,
-    {}
+    {},
   );
 
   if (response.status === 200) {
@@ -280,7 +303,8 @@ export const getCourseBySlugTeacherArea = async (
         headline: course.courseDescription?.headline,
         targetKnowledges: course.courseDescription?.targetKnowledges || [],
         requirements: course.courseDescription?.requirement || [],
-        suitableParticipants: course.courseDescription?.suitableParticipant || [],
+        suitableParticipants:
+          course.courseDescription?.suitableParticipant || [],
         detail: course.courseDescription?.detail,
       },
     };
@@ -288,17 +312,17 @@ export const getCourseBySlugTeacherArea = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get course"
+        : "Failed to get course",
     );
   }
 };
 
 export const getCourseById = async (
-  id: string
+  id: string,
 ): Promise<ExtendedCourseType> => {
   const response = await get<GetCourseByIdRawResponse>(
     `/api/course/teacher-area/${id}`,
-    {}
+    {},
   );
 
   if (response.status === 200) {
@@ -309,7 +333,8 @@ export const getCourseById = async (
         headline: course.courseDescription?.headline,
         targetKnowledges: course.courseDescription?.targetKnowledges || [],
         requirements: course.courseDescription?.requirement || [],
-        suitableParticipants: course.courseDescription?.suitableParticipant || [],
+        suitableParticipants:
+          course.courseDescription?.suitableParticipant || [],
         detail: course.courseDescription?.detail,
       },
     };
@@ -317,7 +342,7 @@ export const getCourseById = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get course"
+        : "Failed to get course",
     );
   }
 };
@@ -383,7 +408,7 @@ export const updateCourseById = async (
       suitableParticipants?: string[];
       detail?: string;
     };
-  }
+  },
 ): Promise<ExtendedCourseType> => {
   const requestData: UpdateCourseRequest = {
     ...(data.title !== undefined && { title: data.title }),
@@ -414,7 +439,7 @@ export const updateCourseById = async (
 
   const response = await patch<UpdateCourseRawResponse>(
     `/api/course/teacher-area/${id}`,
-    requestData
+    requestData,
   );
 
   if (response.status === 200) {
@@ -427,7 +452,8 @@ export const updateCourseById = async (
             headline: course.courseDescription.headline || undefined,
             targetKnowledges: course.courseDescription.targetKnowledges || [],
             requirements: course.courseDescription.requirement || [],
-            suitableParticipants: course.courseDescription.suitableParticipant || [],
+            suitableParticipants:
+              course.courseDescription.suitableParticipant || [],
             detail: course.courseDescription.detail || undefined,
           }
         : {
@@ -465,7 +491,7 @@ export const updateCourseById = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update course"
+        : "Failed to update course",
     );
   }
 };
@@ -478,11 +504,11 @@ type GetChapterTreeByIdResponse = {
 };
 
 export const getChapterTreeBySlug = async (
-  slug: string
+  slug: string,
 ): Promise<ChapterTreeItemType[]> => {
   const response = await get<GetChapterTreeByIdResponse>(
     `/api/course/teacher-area/slug/${slug}/chapters`,
-    {}
+    {},
   );
 
   if (response.status === 200) {
@@ -491,17 +517,17 @@ export const getChapterTreeBySlug = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get chapter tree"
+        : "Failed to get chapter tree",
     );
   }
 };
 
 export const getChapterTreeById = async (
-  id: string
+  id: string,
 ): Promise<ChapterTreeItemType[]> => {
   const response = await get<GetChapterTreeByIdResponse>(
     `/api/course/teacher-area/${id}/chapters`,
-    {}
+    {},
   );
 
   if (response.status === 200) {
@@ -510,7 +536,7 @@ export const getChapterTreeById = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get chapter tree"
+        : "Failed to get chapter tree",
     );
   }
 };
@@ -532,11 +558,11 @@ export const createChapterBySlug = async (
     title: string;
     description?: string;
     parentId?: string;
-  }
+  },
 ): Promise<CreateChapterByIdResponse["data"]> => {
   const response = await post<CreateChapterByIdResponse>(
     `/api/course/teacher-area/slug/${slug}/chapters`,
-    data
+    data,
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -545,7 +571,7 @@ export const createChapterBySlug = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to create chapter"
+        : "Failed to create chapter",
     );
   }
 };
@@ -556,11 +582,11 @@ export const createChapterById = async (
     title: string;
     description?: string;
     parentId?: string;
-  }
+  },
 ): Promise<CreateChapterByIdResponse["data"]> => {
   const response = await post<CreateChapterByIdResponse>(
     `/api/course/teacher-area/${id}/chapters`,
-    data
+    data,
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -569,26 +595,25 @@ export const createChapterById = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to create chapter"
+        : "Failed to create chapter",
     );
   }
 };
 
-export const getAllCourses = async (params: Record<string, string | number | boolean | undefined>): Promise<{ items: ExtendedCourseType[]; pagination: PaginationType }> => {
-  const response = await get<GetAllCourseResponseType>(
-    '/api/course',
-    params
-  );
+export const getAllCourses = async (
+  params: Record<string, string | number | boolean | undefined>,
+): Promise<{ items: ExtendedCourseType[]; pagination: PaginationType }> => {
+  const response = await get<GetAllCourseResponseType>("/api/course", params);
   if (response.status === 200) {
     const payload = response.payload as GetAllCourseResponseType;
     return {
       items: payload.data.items,
-      pagination: payload.data.pagination
+      pagination: payload.data.pagination,
     };
   } else {
-    redirect('/error-fetch-data')
+    redirect("/error-fetch-data");
   }
-}
+};
 
 type UpdateChapterResponse = {
   message: string;
@@ -608,11 +633,11 @@ export const updateChapterBySlug = async (
   data: {
     title?: string;
     description?: string;
-  }
+  },
 ): Promise<UpdateChapterResponse["data"]> => {
   const response = await patch<UpdateChapterResponse>(
     `/api/course/teacher-area/slug/${slug}/chapters/${chapterId}`,
-    data
+    data,
   );
 
   if (response.status === 200) {
@@ -621,7 +646,7 @@ export const updateChapterBySlug = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update chapter"
+        : "Failed to update chapter",
     );
   }
 };
@@ -632,11 +657,11 @@ export const updateChapterById = async (
   data: {
     title?: string;
     description?: string;
-  }
+  },
 ): Promise<UpdateChapterResponse["data"]> => {
   const response = await patch<UpdateChapterResponse>(
     `/api/course/teacher-area/${courseId}/chapters/${chapterId}`,
-    data
+    data,
   );
 
   if (response.status === 200) {
@@ -645,7 +670,7 @@ export const updateChapterById = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update chapter"
+        : "Failed to update chapter",
     );
   }
 };
@@ -656,10 +681,10 @@ type DeleteChapterResponse = {
 
 export const deleteChapterBySlug = async (
   slug: string,
-  chapterId: string
+  chapterId: string,
 ): Promise<void> => {
   const response = await del<DeleteChapterResponse>(
-    `/api/course/teacher-area/slug/${slug}/chapters/${chapterId}`
+    `/api/course/teacher-area/slug/${slug}/chapters/${chapterId}`,
   );
 
   if (response.status === 200) {
@@ -668,7 +693,7 @@ export const deleteChapterBySlug = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to delete chapter"
+        : "Failed to delete chapter",
     );
   }
 };
@@ -677,11 +702,9 @@ type DeleteCourseResponse = {
   message: string;
 };
 
-export const deleteCourse = async (
-  courseId: string
-): Promise<void> => {
+export const deleteCourse = async (courseId: string): Promise<void> => {
   const response = await del<DeleteCourseResponse>(
-    `/api/course/teacher-area/${courseId}`
+    `/api/course/teacher-area/${courseId}`,
   );
 
   if (response.status === 200) {
@@ -690,8 +713,172 @@ export const deleteCourse = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to delete course"
+        : "Failed to delete course",
     );
   }
 };
 
+type GetMyLearningRawResponse = {
+  message: string;
+  data: {
+    items: Array<{
+      id: string;
+      title: string;
+      thumbnailUrl?: string | null;
+      price: number;
+      originalPrice: number;
+      finalPrice: number;
+      discountAmount: number;
+      teacher: {
+        id: string;
+        fullName: string;
+      };
+      courseDescription: {
+        headline: string | null;
+        targetKnowledges: string | null;
+        requirement: string | null;
+        suitableParticipant: string | null;
+        detail: string | null;
+      } | null;
+      category: {
+        id: string;
+        title: string;
+        slug: string | null;
+      };
+      rating: number;
+      slug: string;
+      isPublished: boolean;
+      createdAt: Date;
+      updatedAt: Date | null;
+      countStudent: number;
+      purchasedAt: Date;
+      progress: {
+        completedLessons: number;
+        totalLessons: number;
+        percentage: number;
+      };
+    }>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+};
+
+type GetMyLearningParams = {
+  page?: number;
+  limit?: number;
+  keySearch?: string;
+};
+
+export const getMyLearning = async (
+  params?: GetMyLearningParams,
+): Promise<{
+  courses: ExtendedCourseType[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> => {
+  const queryParams: Record<string, string> = {};
+
+  if (params?.page) {
+    queryParams.page = params.page.toString();
+  }
+  if (params?.limit) {
+    queryParams.limit = params.limit.toString();
+  }
+  if (params?.keySearch) {
+    queryParams.keySearch = params.keySearch;
+  }
+
+  const response = await get<GetMyLearningRawResponse>(
+    "/api/course/student-area/my-learning",
+    Object.keys(queryParams).length > 0 ? queryParams : undefined,
+  );
+
+  if (response.status === 200) {
+    const payload = response.payload as GetMyLearningRawResponse;
+    const courses = payload.data.items.map((course) => {
+      const courseDescription = course.courseDescription
+        ? {
+            headline: course.courseDescription.headline || undefined,
+            targetKnowledges: course.courseDescription.targetKnowledges
+              ? course.courseDescription.targetKnowledges
+                  .split("&&&")
+                  .filter((item) => item.trim() !== "")
+              : undefined,
+            requirements: course.courseDescription.requirement
+              ? course.courseDescription.requirement
+                  .split("&&&")
+                  .filter((item) => item.trim() !== "")
+              : undefined,
+            suitableParticipants: course.courseDescription.suitableParticipant
+              ? course.courseDescription.suitableParticipant
+                  .split("&&&")
+                  .filter((item) => item.trim() !== "")
+              : undefined,
+            detail: course.courseDescription.detail || undefined,
+          }
+        : {
+            headline: undefined,
+            targetKnowledges: undefined,
+            requirements: undefined,
+            suitableParticipants: undefined,
+            detail: undefined,
+          };
+
+      return {
+        id: course.id,
+        title: course.title,
+        courseDescription,
+        thumbnailUrl: course.thumbnailUrl || undefined,
+        price: course.price,
+        originalPrice: course.originalPrice,
+        finalPrice: course.finalPrice,
+        discountAmount: course.discountAmount,
+        teacher: {
+          id: course.teacher.id,
+          fullName: course.teacher.fullName,
+          email: "",
+          role: "teacher" as const,
+          emailVerified: false,
+          avatarUrl: null,
+          status: "active" as const,
+          country: "Vietnam" as const,
+        },
+        rating: course.rating,
+        slug: course.slug,
+        isPublished: course.isPublished,
+        createdAt: course.createdAt ? new Date(course.createdAt) : undefined,
+        updatedAt: course.updatedAt ? new Date(course.updatedAt) : new Date(),
+        countStudent: course.countStudent,
+        category: {
+          id: course.category.id,
+          title: course.category.title,
+          slug: course.category.slug || "",
+          parentId: null,
+        },
+        progress: course.progress,
+        purchasedAt: course.purchasedAt
+          ? new Date(course.purchasedAt)
+          : undefined,
+      };
+    });
+
+    return {
+      courses: courses as unknown as ExtendedCourseType[],
+      pagination: payload.data.pagination,
+    };
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get my learning courses",
+    );
+  }
+};
