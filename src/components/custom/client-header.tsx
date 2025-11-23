@@ -1,11 +1,20 @@
-import Link from "next/link"
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "../ui/navigation-menu"
-import { ModeToggle } from "../theme/mode-toggle"
-import Logo from "./logo"
-import SearchPopover from "./search-popover"
-import { getMyProfile } from "@/service/user.service"
-import { Button } from "../ui/button"
-import UserMenu from "./user-menu"
+import Link from "next/link";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "../ui/navigation-menu";
+import { ModeToggle } from "../theme/mode-toggle";
+import Logo from "./logo";
+import SearchPopover from "./search-popover";
+import { getMyProfile } from "@/service/user.service";
+import { Button } from "../ui/button";
+import UserMenu from "./user-menu";
+import { unstable_noStore } from "next/cache";
 
 const navItems = [
   {
@@ -32,10 +41,11 @@ const navItems = [
         href: "/faqs",
       },
     ],
-  }
-]
+  },
+];
 
 export default async function ClientHeader() {
+  unstable_noStore();
   const myProfile = await getMyProfile();
 
   return (
@@ -44,23 +54,26 @@ export default async function ClientHeader() {
 
       <NavigationMenu viewport={false} className="hidden lg:block">
         <NavigationMenuList>
-          {navItems.map(item => (
+          {navItems.map((item) =>
             item.href ? (
               <NavigationMenuItem key={item.label}>
-                <NavigationMenuLink asChild
+                <NavigationMenuLink
+                  asChild
                   className={`${navigationMenuTriggerStyle()} p-4 text-base hover:text-green`}
                 >
-                  <Link href={item.href}>
-                    {item.label}
-                  </Link>
+                  <Link href={item.href}>{item.label}</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             ) : (
               <NavigationMenuItem key={item.label}>
-                <NavigationMenuTrigger className="p-4 text-base hover:text-green">{item.label}</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="p-4 text-base hover:text-green">
+                  {item.label}
+                </NavigationMenuTrigger>
                 <NavigationMenuContent className="flex flex-col gap-1">
-                  {item.children?.map(child => (
-                    <Link href={child.href} key={child.label}
+                  {item.children?.map((child) => (
+                    <Link
+                      href={child.href}
+                      key={child.label}
                       className="px-2 py-1 text-base font-medium hover:text-green"
                     >
                       {child.label}
@@ -68,8 +81,8 @@ export default async function ClientHeader() {
                   ))}
                 </NavigationMenuContent>
               </NavigationMenuItem>
-            )
-          ))}
+            ),
+          )}
         </NavigationMenuList>
       </NavigationMenu>
 
@@ -77,17 +90,15 @@ export default async function ClientHeader() {
         <SearchPopover />
         {myProfile ? (
           <>
-            {myProfile.role === 'teacher' && (
-              <Button variant={"link"}
-                className="hover:text-green"
-              >
+            {myProfile.role === "teacher" && (
+              <Button variant={"link"} className="hover:text-green">
                 <Link href="/teacher/dashboard">Teacher</Link>
               </Button>
             )}
             <UserMenu user={myProfile} />
           </>
         ) : (
-          <Button className="bg-green" size={'lg'}>
+          <Button className="bg-green" size={"lg"}>
             <Link href="/login">Login/Register</Link>
           </Button>
         )}
@@ -97,5 +108,5 @@ export default async function ClientHeader() {
         <ModeToggle />
       </div>
     </header>
-  )
+  );
 }

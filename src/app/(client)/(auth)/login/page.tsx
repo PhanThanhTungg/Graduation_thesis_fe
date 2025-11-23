@@ -1,5 +1,6 @@
-import Link from 'next/link'
-import { LoginForm } from './_components/login-form'
+import Link from "next/link";
+import { LoginForm } from "./_components/login-form";
+import Logo from "@/components/custom/logo";
 
 export default function LoginPage() {
   return (
@@ -7,26 +8,29 @@ export default function LoginPage() {
       <div className="container-md py-12">
         <div className="flex flex-col items-center space-y-6">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="size-10 bg-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-heading text-xl font-bold">A</span>
-            </div>
-            <span className="font-heading text-2xl font-bold">Aikabis</span>
+            <Logo />
           </Link>
 
           <LoginForm />
 
           <p className="text-center text-sm text-muted-foreground max-w-md">
-            By continuing, you agree to our{' '}
-            <Link href="/terms" className="text-green hover:text-green/80 transition-colors">
+            By continuing, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="text-green hover:text-green/80 transition-colors"
+            >
               Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-green hover:text-green/80 transition-colors">
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-green hover:text-green/80 transition-colors"
+            >
               Privacy Policy
             </Link>
           </p>
         </div>
       </div>
     </main>
-  )
+  );
 }
