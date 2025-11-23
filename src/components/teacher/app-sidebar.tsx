@@ -1,11 +1,30 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { IconChartBar, IconDashboard, IconFolder, IconHelp, IconListDetails, IconSearch, IconSettings, IconUser, IconUsers, IconWallet } from "@tabler/icons-react"
-import { NavMain } from "@/components/teacher/nav-main"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
-import Link from "next/link"
-import { ArrowLeftToLine } from "lucide-react"
+import * as React from "react";
+import {
+  IconChartBar,
+  IconDashboard,
+  IconFolder,
+  IconHelp,
+  IconListDetails,
+  IconSearch,
+  IconSettings,
+  IconUser,
+  IconUsers,
+  IconWallet,
+} from "@tabler/icons-react";
+import { NavMain } from "@/components/teacher/nav-main";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { ArrowLeftToLine } from "lucide-react";
 
 const data = {
   user: {
@@ -41,14 +60,14 @@ const data = {
     },
     {
       title: "Students",
-      url: "#",
+      url: "/teacher/students",
       icon: IconUsers,
     },
     {
       title: "Finance",
       url: "#",
-      icon: IconWallet
-    }
+      icon: IconWallet,
+    },
   ],
   navSecondary: [
     {
@@ -67,7 +86,7 @@ const data = {
       icon: IconSearch,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -103,5 +122,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
