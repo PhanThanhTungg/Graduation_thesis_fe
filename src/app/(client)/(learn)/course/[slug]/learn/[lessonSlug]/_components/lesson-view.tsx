@@ -14,18 +14,23 @@ import {
   LessonQuizTab,
   type LessonTabId,
 } from "@/components/lesson";
-import { CourseType } from "@/schema/course.schema";
+import { ExtendedCourseType } from "@/schema/course.schema";
 import { CourseCurriculumType, LessonItemType } from "@/schema/lesson.schema";
 import { cn } from "@/lib/utils";
 
 interface LessonViewProps {
-  course: CourseType;
+  course: ExtendedCourseType;
   curriculum: CourseCurriculumType;
   currentLesson: LessonItemType;
   lessonId: string;
 }
 
-export function LessonView({ course, curriculum, currentLesson, lessonId }: LessonViewProps) {
+export function LessonView({
+  course,
+  curriculum,
+  currentLesson,
+  lessonId,
+}: LessonViewProps) {
   const [activeTab, setActiveTab] = useState<LessonTabId>("overview");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -82,7 +87,11 @@ export function LessonView({ course, curriculum, currentLesson, lessonId }: Less
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="lg:hidden"
           >
-            {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {isSidebarOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -98,13 +107,22 @@ export function LessonView({ course, curriculum, currentLesson, lessonId }: Less
         )}
 
         {/* Video and Content Section */}
-        <div className={cn("flex-1 flex flex-col overflow-hidden", isSidebarOpen && "lg:mr-96")}>
+        <div
+          className={cn(
+            "flex-1 flex flex-col overflow-hidden",
+            isSidebarOpen && "lg:mr-96",
+          )}
+        >
           {/* Video Player */}
           {currentLesson.type === "video" && currentLesson.embedUrl ? (
             <div className="bg-black">
               <div className="max-w-6xl mx-auto">
                 <VideoPlayer
-                  embedUrl={typeof currentLesson.embedUrl === "string" ? currentLesson.embedUrl : ""}
+                  embedUrl={
+                    typeof currentLesson.embedUrl === "string"
+                      ? currentLesson.embedUrl
+                      : ""
+                  }
                   title={currentLesson.title}
                   onProgress={handleProgress}
                   onComplete={handleComplete}
@@ -134,7 +152,7 @@ export function LessonView({ course, curriculum, currentLesson, lessonId }: Less
         <div
           className={cn(
             "fixed lg:fixed right-0 top-[65px] bottom-0 w-65 md:w-96 border-l border-border shadow-lg transform transition-transform duration-300 z-30 bg-background",
-            isSidebarOpen ? "translate-x-0" : "translate-x-full"
+            isSidebarOpen ? "translate-x-0" : "translate-x-full",
           )}
         >
           <LessonSidebar

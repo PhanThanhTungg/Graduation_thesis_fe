@@ -67,7 +67,7 @@ export default function UserMenu({ user }: UserMenuProps) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/my-learning" className="cursor-pointer">
+            <Link href="/my-learning/courses" className="cursor-pointer">
               <BookCheck className="mr-2" />
               <span>My learning</span>
             </Link>

@@ -1,19 +1,11 @@
 import { Metadata } from "next";
-import BreadcrumbCustom, {
-  BreadcrumbProps,
-} from "@/components/custom/breadcrumb";
 import { getMyLearning } from "@/service/course.service";
-import MyLearningClient from "./_components/my-learning-client";
+import MyLearningClient from "../_components/my-learning-client";
 
 export const metadata: Metadata = {
   title: "My Learning",
   description: "Your purchased courses in Aikabis Learning Platform",
 };
-
-const breadcrumbData: BreadcrumbProps[] = [
-  { url: "/", label: "Home" },
-  { url: undefined, label: "My Learning" },
-];
 
 interface MyLearningPageProps {
   searchParams: Promise<{
@@ -48,12 +40,10 @@ export default async function MyLearningPage({
 
   return (
     <>
-      <BreadcrumbCustom breadcrumb={breadcrumbData} />
-
-      <section className="container-md py-16">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">My Learning</h1>
-          <p className="text-muted-foreground">
+      <section className="container-md">
+        <div className="mb-3">
+          <h1 className="text-2xl font-bold mb-2">My purchased courses</h1>
+          <p className="text-muted-foreground text-sm">
             Your purchased courses in Aikabis Learning Platform
           </p>
         </div>

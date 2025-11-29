@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { LessonView } from "./_components";
-import { getLessonBySlugForStudent, getLessonChapterTree } from "@/service/lesson.service";
+import {
+  getLessonBySlugForStudent,
+  getLessonChapterTree,
+} from "@/service/lesson.service";
 import { getCourseBySlug } from "@/service/course.service";
 import { CourseCurriculumType } from "@/schema/lesson.schema";
 import {
   transformChapterTreeWithStats,
   transformLessonToLessonItem,
-  transformCourseToCourseType,
   formatDuration,
 } from "../../../../../../../utils/lesson.utils";
 
@@ -43,21 +45,25 @@ export default async function LessonPage({ params }: PageProps) {
     }),
   ]);
 
-  const { sections, totalLessons, totalDuration } = transformChapterTreeWithStats(chapterTree);
+  const { sections, totalLessons, totalDuration } =
+    transformChapterTreeWithStats(chapterTree);
 
   const curriculum: CourseCurriculumType = {
-    courseId: typeof course?.id === "number" ? course?.id : parseInt(course?.id || "0") || 0,
+    courseId:
+      typeof course?.id === "number"
+        ? course?.id
+        : parseInt(course?.id || "0") || 0,
     sections,
     totalDuration: formatDuration(totalDuration),
     totalLessons,
   };
 
   const currentLesson = transformLessonToLessonItem(lesson);
-  const courseData = transformCourseToCourseType(course!);
+  // const courseData = transformCourseToCourseType(course!);
 
   return (
     <LessonView
-      course={courseData}
+      course={course!}
       curriculum={curriculum}
       currentLesson={currentLesson}
       lessonId={lesson.id}
