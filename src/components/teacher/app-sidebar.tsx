@@ -60,7 +60,7 @@ const data = {
     },
     {
       title: "Students",
-      url: "#",
+      url: "/teacher/students",
       icon: IconUsers,
     },
     {
