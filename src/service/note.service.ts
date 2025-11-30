@@ -11,13 +11,8 @@ import {
 } from "@/schema/note.schema";
 import { showToast } from "@/lib/toast";
 
-/**
- * Tạo note mới cho một lesson
- * @param data - Dữ liệu note cần tạo (lessonId, content, timestamp)
- * @returns Note với thông tin lesson nếu thành công, undefined nếu thất bại
- */
 export const createNote = async (
-  data: CreateNoteBodyType
+  data: CreateNoteBodyType,
 ): Promise<NoteWithLessonType | undefined> => {
   const response = await post<CreateNoteResponseType>("/api/note", data);
 
@@ -33,17 +28,12 @@ export const createNote = async (
   }
 };
 
-/**
- * Lấy tất cả notes của user trong một lesson cụ thể
- * @param lessonId - ID của lesson
- * @returns Object chứa thông tin lesson, danh sách notes và tổng số, undefined nếu thất bại
- */
 export const getNotesByLessonId = async (
-  lessonId: string
+  lessonId: string,
 ): Promise<GetNotesByLessonResponseType["data"] | undefined> => {
   const response = await get<GetNotesByLessonResponseType>(
     `/api/note/lesson/${lessonId}`,
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
@@ -58,28 +48,27 @@ export const getNotesByLessonId = async (
   }
 };
 
-/**
- * Lấy tất cả notes của user trong một course cụ thể
- * @param courseId - ID của course
- * @returns Object chứa thông tin course, danh sách notes với lesson info và tổng số, undefined nếu thất bại
- */
 export const getNotesByCourseId = async (
-  courseId: string
-): Promise<GetNotesByCourseResponseType["data"] | undefined> => {
+  courseId: string | undefined,
+): Promise<GetNotesByCourseResponseType["data"]["lessons"]> => {
+  if (!courseId) {
+    return [];
+  }
+
   const response = await get<GetNotesByCourseResponseType>(
     `/api/note/course/${courseId}`,
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
-    return (response.payload as GetNotesByCourseResponseType).data;
+    return (response.payload as GetNotesByCourseResponseType).data.lessons;
   } else {
     const errorMessage =
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
         : "Failed to get notes by course";
     showToast("error", errorMessage);
-    return undefined;
+    return [];
   }
 };
 
@@ -91,11 +80,11 @@ export const getNotesByCourseId = async (
  */
 export const updateNote = async (
   noteId: string,
-  data: UpdateNoteBodyType
+  data: UpdateNoteBodyType,
 ): Promise<NoteWithLessonType | undefined> => {
   const response = await patch<UpdateNoteResponseType>(
     `/api/note/${noteId}`,
-    data
+    data,
   );
 
   if (response.status === 200) {
