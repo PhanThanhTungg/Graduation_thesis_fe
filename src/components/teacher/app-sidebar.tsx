@@ -64,8 +64,8 @@ const data = {
       icon: IconUsers,
     },
     {
-      title: "Finance",
-      url: "/teacher/Finance",
+      title: "Vouchers",
+      url: "/teacher/vouchers",
       icon: IconWallet,
     },
   ],
