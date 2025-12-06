@@ -56,7 +56,9 @@ export function LessonView({
       case "documents":
         return <LessonDocumentsTab files={currentLesson.files} />;
       case "quiz":
-        return <LessonQuizTab lessonId={lessonId} />;
+        return (
+          <LessonQuizTab lessonId={lessonId} lessonSlug={currentLesson.slug} />
+        );
       default:
         return null;
     }
