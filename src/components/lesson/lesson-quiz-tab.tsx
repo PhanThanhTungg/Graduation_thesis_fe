@@ -22,6 +22,10 @@ export function LessonQuizTab({ lessonSlug }: LessonQuizTabProps) {
   }
 
   return (
-    <QuestionDisplay question={question} onReset={() => setQuestion(null)} />
+    <QuestionDisplay
+      question={question}
+      onReset={() => setQuestion(null)}
+      lessonSlug={lessonSlug}
+    />
   );
 }

@@ -31,3 +31,15 @@ export interface AnswerResult {
   aiFeedback: string;
   answer: string;
 }
+
+export interface QuestionHistoryItem {
+  id: string;
+  statement: string;
+  type: TypeQuestion;
+  difficulty: Difficulty;
+  answer: string | null;
+  score: number | null;
+  explain: string | null;
+  aiFeedback: string | null;
+  createdAt: string;
+}

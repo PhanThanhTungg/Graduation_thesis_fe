@@ -10,13 +10,19 @@ import {
 import { QuizOptions } from "./quiz-options";
 import { QuizResultCard } from "./quiz-result-card";
 import { useQuizAnswer } from "./use-quiz-answer";
+import { QuestionHistoryModal } from "./question-history-modal";
 
 interface QuestionDisplayProps {
   question: GeneratedQuestion;
   onReset: () => void;
+  lessonSlug?: string;
 }
 
-export function QuestionDisplay({ question, onReset }: QuestionDisplayProps) {
+export function QuestionDisplay({
+  question,
+  onReset,
+  lessonSlug,
+}: QuestionDisplayProps) {
   const {
     selectedAnswer,
     selectedAnswers,
@@ -42,20 +48,23 @@ export function QuestionDisplay({ question, onReset }: QuestionDisplayProps) {
               {QUESTION_TYPE_LABELS[question.type]}
             </p>
           </div>
-          <Button
-            onClick={onReset}
-            variant="outline"
-            size="sm"
-            disabled={!hasAnswered}
-            title={
-              !hasAnswered
-                ? "Answer the question first"
-                : "Generate a new question"
-            }
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Generate New
-          </Button>
+          <div className="flex items-center gap-2">
+            <QuestionHistoryModal lessonSlug={lessonSlug} />
+            <Button
+              onClick={onReset}
+              variant="outline"
+              size="sm"
+              disabled={!hasAnswered}
+              title={
+                !hasAnswered
+                  ? "Answer the question first"
+                  : "Generate a new question"
+              }
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Generate New
+            </Button>
+          </div>
         </div>
 
         {/* Question Card */}

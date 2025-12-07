@@ -1,10 +1,11 @@
-import { post } from "@/lib/request";
+import { get, post } from "@/lib/request";
 import { Model } from "@/enums/question.enum";
 import {
   GeneratedQuestion,
   GenerateQuestionsParams,
   AnswerQuestionParams,
   AnswerResult,
+  QuestionHistoryItem,
 } from "@/interfaces/question.interface";
 import JsonUtils, { BackendQuestion } from "@/utils/json.util";
 
@@ -61,5 +62,25 @@ export const answerQuestion = async (
     "payload" in response.payload && "message" in response.payload
       ? response.payload.message
       : "Failed to submit answer",
+  );
+};
+
+// Get question history API
+export const getQuestionHistory = async (
+  lessonSlug: string,
+): Promise<QuestionHistoryItem[]> => {
+  const response = await get<{ message: string; data: QuestionHistoryItem[] }>(
+    `/api/question/history/${lessonSlug}`,
+    undefined,
+  );
+
+  if (response.status === 200) {
+    return (response.payload as { data: QuestionHistoryItem[] }).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to get question history",
   );
 };
