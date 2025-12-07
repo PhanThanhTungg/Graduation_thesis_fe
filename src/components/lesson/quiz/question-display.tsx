@@ -1,13 +1,15 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Send, Loader2 } from "lucide-react";
 import {
-  TypeQuestion,
   QUESTION_TYPE_LABELS,
   type GeneratedQuestion,
 } from "@/service/question.service";
-import { OptionItem } from "./option-item";
+import { QuizOptions } from "./quiz-options";
+import { QuizResultCard } from "./quiz-result-card";
+import { useQuizAnswer } from "./use-quiz-answer";
 
 interface QuestionDisplayProps {
   question: GeneratedQuestion;
@@ -15,13 +17,19 @@ interface QuestionDisplayProps {
 }
 
 export function QuestionDisplay({ question, onReset }: QuestionDisplayProps) {
-  const isChoiceQuestion =
-    question.type === TypeQuestion.SINGLE_CHOICE ||
-    question.type === TypeQuestion.MULTIPLE_CHOICE;
-  const isTrueFalse = question.type === TypeQuestion.TRUE_FALSE;
-  const isTextQuestion =
-    question.type === TypeQuestion.SHORT_ANSWER ||
-    question.type === TypeQuestion.FILL_IN_THE_BLANK;
+  const {
+    selectedAnswer,
+    selectedAnswers,
+    textAnswer,
+    isSubmitting,
+    result,
+    hasAnswered,
+    canSubmit,
+    setSelectedAnswer,
+    toggleMultipleAnswer,
+    setTextAnswer,
+    handleSubmit,
+  } = useQuizAnswer(question);
 
   return (
     <div className="px-6 py-8">
@@ -34,7 +42,17 @@ export function QuestionDisplay({ question, onReset }: QuestionDisplayProps) {
               {QUESTION_TYPE_LABELS[question.type]}
             </p>
           </div>
-          <Button onClick={onReset} variant="outline" size="sm">
+          <Button
+            onClick={onReset}
+            variant="outline"
+            size="sm"
+            disabled={!hasAnswered}
+            title={
+              !hasAnswered
+                ? "Answer the question first"
+                : "Generate a new question"
+            }
+          >
             <RefreshCw className="w-4 h-4 mr-2" />
             Generate New
           </Button>
@@ -54,42 +72,44 @@ export function QuestionDisplay({ question, onReset }: QuestionDisplayProps) {
             </div>
 
             {/* Options */}
-            <div className="space-y-3">
-              {isChoiceQuestion &&
-                question.options.map((opt) => (
-                  <OptionItem
-                    key={opt.name}
-                    label={`${opt.name}. ${opt.text}`}
-                  />
-                ))}
+            <QuizOptions
+              question={question}
+              selectedAnswer={selectedAnswer}
+              selectedAnswers={selectedAnswers}
+              textAnswer={textAnswer}
+              disabled={hasAnswered}
+              onSelectSingle={setSelectedAnswer}
+              onToggleMultiple={toggleMultipleAnswer}
+              onTextChange={setTextAnswer}
+            />
 
-              {isTrueFalse && (
-                <>
-                  <OptionItem label="True" />
-                  <OptionItem label="False" />
-                </>
-              )}
-
-              {isTextQuestion && (
-                <Textarea
-                  placeholder="Your answer..."
-                  className="min-h-32"
-                  disabled
-                />
-              )}
-            </div>
+            {/* Submit Button */}
+            {!hasAnswered && (
+              <div className="mt-6 flex justify-end">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!canSubmit}
+                  className="bg-orange hover:bg-orange/90"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Submit Answer
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
-
-          {/* Explanation */}
-          {question.aiExplanation && (
-            <div className="p-4 rounded-lg bg-muted/50 border">
-              <p className="font-semibold mb-2 text-sm">Explanation</p>
-              <p className="text-sm text-muted-foreground">
-                {question.aiExplanation}
-              </p>
-            </div>
-          )}
         </Card>
+
+        {/* Result Card */}
+        {result && <QuizResultCard result={result} />}
       </div>
     </div>
   );

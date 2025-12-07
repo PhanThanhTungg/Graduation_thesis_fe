@@ -18,3 +18,16 @@ export interface GenerateQuestionsParams {
   difficulty: Difficulty;
   model?: Model;
 }
+
+export interface AnswerQuestionParams {
+  answer: string;
+  model?: Model;
+}
+
+export interface AnswerResult {
+  id: string;
+  score: number;
+  explain: string;
+  aiFeedback: string;
+  answer: string;
+}
