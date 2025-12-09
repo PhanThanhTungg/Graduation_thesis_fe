@@ -20,11 +20,13 @@ import { QuestionHistoryModal } from "./question-history-modal";
 interface GenerationFormProps {
   lessonSlug?: string;
   onGenerate: (questions: GeneratedQuestion[]) => void;
+  hasUnanswered?: boolean;
 }
 
 export function GenerationForm({
   lessonSlug,
   onGenerate,
+  hasUnanswered = false,
 }: GenerationFormProps) {
   const [questionType, setQuestionType] = useState<TypeQuestion>(
     TypeQuestion.SINGLE_CHOICE,
@@ -108,7 +110,7 @@ export function GenerationForm({
 
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating || !lessonSlug}
+              disabled={isGenerating || !lessonSlug || hasUnanswered}
               className="w-full bg-orange hover:bg-orange/90"
               size="lg"
             >
@@ -124,6 +126,13 @@ export function GenerationForm({
                 </>
               )}
             </Button>
+
+            {hasUnanswered && (
+              <p className="text-sm text-orange text-center font-medium">
+                ⚠️ You have unanswered questions. Please answer them before
+                generating new ones.
+              </p>
+            )}
 
             {!lessonSlug && (
               <p className="text-sm text-destructive text-center">

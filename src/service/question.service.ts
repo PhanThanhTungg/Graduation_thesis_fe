@@ -140,3 +140,31 @@ export const getQuestionHistory = async (
       : "Failed to get question history",
   );
 };
+
+// Get unanswered question API
+export const getUnansweredQuestion = async (
+  lessonSlug: string,
+): Promise<GeneratedQuestion | null> => {
+  const response = await get<{
+    message: string;
+    data: BackendQuestion | null;
+  }>(`/api/question/unanswered/${lessonSlug}`, undefined);
+
+  if (response.status === 200) {
+    const payload = response.payload as {
+      data: BackendQuestion | null;
+    };
+
+    if (payload.data) {
+      return JsonUtils.parseQuestionFromBackend(payload.data);
+    }
+
+    return null;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to get unanswered question",
+  );
+};
