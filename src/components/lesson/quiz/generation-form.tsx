@@ -15,6 +15,7 @@ import {
 } from "@/service/question.service";
 import { showToast } from "@/lib/toast";
 import { FormSelect } from "./form-select";
+import { QuestionHistoryModal } from "./question-history-modal";
 
 interface GenerationFormProps {
   lessonSlug?: string;
@@ -60,6 +61,9 @@ export function GenerationForm({
   return (
     <div className="px-6 py-8">
       <div className="max-w-2xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <QuestionHistoryModal lessonSlug={lessonSlug} />
+        </div>
         <Card className="p-8">
           <div className="mb-6 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange/10 mb-4">

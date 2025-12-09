@@ -66,16 +66,72 @@ export const answerQuestion = async (
 };
 
 // Get question history API
+export interface QuestionHistoryParams {
+  page?: number;
+  limit?: number;
+  type?: string;
+  difficulty?: string;
+  sortBy?: "date" | "score";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface QuestionHistoryResponse {
+  data: QuestionHistoryItem[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+}
+
 export const getQuestionHistory = async (
   lessonSlug: string,
-): Promise<QuestionHistoryItem[]> => {
-  const response = await get<{ message: string; data: QuestionHistoryItem[] }>(
-    `/api/question/history/${lessonSlug}`,
-    undefined,
-  );
+  params?: QuestionHistoryParams,
+): Promise<QuestionHistoryResponse> => {
+  const queryParams = new URLSearchParams();
+
+  if (params?.page) queryParams.append("page", params.page.toString());
+  if (params?.limit) queryParams.append("limit", params.limit.toString());
+  if (params?.type && params.type !== "all")
+    queryParams.append("type", params.type);
+  if (params?.difficulty && params.difficulty !== "all")
+    queryParams.append("difficulty", params.difficulty);
+  if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+  if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+  const url = `/api/question/history/${lessonSlug}${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+
+  const response = await get<{
+    message: string;
+    data: QuestionHistoryItem[];
+    pagination?: QuestionHistoryResponse["pagination"];
+  }>(url, undefined);
 
   if (response.status === 200) {
-    return (response.payload as { data: QuestionHistoryItem[] }).data;
+    const payload = response.payload as {
+      data: QuestionHistoryItem[];
+      pagination?: QuestionHistoryResponse["pagination"];
+    };
+
+    // If backend returns pagination info, use it
+    if (payload.pagination) {
+      return {
+        data: payload.data,
+        pagination: payload.pagination,
+      };
+    }
+
+    // Otherwise, return all data with default pagination
+    return {
+      data: payload.data,
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: payload.data.length,
+        itemsPerPage: payload.data.length,
+      },
+    };
   }
 
   throw new Error(
