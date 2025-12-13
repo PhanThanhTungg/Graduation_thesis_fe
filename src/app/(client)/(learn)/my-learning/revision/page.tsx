@@ -1,191 +1,202 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getReviewSpaceLessons } from "@/service/review-space.service";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  LessonReviewSettingType,
-  LessonReviewStatus,
-} from "@/schema/review-space.schema";
-import RevisionLessonCard from "./_components/revision-lesson-card";
-import RevisionFilters from "./_components/revision-filters";
-import RevisionPagination from "./_components/revision-pagination";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { BookOpen, Brain, Calendar, TrendingUp, Home } from "lucide-react";
 
 export default function RevisionPage() {
-  const [lessons, setLessons] = useState<LessonReviewSettingType[]>([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    new: 0,
+    learning: 0,
+    reviewing: 0,
+    lapsed: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filter states
-  const [selectedStatus, setSelectedStatus] = useState<
-    LessonReviewStatus | "all"
-  >("all");
-  const [selectedCourse, setSelectedCourse] = useState<string>("all");
-  const [selectedReviewStep, setSelectedReviewStep] = useState<string>("all");
-
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-
-  // Fetch lessons with pagination
-  const fetchLessons = async () => {
-    try {
-      setIsLoading(true);
-      const response = await getReviewSpaceLessons({
-        page: currentPage,
-        limit: itemsPerPage,
-      });
-      setLessons(response.data);
-      setTotalItems(response.pagination.total);
-      setTotalPages(response.pagination.totalPages);
-    } catch (err) {
-      console.error("Error fetching review space lessons:", err);
-      setError("Failed to load review space lessons");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchLessons();
-  }, [currentPage, itemsPerPage]);
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch all lessons to calculate stats
+        const response = await getReviewSpaceLessons({
+          page: 1,
+          limit: 1000, // Get all for stats
+        });
 
-  // Get unique courses for filter (from current page data)
-  const courses = useMemo(() => {
-    const uniqueCourses = new Map<string, string>();
-    lessons.forEach((lesson) => {
-      if (!uniqueCourses.has(lesson.courseId)) {
-        uniqueCourses.set(lesson.courseId, lesson.courseTitle);
+        const lessons = response.data;
+        const statusCounts = {
+          total: lessons.length,
+          new: lessons.filter((l) => l.status === "new").length,
+          learning: lessons.filter((l) => l.status === "learning").length,
+          reviewing: lessons.filter((l) => l.status === "reviewing").length,
+          lapsed: lessons.filter((l) => l.status === "lapsed").length,
+        };
+
+        setStats(statusCounts);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      } finally {
+        setIsLoading(false);
       }
-    });
-    return Array.from(uniqueCourses.entries()).map(([id, title]) => ({
-      id,
-      title,
-    }));
-  }, [lessons]);
+    };
 
-  // Client-side filter for current page
-  const filteredLessons = useMemo(() => {
-    return lessons.filter((lesson) => {
-      // Filter by status
-      if (selectedStatus !== "all" && lesson.status !== selectedStatus) {
-        return false;
-      }
-
-      // Filter by course
-      if (selectedCourse !== "all" && lesson.courseId !== selectedCourse) {
-        return false;
-      }
-
-      // Filter by review step
-      if (selectedReviewStep !== "all") {
-        if (selectedReviewStep === "5+") {
-          if (lesson.reviewStep < 5) return false;
-        } else {
-          if (lesson.reviewStep !== parseInt(selectedReviewStep)) return false;
-        }
-      }
-
-      return true;
-    });
-  }, [lessons, selectedStatus, selectedCourse, selectedReviewStep]);
-
-  // Reset to page 1 when items per page changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [itemsPerPage]);
-
-  const handleRemoveLesson = (lessonId: string) => {
-    setLessons((prev) => prev.filter((lesson) => lesson.lessonId !== lessonId));
-    setTotalItems((prev) => prev - 1);
-  };
-
-  const handleClearFilters = () => {
-    setSelectedStatus("all");
-    setSelectedCourse("all");
-    setSelectedReviewStep("all");
-  };
+    fetchStats();
+  }, []);
 
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-muted-foreground">Loading review space...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-2xl font-semibold text-destructive mb-2">{error}</p>
-        <p className="text-muted-foreground">Please try again later</p>
-      </div>
-    );
-  }
-
-  if (totalItems === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-2xl font-semibold text-muted-foreground mb-2">
-          No lessons in review space
-        </p>
-        <p className="text-muted-foreground">
-          Add lessons to your review space to start reviewing
-        </p>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
 
   return (
     <div className="py-8 container-sm">
-      <div className="mb-6">
+      <Breadcrumb className="mb-4">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">
+              <Home className="size-4" />
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/my-learning/courses">
+              My Learning
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Revision</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Revision</h1>
         <p className="text-muted-foreground">
           Review your lessons using spaced repetition
         </p>
       </div>
 
-      <RevisionFilters
-        courses={courses}
-        selectedStatus={selectedStatus}
-        selectedCourse={selectedCourse}
-        selectedReviewStep={selectedReviewStep}
-        onStatusChange={setSelectedStatus}
-        onCourseChange={setSelectedCourse}
-        onReviewStepChange={setSelectedReviewStep}
-        onClearFilters={handleClearFilters}
-      />
-
-      {filteredLessons.length === 0 ? (
+      {stats.total === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-xl font-semibold text-muted-foreground mb-2">
-            No lessons match your filters
+          <Brain className="size-16 text-muted-foreground mb-4" />
+          <p className="text-2xl font-semibold text-muted-foreground mb-2">
+            No lessons in review space
           </p>
-          <p className="text-muted-foreground">
-            Try adjusting your filter criteria
+          <p className="text-muted-foreground mb-6">
+            Add lessons to your review space to start reviewing
           </p>
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-4">
-            {filteredLessons.map((lesson) => (
-              <RevisionLessonCard
-                key={lesson.id}
-                lesson={lesson}
-                onRemove={handleRemoveLesson}
-              />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Lessons
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="size-5 text-blue-500" />
+                  <p className="text-3xl font-bold">{stats.total}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  New
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-5 text-blue-500" />
+                  <p className="text-3xl font-bold">{stats.new}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Learning
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Brain className="size-5 text-yellow-500" />
+                  <p className="text-3xl font-bold">{stats.learning}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Reviewing
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Calendar className="size-5 text-green-500" />
+                  <p className="text-3xl font-bold">{stats.reviewing}</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <RevisionPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            itemsPerPage={itemsPerPage}
-            totalItems={totalItems}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Ready to Review</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                You have {stats.total} lessons in your review space. Start
+                reviewing to improve your retention and master the content.
+              </p>
+              <Link href="/my-learning/revision/lesson">
+                <Button size="lg" className="w-full sm:w-auto">
+                  <BookOpen className="size-4 mr-2" />
+                  View All Lessons
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {stats.lapsed > 0 && (
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardHeader>
+                <CardTitle className="text-destructive">
+                  Attention Needed
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  You have {stats.lapsed} lapsed{" "}
+                  {stats.lapsed === 1 ? "lesson" : "lessons"} that need review.
+                  These lessons require immediate attention to prevent further
+                  forgetting.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>
