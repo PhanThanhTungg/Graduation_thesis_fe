@@ -1,4 +1,5 @@
-import { post } from "@/lib/request";
+import { get, post } from "@/lib/request";
+import { LessonReviewSettingType } from "@/schema/review-space.schema";
 
 export const toggleLessonInReviewSpace = async (
   lessonId: string,
@@ -24,3 +25,26 @@ export const toggleLessonInReviewSpace = async (
 
 // Keep old name for backward compatibility
 export const addLessonToReviewSpace = toggleLessonInReviewSpace;
+
+export const getReviewSpaceLessons = async (): Promise<
+  LessonReviewSettingType[]
+> => {
+  const response = await get<LessonReviewSettingType[]>(
+    "/api/review-space/lessons",
+    undefined,
+  );
+
+  if (response.status === 200) {
+    return response.payload as LessonReviewSettingType[];
+  }
+
+  const errorMessage =
+    typeof response.payload === "object" &&
+    response.payload !== null &&
+    "message" in response.payload &&
+    typeof response.payload.message === "string"
+      ? response.payload.message
+      : "Failed to fetch review space lessons";
+
+  throw new Error(errorMessage);
+};
