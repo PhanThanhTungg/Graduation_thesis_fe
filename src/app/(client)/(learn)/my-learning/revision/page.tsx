@@ -13,7 +13,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { BookOpen, Brain, Calendar, TrendingUp, Home } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  Calendar,
+  TrendingUp,
+  Home,
+  Settings,
+} from "lucide-react";
 
 export default function RevisionPage() {
   const [stats, setStats] = useState({
@@ -175,6 +182,30 @@ export default function RevisionPage() {
                 <Button size="lg" className="w-full sm:w-auto">
                   <BookOpen className="size-4 mr-2" />
                   View All Lessons
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="size-5" />
+                Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Customize your revision settings and preferences.
+              </p>
+              <Link href="/my-learning/revision/setting">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  <Settings className="size-4 mr-2" />
+                  Configure Settings
                 </Button>
               </Link>
             </CardContent>
