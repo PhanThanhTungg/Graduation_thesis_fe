@@ -25,7 +25,7 @@ import {
 interface LessonSidebarProps {
   courseSlug: string;
   sections: SectionType[];
-  currentLessonId: number;
+  currentLessonId: string;
   currentLessonSlug?: string;
   totalDuration: string;
   totalLessons: number;
@@ -33,7 +33,7 @@ interface LessonSidebarProps {
 
 function findSectionWithLesson(
   sections: SectionType[],
-  lessonId: number,
+  lessonId: string,
   lessonSlug?: string,
 ): SectionType | null {
   for (const section of sections) {
@@ -56,9 +56,9 @@ function findSectionWithLesson(
 
 function getAllParentSectionIds(
   sections: SectionType[],
-  targetSectionId: number,
-  parentIds: number[] = [],
-): number[] {
+  targetSectionId: string,
+  parentIds: string[] = [],
+): string[] {
   for (const section of sections) {
     if (section.id === targetSectionId) {
       return parentIds;
@@ -110,7 +110,7 @@ export function LessonSidebar({
   totalDuration,
   totalLessons,
 }: LessonSidebarProps) {
-  const [expandedSections, setExpandedSections] = useState<number[]>(() => {
+  const [expandedSections, setExpandedSections] = useState<string[]>(() => {
     const currentSection = findSectionWithLesson(
       initialSections,
       currentLessonId,
@@ -127,10 +127,10 @@ export function LessonSidebar({
   });
 
   const [sections, setSections] = useState<SectionType[]>(initialSections);
-  const [loadingLessons, setLoadingLessons] = useState<Set<number>>(new Set());
-  const [addingToReview, setAddingToReview] = useState<Set<number>>(new Set());
+  const [loadingLessons, setLoadingLessons] = useState<Set<string>>(new Set());
+  const [addingToReview, setAddingToReview] = useState<Set<string>>(new Set());
   const [hoveredCompletedLesson, setHoveredCompletedLesson] = useState<
-    number | null
+    string | null
   >(null);
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export function LessonSidebar({
 
   const updateLessonStatus = useCallback(
     (
-      lessonId: number,
+      lessonId: string,
       progress: "not_started" | "in_progress" | "completed",
     ) => {
       const updateSection = (section: SectionType): SectionType => {
@@ -199,7 +199,7 @@ export function LessonSidebar({
         const targetProgress: "not_started" | "in_progress" | "completed" =
           lesson.isCompleted ? "in_progress" : "completed";
 
-        const result = await pingStatusLesson(lesson.slug!, targetProgress);
+        const result = await pingStatusLesson(lesson.slug, targetProgress);
         updateLessonStatus(lesson.id, result.progress);
         showToast(
           "success",
@@ -225,7 +225,7 @@ export function LessonSidebar({
     [updateLessonStatus],
   );
 
-  const handleAddToReviewSpace = useCallback(
+  const handleToggleReviewSpace = useCallback(
     async (e: React.MouseEvent, lesson: LessonItemType) => {
       e.preventDefault();
       e.stopPropagation();
@@ -233,15 +233,37 @@ export function LessonSidebar({
       setAddingToReview((prev) => new Set(prev).add(lesson.id));
 
       try {
-        console.log("Adding lesson to review space:", lesson);
-        await addLessonToReviewSpace(lesson.id);
-        showToast("success", "Lesson added to review space");
+        const wasInReviewSpace = lesson.isInReviewSpace;
+        const result = await addLessonToReviewSpace(lesson.id);
+
+        // Update local state based on API response
+        const updateSection = (section: SectionType): SectionType => {
+          const updatedLessons = section.lessons.map((l) =>
+            l.id === lesson.id
+              ? { ...l, isInReviewSpace: result.data.isInReviewSpace }
+              : l,
+          );
+          const updatedChildren = section.children?.map(updateSection);
+          return {
+            ...section,
+            lessons: updatedLessons,
+            children: updatedChildren,
+          };
+        };
+        setSections((prev) => prev.map(updateSection));
+
+        showToast(
+          "success",
+          wasInReviewSpace
+            ? "Lesson removed from review space"
+            : "Lesson added to review space",
+        );
       } catch (error) {
         showToast(
           "error",
           error instanceof Error
             ? error.message
-            : "Failed to add lesson to review space",
+            : "Failed to update review space",
         );
       } finally {
         setAddingToReview((prev) => {
@@ -388,24 +410,34 @@ export function LessonSidebar({
 
                     {canAccess && (
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Add to Review Space Button */}
+                        {/* Toggle Review Space Button */}
                         <button
                           type="button"
-                          onClick={(e) => handleAddToReviewSpace(e, lesson)}
+                          onClick={(e) => handleToggleReviewSpace(e, lesson)}
                           disabled={addingToReview.has(lesson.id)}
                           className={cn(
                             "p-1.5 text-xs rounded-md transition-all",
-                            "opacity-0 group-hover:opacity-100",
-                            "bg-orange/10 text-orange hover:bg-orange hover:text-white",
+                            lesson.isInReviewSpace
+                              ? "opacity-100 bg-orange text-white hover:bg-orange/80"
+                              : "opacity-0 group-hover:opacity-100 bg-orange/10 text-orange hover:bg-orange hover:text-white",
                             addingToReview.has(lesson.id) &&
                               "opacity-100 cursor-not-allowed",
                           )}
-                          title="Add to Review Space"
+                          title={
+                            lesson.isInReviewSpace
+                              ? "Remove from Review Space"
+                              : "Add to Review Space"
+                          }
                         >
                           {addingToReview.has(lesson.id) ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           ) : (
-                            <BookMarked className="w-3.5 h-3.5" />
+                            <BookMarked
+                              className={cn(
+                                "w-3.5 h-3.5",
+                                lesson.isInReviewSpace && "fill-current",
+                              )}
+                            />
                           )}
                         </button>
 
@@ -503,9 +535,7 @@ export function LessonSidebar({
           type="multiple"
           value={expandedSections.map((id) => `section-${id}`)}
           onValueChange={(values) => {
-            const sectionIds = values.map((v) =>
-              parseInt(v.replace("section-", "")),
-            );
+            const sectionIds = values.map((v) => v.replace("section-", ""));
             setExpandedSections(sectionIds);
           }}
         >

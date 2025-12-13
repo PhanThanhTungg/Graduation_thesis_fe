@@ -1,20 +1,26 @@
 import { post } from "@/lib/request";
 
-export const addLessonToReviewSpace = async (
-  lessonId: number,
-): Promise<{ message: string }> => {
-  const response = await post<{ message: string }>(
-    `/api/review-space/lessons/${lessonId}`,
-    {},
-  );
+export const toggleLessonInReviewSpace = async (
+  lessonId: string,
+): Promise<{ message: string; data: { isInReviewSpace: boolean } }> => {
+  const response = await post<{
+    message: string;
+    data: { isInReviewSpace: boolean };
+  }>(`/api/review-space/lessons/${lessonId}`, {});
 
   if (response.status === 200 || response.status === 201) {
-    return response.payload as { message: string };
+    return response.payload as {
+      message: string;
+      data: { isInReviewSpace: boolean };
+    };
   }
 
   throw new Error(
     "payload" in response.payload && "message" in response.payload
       ? response.payload.message
-      : "Failed to add lesson to review space",
+      : "Failed to toggle lesson in review space",
   );
 };
+
+// Keep old name for backward compatibility
+export const addLessonToReviewSpace = toggleLessonInReviewSpace;

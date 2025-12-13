@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const LessonItemSchema = z
   .object({
-    id: z.number(),
+    id: z.string(),
     slug: z.string().optional(),
     title: z.string(),
     duration: z.string(),
@@ -10,6 +10,7 @@ export const LessonItemSchema = z
     isPreview: z.boolean().default(false),
     isCompleted: z.boolean().default(false),
     progress: z.enum(["not_started", "in_progress", "completed"]).optional(),
+    isInReviewSpace: z.boolean().default(false),
     videoId: z.string().optional(),
     embedUrl: z.union([z.url(), z.instanceof(File)]).optional(),
     content: z.string().optional(),
@@ -31,7 +32,7 @@ export type LessonItemType = z.infer<typeof LessonItemSchema>;
 export const SectionSchema: z.ZodType<SectionType> = z.lazy(() =>
   z
     .object({
-      id: z.number(),
+      id: z.string(),
       title: z.string(),
       lessons: z.array(LessonItemSchema),
       children: z.array(SectionSchema).optional(),
@@ -40,7 +41,7 @@ export const SectionSchema: z.ZodType<SectionType> = z.lazy(() =>
 );
 
 export type SectionType = {
-  id: number;
+  id: string;
   title: string;
   lessons: LessonItemType[];
   children?: SectionType[];

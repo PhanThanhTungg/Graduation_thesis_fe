@@ -369,6 +369,7 @@ type LessonTreeItemDto = {
     duration: number | null;
   } | null;
   progress: "not_started" | "in_progress" | "completed";
+  isInReviewSpace: boolean;
   createdAt: string;
   updatedAt?: string | null;
 };
