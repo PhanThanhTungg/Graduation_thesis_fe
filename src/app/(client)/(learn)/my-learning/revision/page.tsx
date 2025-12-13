@@ -8,6 +8,7 @@ import {
 } from "@/schema/review-space.schema";
 import RevisionLessonCard from "./_components/revision-lesson-card";
 import RevisionFilters from "./_components/revision-filters";
+import RevisionPagination from "./_components/revision-pagination";
 
 export default function RevisionPage() {
   const [lessons, setLessons] = useState<LessonReviewSettingType[]>([]);
@@ -21,24 +22,36 @@ export default function RevisionPage() {
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
   const [selectedReviewStep, setSelectedReviewStep] = useState<string>("all");
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Fetch lessons with pagination
+  const fetchLessons = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getReviewSpaceLessons({
+        page: currentPage,
+        limit: itemsPerPage,
+      });
+      setLessons(response.data);
+      setTotalItems(response.pagination.total);
+      setTotalPages(response.pagination.totalPages);
+    } catch (err) {
+      console.error("Error fetching review space lessons:", err);
+      setError("Failed to load review space lessons");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchLessons = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getReviewSpaceLessons();
-        setLessons(data);
-      } catch (err) {
-        console.error("Error fetching review space lessons:", err);
-        setError("Failed to load review space lessons");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchLessons();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
-  // Get unique courses for filter
+  // Get unique courses for filter (from current page data)
   const courses = useMemo(() => {
     const uniqueCourses = new Map<string, string>();
     lessons.forEach((lesson) => {
@@ -52,7 +65,7 @@ export default function RevisionPage() {
     }));
   }, [lessons]);
 
-  // Filter lessons
+  // Client-side filter for current page
   const filteredLessons = useMemo(() => {
     return lessons.filter((lesson) => {
       // Filter by status
@@ -78,8 +91,14 @@ export default function RevisionPage() {
     });
   }, [lessons, selectedStatus, selectedCourse, selectedReviewStep]);
 
+  // Reset to page 1 when items per page changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [itemsPerPage]);
+
   const handleRemoveLesson = (lessonId: string) => {
     setLessons((prev) => prev.filter((lesson) => lesson.lessonId !== lessonId));
+    setTotalItems((prev) => prev - 1);
   };
 
   const handleClearFilters = () => {
@@ -105,7 +124,7 @@ export default function RevisionPage() {
     );
   }
 
-  if (lessons.length === 0) {
+  if (totalItems === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <p className="text-2xl font-semibold text-muted-foreground mb-2">
@@ -138,13 +157,6 @@ export default function RevisionPage() {
         onClearFilters={handleClearFilters}
       />
 
-      <div className="mb-4">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredLessons.length} of {lessons.length}{" "}
-          {lessons.length === 1 ? "lesson" : "lessons"}
-        </p>
-      </div>
-
       {filteredLessons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-xl font-semibold text-muted-foreground mb-2">
@@ -155,15 +167,26 @@ export default function RevisionPage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {filteredLessons.map((lesson) => (
-            <RevisionLessonCard
-              key={lesson.id}
-              lesson={lesson}
-              onRemove={handleRemoveLesson}
-            />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-4">
+            {filteredLessons.map((lesson) => (
+              <RevisionLessonCard
+                key={lesson.id}
+                lesson={lesson}
+                onRemove={handleRemoveLesson}
+              />
+            ))}
+          </div>
+
+          <RevisionPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={totalItems}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+          />
+        </>
       )}
     </div>
   );

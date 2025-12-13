@@ -26,16 +26,42 @@ export const toggleLessonInReviewSpace = async (
 // Keep old name for backward compatibility
 export const addLessonToReviewSpace = toggleLessonInReviewSpace;
 
-export const getReviewSpaceLessons = async (): Promise<
-  LessonReviewSettingType[]
-> => {
-  const response = await get<LessonReviewSettingType[]>(
-    "/api/review-space/lessons",
-    undefined,
-  );
+export const getReviewSpaceLessons = async (params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{
+  data: LessonReviewSettingType[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> => {
+  const queryParams: Record<string, unknown> = {};
+  if (params?.page) queryParams.page = params.page;
+  if (params?.limit) queryParams.limit = params.limit;
+
+  const response = await get<{
+    data: LessonReviewSettingType[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }>("/api/review-space/lessons", queryParams);
 
   if (response.status === 200) {
-    return response.payload as LessonReviewSettingType[];
+    return response.payload as {
+      data: LessonReviewSettingType[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    };
   }
 
   const errorMessage =
