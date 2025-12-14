@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   BarChart2,
@@ -16,27 +16,27 @@ import {
   Menu,
   Home,
   LucideIcon,
-} from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
-import Image from "next/image"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 interface NavItemProps {
-  href: string
-  icon: LucideIcon
-  children: React.ReactNode
-  onClick?: () => void
+  href: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+  onClick?: () => void;
 }
 
 interface NavSection {
-  title: string
+  title: string;
   items: Array<{
-    href: string
-    icon: LucideIcon
-    label: string
-  }>
+    href: string;
+    icon: LucideIcon;
+    label: string;
+  }>;
 }
 
 const NAV_SECTIONS: NavSection[] = [
@@ -66,16 +66,16 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "#", icon: Video, label: "Meetings" },
     ],
   },
-]
+];
 
 const FOOTER_ITEMS = [
-  { href: "#", icon: Settings, label: "Settings" },
+  { href: "/admin/settings", icon: Settings, label: "Settings" },
   { href: "#", icon: HelpCircle, label: "Help" },
-]
+];
 
 function NavItem({ href, icon: Icon, children, onClick }: NavItemProps) {
-  const pathname = usePathname()
-  const isActive = href !== "#" && pathname.includes(href)
+  const pathname = usePathname();
+  const isActive = href !== "#" && pathname.includes(href);
 
   return (
     <Link
@@ -85,13 +85,13 @@ function NavItem({ href, icon: Icon, children, onClick }: NavItemProps) {
         "flex items-center px-3 py-2 text-sm rounded-md transition-colors",
         isActive
           ? "text-green bg-green-foreground font-medium"
-          : "text-muted-foreground hover:text-primary hover:bg-primary-foreground"
+          : "text-muted-foreground hover:text-primary hover:bg-primary-foreground",
       )}
     >
       <Icon className="h-4 w-4 mr-3 flex-shrink-0" />
       {children}
     </Link>
-  )
+  );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -99,7 +99,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
       {children}
     </div>
-  )
+  );
 }
 
 function Logo() {
@@ -121,13 +121,13 @@ function Logo() {
         </span>
       </div>
     </Link>
-  )
+  );
 }
 
 export default function Sidebar() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleNavigation = () => setIsMobileMenuOpen(false)
+  const handleNavigation = () => setIsMobileMenuOpen(false);
 
   return (
     <>
@@ -143,8 +143,8 @@ export default function Sidebar() {
       <nav
         className={cn(
           "fixed inset-y-0 left-0 z-[70] w-64 bg-white dark:bg-[#0F0F12] transform transition-transform duration-200 ease-in-out",
-          "lg:translate-x-0 lg:static lg:w-64 border-r border-gray-200 dark:border-[#1F1F23]",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          "lg:translate-x-0 lg:fixed lg:w-64 border-r border-gray-200 dark:border-[#1F1F23]",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="h-full flex flex-col">
@@ -197,5 +197,5 @@ export default function Sidebar() {
         />
       )}
     </>
-  )
+  );
 }
