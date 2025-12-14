@@ -9,6 +9,7 @@ export const SprSettingSchema = z.object({
   sprBot: SprBotEnum,
   sprModel: AiModelEnum,
   sprInterval: z.number(),
+  enabledSpr: z.boolean(),
 });
 
 export type SprSettingType = z.infer<typeof SprSettingSchema>;

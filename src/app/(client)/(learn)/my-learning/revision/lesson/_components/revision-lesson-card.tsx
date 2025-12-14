@@ -3,39 +3,31 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LessonReviewSettingType } from "@/schema/review-space.schema";
-import { toggleLessonInReviewSpace } from "@/service/review-space.service";
+import {
+  toggleLessonInReviewSpace,
+  updateLessonReviewSetting,
+} from "@/service/review-space.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Trash2 } from "lucide-react";
 import { showToast } from "@/lib/toast";
+import { statusLabels, statusColors } from "@/lib/review-space.constants";
 
 interface RevisionLessonCardProps {
   lesson: LessonReviewSettingType;
   onRemove: (lessonId: string) => void;
+  onUpdate?: (lesson: LessonReviewSettingType) => void;
 }
-
-const statusLabels: Record<string, string> = {
-  new: "New",
-  learning: "Learning",
-  reviewing: "Reviewing",
-  lapsed: "Lapsed",
-  suspending: "Suspended",
-};
-
-const statusColors: Record<string, string> = {
-  new: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  learning: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  reviewing: "bg-green-500/10 text-green-500 border-green-500/20",
-  lapsed: "bg-red-500/10 text-red-500 border-red-500/20",
-  suspending: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-};
 
 export default function RevisionLessonCard({
   lesson,
   onRemove,
+  onUpdate,
 }: RevisionLessonCardProps) {
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleRemove = async () => {
     try {
@@ -51,6 +43,24 @@ export default function RevisionLessonCard({
     }
   };
 
+  const handleToggleReviewEnabled = async (checked: boolean) => {
+    try {
+      setIsUpdating(true);
+      const updated = await updateLessonReviewSetting(lesson.lessonId, {
+        reviewEnabled: checked,
+      });
+      if (onUpdate) {
+        onUpdate(updated);
+      }
+      showToast("success", "Review enabled updated successfully");
+    } catch (error) {
+      console.error("Error updating review enabled:", error);
+      showToast("error", "Failed to update review enabled");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader>
@@ -58,7 +68,7 @@ export default function RevisionLessonCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-1 flex-wrap">
               <Link
-                href={`/courses/${lesson.courseId}/learn/${lesson.lessonId}`}
+                href={`/my-learning/revision/lesson/${lesson.lessonId}`}
                 className="text-lg font-semibold hover:text-green transition-colors"
               >
                 {lesson.lessonTitle}
@@ -81,7 +91,7 @@ export default function RevisionLessonCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Status</p>
             <Badge
@@ -108,6 +118,14 @@ export default function RevisionLessonCard({
             <p className="text-sm font-medium">
               {lesson.easinessFactor.toFixed(2)}
             </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Review Enabled</p>
+            <Switch
+              checked={lesson.reviewEnabled}
+              onCheckedChange={handleToggleReviewEnabled}
+              disabled={isUpdating}
+            />
           </div>
         </div>
       </CardContent>

@@ -1,4 +1,4 @@
-import { get, post } from "@/lib/request";
+import { get, post, patch } from "@/lib/request";
 import { LessonReviewSettingType } from "@/schema/review-space.schema";
 
 export const toggleLessonInReviewSpace = async (
@@ -71,6 +71,53 @@ export const getReviewSpaceLessons = async (params?: {
     typeof response.payload.message === "string"
       ? response.payload.message
       : "Failed to fetch review space lessons";
+
+  throw new Error(errorMessage);
+};
+
+export const getLessonReviewSettingByLessonId = async (
+  lessonId: string,
+): Promise<LessonReviewSettingType> => {
+  const response = await get<LessonReviewSettingType>(
+    `/api/review-space/lessons/${lessonId}`,
+    undefined,
+  );
+
+  if (response.status === 200) {
+    return response.payload as LessonReviewSettingType;
+  }
+
+  const errorMessage =
+    typeof response.payload === "object" &&
+    response.payload !== null &&
+    "message" in response.payload &&
+    typeof response.payload.message === "string"
+      ? response.payload.message
+      : "Failed to fetch lesson review setting";
+
+  throw new Error(errorMessage);
+};
+
+export const updateLessonReviewSetting = async (
+  lessonId: string,
+  data: { reviewEnabled?: boolean; note?: string },
+): Promise<LessonReviewSettingType> => {
+  const response = await patch<LessonReviewSettingType>(
+    `/api/review-space/lessons/${lessonId}`,
+    data,
+  );
+
+  if (response.status === 200) {
+    return response.payload as LessonReviewSettingType;
+  }
+
+  const errorMessage =
+    typeof response.payload === "object" &&
+    response.payload !== null &&
+    "message" in response.payload &&
+    typeof response.payload.message === "string"
+      ? response.payload.message
+      : "Failed to update lesson review setting";
 
   throw new Error(errorMessage);
 };

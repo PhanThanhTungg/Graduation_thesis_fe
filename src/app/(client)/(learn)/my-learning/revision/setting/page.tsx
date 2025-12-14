@@ -17,6 +17,7 @@ import { showToast } from "@/lib/toast";
 import { SprSettingForm } from "@/components/custom/spr-setting-form";
 import { getMyProfile } from "@/service/user.service";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
 
 export default function RevisionSettingPage() {
@@ -51,13 +52,27 @@ export default function RevisionSettingPage() {
 
   const handleSave = async (
     updateData: Partial<
-      Pick<SprSettingType, "sprBot" | "sprModel" | "sprInterval">
+      Pick<SprSettingType, "sprBot" | "sprModel" | "sprInterval" | "enabledSpr">
     >,
   ): Promise<SprSettingType> => {
     const updatedSettings = await updateSprSettings(updateData);
     setSettings(updatedSettings);
     showToast("success", "Settings updated successfully");
     return updatedSettings;
+  };
+
+  const handleToggleEnabledSpr = async (checked: boolean) => {
+    try {
+      setIsSaving(true);
+      const updatedSettings = await updateSprSettings({ enabledSpr: checked });
+      setSettings(updatedSettings);
+      showToast("success", "Settings updated successfully");
+    } catch (err) {
+      console.error("Error updating enabledSpr:", err);
+      showToast("error", "Failed to update settings");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -110,11 +125,18 @@ export default function RevisionSettingPage() {
       ) : settings ? (
         <>
           <Card className="mb-6">
-            <CardHeader>
+            <CardHeader className="relative">
               <CardTitle className="flex items-center gap-2">
                 <Settings className="size-5" />
                 Spaced Repetition Settings
               </CardTitle>
+              <div className="absolute top-4 right-4">
+                <Switch
+                  checked={settings.enabledSpr}
+                  onCheckedChange={handleToggleEnabledSpr}
+                  disabled={isSaving}
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <SprSettingForm

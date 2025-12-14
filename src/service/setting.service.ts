@@ -24,7 +24,9 @@ export const getSprSettings = async (): Promise<SprSettingType> => {
 };
 
 export const updateSprSettings = async (
-  data: Partial<Pick<SprSettingType, "sprBot" | "sprModel" | "sprInterval">>,
+  data: Partial<
+    Pick<SprSettingType, "sprBot" | "sprModel" | "sprInterval" | "enabledSpr">
+  >,
 ): Promise<SprSettingType> => {
   const response = await patch<{ data: SprSettingType }>(
     "/api/setting/spr",

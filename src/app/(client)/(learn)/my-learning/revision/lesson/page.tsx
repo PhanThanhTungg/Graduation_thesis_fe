@@ -110,6 +110,14 @@ export default function RevisionLessonPage() {
     setTotalItems((prev) => prev - 1);
   };
 
+  const handleUpdateLesson = (updatedLesson: LessonReviewSettingType) => {
+    setLessons((prev) =>
+      prev.map((lesson) =>
+        lesson.lessonId === updatedLesson.lessonId ? updatedLesson : lesson,
+      ),
+    );
+  };
+
   const handleClearFilters = () => {
     setSelectedStatus("all");
     setSelectedCourse("all");
@@ -209,6 +217,7 @@ export default function RevisionLessonPage() {
                 key={lesson.id}
                 lesson={lesson}
                 onRemove={handleRemoveLesson}
+                onUpdate={handleUpdateLesson}
               />
             ))}
           </div>
