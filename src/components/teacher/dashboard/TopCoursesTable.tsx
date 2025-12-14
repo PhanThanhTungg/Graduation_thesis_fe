@@ -1,10 +1,26 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
-import { getTopCourses } from '@/lib/teacher-dashboard-mock-data';
+import { getTopCourses, type TopCourse } from '@/service/analytics.service';
 
 export default function TopCoursesTable() {
-  const courses = getTopCourses();
+  const [courses, setCourses] = useState<TopCourse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getTopCourses();
+        setCourses(data);
+      } catch (error) {
+        console.error('Failed to fetch top courses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

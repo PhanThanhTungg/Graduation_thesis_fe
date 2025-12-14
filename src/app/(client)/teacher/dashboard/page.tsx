@@ -4,7 +4,6 @@ import RevenueChart from "@/components/teacher/dashboard/RevenueChart";
 import TopCoursesTable from "@/components/teacher/dashboard/TopCoursesTable";
 import StudentsByCountryChart from "@/components/teacher/dashboard/StudentsByCountryChart";
 import CourseRatingReviewsChart from "@/components/teacher/dashboard/CourseRatingReviewsChart";
-import { getSummaryData } from "@/lib/teacher-dashboard-mock-data";
 
 export const metadata: Metadata = {
   title: "Dashboard - Teacher Space",
@@ -12,7 +11,6 @@ export const metadata: Metadata = {
 }
 
 export default async function TeacherDashboardPage() {
-  const summaryData = getSummaryData();
 
   return (
     <div className="w-full py-12 px-4 md:px-6 lg:px-8">
@@ -25,7 +23,7 @@ export default async function TeacherDashboardPage() {
 
       {/* Summary Cards */}
       <section className="mb-8">
-        <SummaryCards data={summaryData} />
+        <SummaryCards />
       </section>
 
       {/* Revenue & Profit Chart */}

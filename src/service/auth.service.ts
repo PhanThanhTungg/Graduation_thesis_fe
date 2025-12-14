@@ -10,11 +10,15 @@ import { redirect } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 
 export const clientRegister: SubmitHandler<UserRegisterType> = async (data) => {
+  // Get timezone from browser
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
   const response = await post<UserAuthResponseType>("/api/auth/register", {
     fullName: data.fullName,
     email: data.email,
     password: data.password,
     country: data.country,
+    timezone: timezone,
     recaptchaToken: data.recaptchaToken,
   });
 
