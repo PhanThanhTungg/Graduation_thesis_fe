@@ -1,14 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getRevenueData } from '@/lib/teacher-dashboard-mock-data';
+import { getChartData, type ChartDataPoint } from '@/service/analytics.service';
 
-type TimeRange = 7 | 30 | 90;
+type TimeRange = '7d' | '30d' | '90d';
 
 export default function RevenueChart() {
-  const [timeRange, setTimeRange] = useState<TimeRange>(7);
-  const data = getRevenueData(timeRange);
+  const [timeRange, setTimeRange] = useState<TimeRange>('7d');
+  const [data, setData] = useState<ChartDataPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const response = await getChartData({ timeRange });
+        setData(response.chartData);
+      } catch (error) {
+        console.error('Failed to fetch chart data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [timeRange]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -28,9 +44,9 @@ export default function RevenueChart() {
         </div>
         <div className="flex gap-2">
           {[
-            { label: '7 days', value: 7 as TimeRange },
-            { label: '30 days', value: 30 as TimeRange },
-            { label: '3 months', value: 90 as TimeRange },
+            { label: '7 days', value: '7d' as TimeRange },
+            { label: '30 days', value: '30d' as TimeRange },
+            { label: '3 months', value: '90d' as TimeRange },
           ].map((option) => (
             <button
               key={option.value}
