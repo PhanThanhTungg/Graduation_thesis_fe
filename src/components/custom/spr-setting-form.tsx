@@ -217,7 +217,7 @@ export function SprSettingForm({
       </div>
 
       {hasChanges && (
-        <div className="flex justify-end pt-4 border-t">
+        <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isSaving}>
             <Save className="size-4" />
             {isSaving ? "Saving..." : "Save Changes"}
