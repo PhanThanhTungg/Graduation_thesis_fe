@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { getStudentsByCountry } from '@/lib/teacher-dashboard-mock-data';
+import { getStudentsByCountry, type StudentsByCountry } from '@/service/analytics.service';
 
 const COLORS = [
   'var(--green)',
@@ -17,7 +18,22 @@ const COLORS = [
 ];
 
 export default function StudentsByCountryChart() {
-  const data = getStudentsByCountry();
+  const [data, setData] = useState<StudentsByCountry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await getStudentsByCountry();
+        setData(result);
+      } catch (error) {
+        console.error('Failed to fetch students by country:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
