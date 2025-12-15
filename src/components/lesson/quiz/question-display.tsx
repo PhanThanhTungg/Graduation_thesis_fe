@@ -39,34 +39,7 @@ export function QuestionDisplay({
 
   return (
     <div className="px-6 py-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Generated Question</h2>
-            <p className="text-muted-foreground">
-              {QUESTION_TYPE_LABELS[question.type]}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <QuestionHistoryModal lessonSlug={lessonSlug} />
-            <Button
-              onClick={onReset}
-              variant="outline"
-              size="sm"
-              disabled={!hasAnswered}
-              title={
-                !hasAnswered
-                  ? "Answer the question first"
-                  : "Generate a new question"
-              }
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Generate New
-            </Button>
-          </div>
-        </div>
-
+      <div className=" mx-auto">
         {/* Question Card */}
         <Card className="p-6">
           <div className="mb-6">

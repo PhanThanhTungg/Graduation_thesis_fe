@@ -28,6 +28,8 @@ export const LessonReviewSettingSchema = z.object({
   courseId: z.string(),
   chapterId: z.string(),
   chapterTitle: z.string(),
+  courseSlug: z.string(),
+  lessonSlug: z.string(),
 });
 
 export type LessonReviewSettingType = z.infer<typeof LessonReviewSettingSchema>;

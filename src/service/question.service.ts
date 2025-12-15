@@ -8,6 +8,7 @@ import {
   QuestionHistoryItem,
 } from "@/interfaces/question.interface";
 import JsonUtils, { BackendQuestion } from "@/utils/json.util";
+import { showToast } from "@/lib/toast";
 
 // Re-export for convenience
 export * from "@/enums/question.enum";
@@ -17,7 +18,7 @@ export * from "@/interfaces/question.interface";
 export const generateQuestions = async (
   lessonSlug: string,
   params: GenerateQuestionsParams,
-): Promise<GeneratedQuestion[]> => {
+) => {
   const response = await post<{ message: string; data: BackendQuestion[] }>(
     `/api/question/generate-questions/${lessonSlug}`,
     {
@@ -33,12 +34,11 @@ export const generateQuestions = async (
       JsonUtils.parseQuestionFromBackend,
     );
   }
-
-  throw new Error(
-    "payload" in response.payload && "message" in response.payload
-      ? response.payload.message
-      : "Failed to generate questions",
+  showToast(
+    "error",
+    response.payload.message || "Failed to generate questions",
   );
+  throw new Error(response.payload.message || "Failed to generate questions");
 };
 
 // Answer question API

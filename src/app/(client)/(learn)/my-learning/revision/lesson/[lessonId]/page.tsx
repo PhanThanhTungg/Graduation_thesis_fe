@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Breadcrumb,
@@ -9,17 +10,25 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useLessonReviewSetting } from "./_hooks/use-lesson-review-setting";
 import { ReviewStatusCard } from "./_components/review-status-card";
 import { ReviewMetricsCard } from "./_components/review-metrics-card";
 import { NoteCard } from "./_components/note-card";
+import { QuestionGenerationCard } from "./_components/question-generation-card";
 
 export default function LessonReviewDetailPage() {
   const params = useParams();
   const router = useRouter();
   const lessonId = params.lessonId as string;
+  const [isOpen, setIsOpen] = useState(true);
 
   const {
     setting,
@@ -92,28 +101,59 @@ export default function LessonReviewDetailPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="mb-6">
-        <div className="flex items-baseline gap-2 flex-wrap">
-          <h1 className="text-xl font-bold">{setting.lessonTitle}</h1>
-          <span className="text-muted-foreground">•</span>
-          <span className="text-muted-foreground">{setting.courseTitle}</span>
-        </div>
-      </div>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-accent/5 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl font-bold">{setting.lessonTitle}</h1>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    {setting.courseTitle}
+                  </span>
+                </div>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  {isOpen ? (
+                    <>
+                      <span className="text-sm">Hide</span>
+                      <ChevronUp className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm">Show</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
 
-      <div className="space-y-6">
-        <ReviewStatusCard
-          setting={setting}
-          isUpdating={isUpdating}
-          onToggleReviewEnabled={handleToggleReviewEnabled}
-        />
-        <ReviewMetricsCard setting={setting} />
-        <NoteCard
-          noteValue={noteValue}
-          isUpdating={isUpdating}
-          onNoteChange={setNoteValue}
-          onNoteBlur={handleNoteBlur}
-        />
-      </div>
+          <CollapsibleContent>
+            <CardContent className="space-y-6">
+              <ReviewStatusCard
+                setting={setting}
+                isUpdating={isUpdating}
+                onToggleReviewEnabled={handleToggleReviewEnabled}
+              />
+              <ReviewMetricsCard setting={setting} />
+              <NoteCard
+                noteValue={noteValue}
+                isUpdating={isUpdating}
+                onNoteChange={setNoteValue}
+                onNoteBlur={handleNoteBlur}
+              />
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {setting.lessonSlug && (
+        <div className="mt-6">
+          <QuestionGenerationCard lessonSlug={setting.lessonSlug} />
+        </div>
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye } from "lucide-react";
 import { showToast } from "@/lib/toast";
 import { statusLabels, statusColors } from "@/lib/review-space.constants";
 
@@ -79,15 +79,11 @@ export default function RevisionLessonCard({
               </span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleRemove}
-            disabled={isRemoving}
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          <Switch
+            checked={lesson.reviewEnabled}
+            onCheckedChange={handleToggleReviewEnabled}
+            disabled={isUpdating}
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -120,12 +116,29 @@ export default function RevisionLessonCard({
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Review Enabled</p>
-            <Switch
-              checked={lesson.reviewEnabled}
-              onCheckedChange={handleToggleReviewEnabled}
-              disabled={isUpdating}
-            />
+            <p className="text-xs text-muted-foreground mb-1">Actions</p>
+            <div className="flex items-center gap-1">
+              <Link
+                href={`/course/${lesson.courseSlug}/learn/${lesson.lessonSlug}`}
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:text-green"
+                >
+                  <Eye className="size-4" />
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleRemove}
+                disabled={isRemoving}
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
