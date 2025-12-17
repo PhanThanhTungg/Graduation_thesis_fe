@@ -18,8 +18,8 @@ import {
 import { showToast } from "@/lib/toast";
 import {
   LearningStep,
-  convertToMinutes,
-  convertFromMinutes,
+  convertToSeconds,
+  convertFromSecondsToObject,
   TimeUnit,
 } from "@/lib/time-converter";
 import { WebSettingsForm } from "@/components/admin/web-settings-form";
@@ -33,11 +33,11 @@ export default function AdminSettingsPage() {
   const [iniInterval, setIniInterval] = useState<{
     value: number;
     unit: TimeUnit;
-  }>({ value: 0, unit: "minutes" });
+  }>({ value: 0, unit: "seconds" });
   const [iniEasyInterval, setIniEasyInterval] = useState<{
     value: number;
     unit: TimeUnit;
-  }>({ value: 0, unit: "minutes" });
+  }>({ value: 0, unit: "seconds" });
 
   const form = useForm<UpdateAdminSettingType>({
     resolver: zodResolver(UpdateAdminSettingSchema),
@@ -50,8 +50,8 @@ export default function AdminSettingsPage() {
       webCopyright: "",
       learningSteps: [],
       lastStepFromLearningToReview: 5,
-      iniInterval: 2,
-      iniEasyInterval: 4,
+      iniInterval: 120,
+      iniEasyInterval: 240,
       leechThreshold: 8,
     },
   });
@@ -63,21 +63,39 @@ export default function AdminSettingsPage() {
         const data = await getAdminSettings();
         setSettings(data);
 
-        const stepsInMinutes = data.learningSteps || [];
-        const convertedSteps = stepsInMinutes.map((minutes) =>
-          convertFromMinutes(minutes),
+        const learningStepsValue = data.learningSteps || [];
+        const iniIntervalValue = data.iniInterval ?? 120;
+        const iniEasyIntervalValue = data.iniEasyInterval ?? 240;
+
+        const isInMinutes =
+          (iniIntervalValue < 100 && iniIntervalValue > 0) ||
+          (iniEasyIntervalValue < 1000 &&
+            iniEasyIntervalValue > 0 &&
+            iniIntervalValue < 100);
+
+        const stepsInSeconds = learningStepsValue.map((value) =>
+          isInMinutes && value < 1000 ? value * 60 : value,
+        );
+        const iniIntervalInSeconds = isInMinutes
+          ? iniIntervalValue * 60
+          : iniIntervalValue;
+        const iniEasyIntervalInSeconds = isInMinutes
+          ? iniEasyIntervalValue * 60
+          : iniEasyIntervalValue;
+
+        const convertedSteps = stepsInSeconds.map((seconds) =>
+          convertFromSecondsToObject(seconds),
         );
         setLearningSteps(
           convertedSteps.length > 0
             ? convertedSteps
-            : [{ value: 0, unit: "minutes" }],
+            : [{ value: 0, unit: "seconds" }],
         );
 
-        const iniIntervalInMinutes = data.iniInterval || 2;
-        const iniEasyIntervalInMinutes = data.iniEasyInterval || 4;
-        const convertedIniInterval = convertFromMinutes(iniIntervalInMinutes);
-        const convertedIniEasyInterval = convertFromMinutes(
-          iniEasyIntervalInMinutes,
+        const convertedIniInterval =
+          convertFromSecondsToObject(iniIntervalInSeconds);
+        const convertedIniEasyInterval = convertFromSecondsToObject(
+          iniEasyIntervalInSeconds,
         );
         setIniInterval(convertedIniInterval);
         setIniEasyInterval(convertedIniEasyInterval);
@@ -89,10 +107,10 @@ export default function AdminSettingsPage() {
           webKeywords: data.webKeywords || [],
           webAuthor: data.webAuthor || "",
           webCopyright: data.webCopyright || "",
-          learningSteps: stepsInMinutes,
+          learningSteps: stepsInSeconds,
           lastStepFromLearningToReview: data.lastStepFromLearningToReview || 5,
-          iniInterval: iniIntervalInMinutes,
-          iniEasyInterval: iniEasyIntervalInMinutes,
+          iniInterval: iniIntervalInSeconds,
+          iniEasyInterval: iniEasyIntervalInSeconds,
           leechThreshold: data.leechThreshold || 8,
         });
       } catch (error) {
@@ -109,41 +127,47 @@ export default function AdminSettingsPage() {
   const onSubmit = async (data: UpdateAdminSettingType) => {
     try {
       setIsSaving(true);
-      const stepsInMinutes = learningSteps.map((step) =>
-        convertToMinutes(step.value, step.unit),
+      const stepsInSeconds = learningSteps.map((step) =>
+        convertToSeconds(step.value, step.unit),
       );
-      const iniIntervalInMinutes = convertToMinutes(
+      const iniIntervalInSeconds = convertToSeconds(
         iniInterval.value,
         iniInterval.unit,
       );
-      const iniEasyIntervalInMinutes = convertToMinutes(
+      const iniEasyIntervalInSeconds = convertToSeconds(
         iniEasyInterval.value,
         iniEasyInterval.unit,
       );
 
       const submitData = {
         ...data,
-        learningSteps: stepsInMinutes,
-        iniInterval: Math.round(iniIntervalInMinutes),
-        iniEasyInterval: Math.round(iniEasyIntervalInMinutes),
+        learningSteps: stepsInSeconds,
+        iniInterval: Math.round(iniIntervalInSeconds),
+        iniEasyInterval: Math.round(iniEasyIntervalInSeconds),
       };
       const updatedSettings = await updateAdminSettings(submitData);
       setSettings(updatedSettings);
 
-      const convertedSteps = updatedSettings.learningSteps.map((minutes) =>
-        convertFromMinutes(minutes),
+      const stepsInSecondsFromBackend = updatedSettings.learningSteps || [];
+      const iniIntervalInSecondsFromBackend =
+        updatedSettings.iniInterval || 120;
+      const iniEasyIntervalInSecondsFromBackend =
+        updatedSettings.iniEasyInterval || 240;
+
+      const convertedSteps = stepsInSecondsFromBackend.map((seconds) =>
+        convertFromSecondsToObject(seconds),
       );
       setLearningSteps(
         convertedSteps.length > 0
           ? convertedSteps
-          : [{ value: 0, unit: "minutes" }],
+          : [{ value: 0, unit: "seconds" }],
       );
 
-      const convertedIniInterval = convertFromMinutes(
-        updatedSettings.iniInterval,
+      const convertedIniInterval = convertFromSecondsToObject(
+        iniIntervalInSecondsFromBackend,
       );
-      const convertedIniEasyInterval = convertFromMinutes(
-        updatedSettings.iniEasyInterval,
+      const convertedIniEasyInterval = convertFromSecondsToObject(
+        iniEasyIntervalInSecondsFromBackend,
       );
       setIniInterval(convertedIniInterval);
       setIniEasyInterval(convertedIniEasyInterval);

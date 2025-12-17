@@ -76,6 +76,20 @@ export const convertFromMinutes = (
   }
 };
 
+export const convertFromSecondsToObject = (
+  seconds: number,
+): { value: number; unit: TimeUnit } => {
+  if (seconds < 60) {
+    return { value: seconds, unit: "seconds" };
+  } else if (seconds < 3600) {
+    return { value: seconds / 60, unit: "minutes" };
+  } else if (seconds < 86400) {
+    return { value: seconds / 3600, unit: "hours" };
+  } else {
+    return { value: seconds / 86400, unit: "days" };
+  }
+};
+
 export const convertBetweenUnits = (
   value: number,
   fromUnit: TimeUnit,
