@@ -1,18 +1,19 @@
 import { z } from "zod";
 import { CountrySchema } from "./country.schema";
 
-export const UserSchema = z.object({
-  id: z.string(),
-  fullName: z.string(),
-  email: z.email(),
-  role: z.enum(["teacher", "student"]),
-  emailVerified: z.boolean(),
-  avatarUrl: z.url().nullable(),
-  status: z.enum(["active", "inactive", "banned"]),
-  country: CountrySchema,
-}).strip();
+export const UserSchema = z
+  .object({
+    id: z.string(),
+    fullName: z.string(),
+    email: z.email(),
+    role: z.enum(["teacher", "student"]),
+    emailVerified: z.boolean(),
+    avatarUrl: z.url().nullable(),
+    status: z.enum(["active", "inactive", "banned"]),
+    country: CountrySchema,
+  })
+  .strip();
 export type UserType = z.infer<typeof UserSchema>;
-
 
 export const TeacherSchema = UserSchema.extend({
   bio: z.string().nullable().optional(),
@@ -21,9 +22,8 @@ export const TeacherSchema = UserSchema.extend({
   facebook: z.union([z.string().url(), z.null()]).optional(),
   linkedin: z.union([z.string().url(), z.null()]).optional(),
   youtube: z.union([z.string().url(), z.null()]).optional(),
-}).strip()
+}).strip();
 export type TeacherType = z.infer<typeof TeacherSchema>;
-
 
 const passwordSchema = z
   .string()
@@ -33,51 +33,56 @@ const passwordSchema = z
   .regex(/[0-9]/, "At least one number")
   .regex(/[^a-zA-Z0-9]/, "At least one special symbol");
 
-
-export const UserLoginSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
-}).strip();
+export const UserLoginSchema = z
+  .object({
+    email: z.email("Invalid email address"),
+    password: z.string().min(1, "Password is required"),
+  })
+  .strip();
 export type UserLoginType = z.infer<typeof UserLoginSchema>;
 
-
-export const UserRegisterSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  email: z.email("Invalid email address"),
-  password: passwordSchema,
-  confirmPassword: z.string().min(1, "Confirm password is required"),
-  country: CountrySchema,
-  recaptchaToken: z.string().optional(),
-}).strict().refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-})
+export const UserRegisterSchema = z
+  .object({
+    fullName: z.string().min(1, "Full name is required"),
+    email: z.email("Invalid email address"),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirm password is required"),
+    country: CountrySchema,
+    recaptchaToken: z.string().optional(),
+  })
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 export type UserRegisterType = z.infer<typeof UserRegisterSchema>;
 
-
-export const ForgotPasswordSchema = z.object({
-  email: z.email("Invalid email address"),
-}).strict();
+export const ForgotPasswordSchema = z
+  .object({
+    email: z.email("Invalid email address"),
+  })
+  .strict();
 export type ForgotPasswordType = z.infer<typeof ForgotPasswordSchema>;
 
-
-export const ResetPasswordSchema = z.object({
-  newPassword: passwordSchema,
-  confirmPassword: z.string().min(1, "Confirm password is required"),
-}).strict().refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+export const ResetPasswordSchema = z
+  .object({
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirm password is required"),
+  })
+  .strict()
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 export type ResetPasswordType = z.infer<typeof ResetPasswordSchema>;
-
 
 export type UserAuthResponseType = {
   message: string;
   data: {
     accessToken: string;
     user: UserType;
-  }
-}
+  };
+};
 
 export const UpdateUserBodySchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -85,7 +90,7 @@ export const UpdateUserBodySchema = z.object({
   country: CountrySchema,
   avatarUrl: z.url().nullable(),
   role: z.enum(["teacher", "student"]),
-})
+});
 export type UpdateUserBodyType = z.infer<typeof UpdateUserBodySchema>;
 
 export const UpdateTeacherProfileSchema = z.object({
@@ -95,8 +100,10 @@ export const UpdateTeacherProfileSchema = z.object({
   facebook: z.union([z.string().url(), z.literal("")]).optional(),
   linkedin: z.union([z.string().url(), z.literal("")]).optional(),
   youtube: z.union([z.string().url(), z.literal("")]).optional(),
-})
-export type UpdateTeacherProfileType = z.infer<typeof UpdateTeacherProfileSchema>;
+});
+export type UpdateTeacherProfileType = z.infer<
+  typeof UpdateTeacherProfileSchema
+>;
 
 // Admin User Management Types
 export type UserListItem = {
@@ -184,9 +191,23 @@ export type GetAllUsersParams = {
   limit?: number;
 };
 
-export const ShortUserSchema = z.object({
-  id: z.string(),
-  fullName: z.string(),
-  email: z.email(),
-  avatarUrl: z.url().nullable(),
-}).strip();
+export type SearchedUser = {
+  id: string;
+  name: string;
+  avatar: string | null;
+  role: "teacher" | "student";
+};
+
+export type SearchUsersResponse = {
+  message: string;
+  data: SearchedUser[];
+};
+
+export const ShortUserSchema = z
+  .object({
+    id: z.string(),
+    fullName: z.string(),
+    email: z.email(),
+    avatarUrl: z.url().nullable(),
+  })
+  .strip();

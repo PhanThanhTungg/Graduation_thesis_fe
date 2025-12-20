@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Users, MessageCircle, Menu } from "lucide-react";
+import {
+  MessageSquare,
+  Users,
+  MessageCircle,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -35,16 +42,33 @@ const menuItems = [
   },
 ];
 
-function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
+function SidebarContent({
+  isCollapsed,
+  onItemClick,
+}: {
+  isCollapsed?: boolean;
+  onItemClick?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
     <>
-      <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold">Messenger</h2>
+      <div
+        className={cn(
+          "p-4 border-b border-border flex items-center justify-between",
+          isCollapsed && "flex-col gap-2",
+        )}
+      >
+        {!isCollapsed && <h2 className="text-lg font-semibold">Messenger</h2>}
+        {isCollapsed && <h2 className="text-lg font-semibold">M</h2>}
       </div>
       <div className="flex-1 p-4 overflow-y-auto">
-        <nav className="space-y-1">
+        <nav
+          className={cn(
+            "space-y-1",
+            isCollapsed && "flex flex-col items-center",
+          )}
+        >
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -55,15 +79,19 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
                 asChild
                 onClick={onItemClick}
                 className={cn(
-                  "w-full justify-start gap-3 h-12",
+                  "h-12",
+                  isCollapsed
+                    ? "w-12 justify-center px-0"
+                    : "w-full justify-start gap-3",
                   isActive
                     ? "bg-muted text-foreground"
                     : "text-muted-foreground hover:bg-muted/50",
                 )}
+                title={isCollapsed ? item.label : undefined}
               >
                 <Link href={item.href}>
                   <Icon className="size-5" />
-                  <span>{item.label}</span>
+                  {!isCollapsed && <span>{item.label}</span>}
                 </Link>
               </Button>
             );
@@ -76,11 +104,35 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
 
 export function MessengerSidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <>
-      <div className="hidden md:flex w-64 border-r border-border bg-background flex-col">
-        <SidebarContent />
+      <div
+        className={cn(
+          "hidden md:flex border-r border-border bg-background flex-col transition-all duration-300 relative",
+          isCollapsed ? "w-16" : "w-64",
+        )}
+      >
+        <SidebarContent isCollapsed={isCollapsed} />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={cn(
+            "absolute -right-3 top-4 z-10 size-6 rounded-full border border-border bg-background shadow-sm hover:bg-muted",
+            "flex items-center justify-center",
+          )}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="size-4" />
+          ) : (
+            <ChevronLeft className="size-4" />
+          )}
+          <span className="sr-only">
+            {isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          </span>
+        </Button>
       </div>
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>

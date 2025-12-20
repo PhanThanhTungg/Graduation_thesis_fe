@@ -1,16 +1,27 @@
+"use client";
+
+import { useState } from "react";
+import { ChatSidebar } from "./_components/chat-sidebar";
+import { ChatView } from "./_components/chat-view";
+import { ConversationType } from "@/schema/chat.schema";
+
 export default function ChatsPage() {
+  const [selectedConversation, setSelectedConversation] =
+    useState<ConversationType | null>(null);
+
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="p-6 border-b border-border">
-        <h1 className="text-2xl font-bold mb-2">Chats</h1>
-        <p className="text-muted-foreground">Your recent chats</p>
-      </div>
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-muted-foreground">
-            No chats yet. Start a conversation!
-          </p>
-        </div>
+    <div className="flex h-full">
+      <ChatSidebar onConversationSelect={setSelectedConversation} />
+      <div className="flex-1 flex items-center justify-center border-l border-border">
+        {selectedConversation ? (
+          <ChatView conversation={selectedConversation} />
+        ) : (
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              Select a conversation to start chatting
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
