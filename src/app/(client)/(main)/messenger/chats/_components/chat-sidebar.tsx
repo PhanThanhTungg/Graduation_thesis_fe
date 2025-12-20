@@ -7,54 +7,16 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { searchUsers } from "@/service/user.service";
 import { SearchedUser } from "@/schema/user.schema";
-import { createOrGetConversation } from "@/service/chat.service";
-import { ConversationType } from "@/schema/chat.schema";
+import {
+  createOrGetConversation,
+  getConversations,
+} from "@/service/chat.service";
+import {
+  ConversationType,
+  ConversationListItemType,
+} from "@/schema/chat.schema";
 import { showToast } from "@/lib/toast";
-
-interface ChatUser {
-  id: string;
-  name: string;
-  avatar?: string;
-  lastMessage?: string;
-  lastMessageTime?: string;
-  unreadCount?: number;
-  isOnline?: boolean;
-}
-
-const mockChats: ChatUser[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    lastMessage: "Hey, how are you?",
-    lastMessageTime: "2m",
-    unreadCount: 2,
-    isOnline: true,
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    lastMessage: "See you tomorrow!",
-    lastMessageTime: "1h",
-    unreadCount: 0,
-    isOnline: true,
-  },
-  {
-    id: "3",
-    name: "Mike Johnson",
-    lastMessage: "Thanks for the help!",
-    lastMessageTime: "3h",
-    unreadCount: 0,
-    isOnline: false,
-  },
-  {
-    id: "4",
-    name: "Sarah Williams",
-    lastMessage: "Are you free this weekend?",
-    lastMessageTime: "1d",
-    unreadCount: 1,
-    isOnline: false,
-  },
-];
+import { formatTimeAgo } from "@/lib/helpers";
 
 interface ChatSidebarProps {
   onConversationSelect?: (conversation: ConversationType) => void;
@@ -68,6 +30,10 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
   const [creatingConversation, setCreatingConversation] = useState<
     string | null
   >(null);
+  const [conversations, setConversations] = useState<
+    ConversationListItemType[]
+  >([]);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
 
   const handleUserClick = async (userId: string) => {
     if (creatingConversation) return;
@@ -80,6 +46,7 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
       }
       setSearchQuery("");
       setSearchResults([]);
+      fetchConversations();
     } catch (error) {
       console.error("Error creating conversation:", error);
       showToast("error", "Failed to create conversation");
@@ -87,6 +54,42 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
       setCreatingConversation(null);
     }
   };
+
+  const handleConversationClick = (
+    conversationItem: ConversationListItemType,
+  ) => {
+    if (conversationItem.isGroup || !conversationItem.otherUser) {
+      return;
+    }
+    const conversation: ConversationType = {
+      id: conversationItem.id,
+      name: conversationItem.name,
+      isGroup: conversationItem.isGroup,
+      createdAt: conversationItem.createdAt,
+      updatedAt: conversationItem.updatedAt,
+      otherUser: conversationItem.otherUser,
+    };
+    if (onConversationSelect) {
+      onConversationSelect(conversation);
+    }
+  };
+
+  const fetchConversations = async () => {
+    setIsLoadingConversations(true);
+    try {
+      const data = await getConversations();
+      setConversations(data);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      showToast("error", "Failed to load conversations");
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConversations();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -191,10 +194,17 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
                 </div>
               )}
             </>
-          ) : (
-            mockChats.map((chat) => (
+          ) : isLoadingConversations ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-muted-foreground">
+                Loading conversations...
+              </p>
+            </div>
+          ) : conversations.length > 0 ? (
+            conversations.map((conversation) => (
               <div
-                key={chat.id}
+                key={conversation.id}
+                onClick={() => handleConversationClick(conversation)}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
                   "hover:bg-muted/50",
@@ -202,44 +212,45 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
               >
                 <div className="relative">
                   <Avatar className="size-12">
-                    <AvatarImage src={chat.avatar} alt={chat.name} />
+                    <AvatarImage
+                      src={conversation.avatar || undefined}
+                      alt={conversation.name}
+                    />
                     <AvatarFallback>
-                      {chat.name
+                      {conversation.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  {chat.isOnline && (
-                    <div className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-background" />
-                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <h3 className="font-medium text-sm truncate">
-                      {chat.name}
+                      {conversation.name}
                     </h3>
-                    {chat.lastMessageTime && (
+                    {conversation.lastMessage?.createdAt && (
                       <span className="text-xs text-muted-foreground shrink-0">
-                        {chat.lastMessageTime}
+                        {formatTimeAgo(conversation.lastMessage.createdAt)}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm text-muted-foreground truncate">
-                      {chat.lastMessage}
+                      {conversation.lastMessage?.message || "No messages yet"}
                     </p>
-                    {chat.unreadCount && chat.unreadCount > 0 && (
-                      <span className="bg-primary text-primary-foreground text-xs font-medium rounded-full size-5 flex items-center justify-center shrink-0">
-                        {chat.unreadCount > 9 ? "9+" : chat.unreadCount}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>
             ))
+          ) : (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-muted-foreground">
+                No conversations yet
+              </p>
+            </div>
           )}
         </div>
       </div>
