@@ -12,6 +12,7 @@ import { getMyProfile } from "@/service/user.service";
 import { UserType } from "@/schema/user.schema";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/helpers";
+import { useSocket } from "@/components/providers/socket-provider";
 
 interface ChatViewProps {
   conversation: ConversationType;
@@ -23,6 +24,7 @@ export function ChatView({ conversation }: ChatViewProps) {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const socket = useSocket();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,19 +47,67 @@ export function ChatView({ conversation }: ChatViewProps) {
     fetchData();
   }, [conversation.id]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const roomName = `conversation:${conversation.id}`;
+    socket.emit("joinRoom", roomName);
+
+    const handleNewMessage = (newMessage: MessageType) => {
+      if (newMessage.conversationId === conversation.id) {
+        setMessages((prev) => {
+          const exists = prev.some((msg) => msg.id === newMessage.id);
+          if (exists) return prev;
+
+          const filtered = prev.filter((msg) => !msg.id.startsWith("temp-"));
+          return [...filtered, newMessage].sort((a, b) => {
+            const timeA = new Date(a.createdAt).getTime();
+            const timeB = new Date(b.createdAt).getTime();
+            return timeA - timeB;
+          });
+        });
+      }
+    };
+
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+      socket.emit("leaveRoom", roomName);
+    };
+  }, [socket, conversation.id]);
+
   const handleSend = async () => {
-    if (!message.trim() || isSending) return;
+    if (!message.trim() || isSending || !currentUser) return;
 
     const messageText = message.trim();
     setMessage("");
     setIsSending(true);
+
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: MessageType = {
+      id: tempId,
+      conversationId: conversation.id,
+      message: messageText,
+      senderId: currentUser.id,
+      sender: {
+        id: currentUser.id,
+        name: currentUser.fullName,
+        avatar: currentUser.avatarUrl,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: null,
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+
     try {
-      const newMessage = await sendMessage(conversation.id, messageText);
-      setMessages((prev) => [...prev, newMessage]);
+      await sendMessage(conversation.id, messageText);
     } catch (error) {
       console.error("Error sending message:", error);
       showToast("error", "Failed to send message");
       setMessage(messageText);
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
     } finally {
       setIsSending(false);
     }

@@ -17,6 +17,7 @@ import {
 } from "@/schema/chat.schema";
 import { showToast } from "@/lib/toast";
 import { formatTimeAgo } from "@/lib/helpers";
+import { useSocket } from "@/components/providers/socket-provider";
 
 interface ChatSidebarProps {
   onConversationSelect?: (conversation: ConversationType) => void;
@@ -90,6 +91,59 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
   useEffect(() => {
     fetchConversations();
   }, []);
+
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleConversationUpdated = (data: {
+      conversationId: string;
+      lastMessage: {
+        id: string;
+        message: string;
+        senderId: string;
+        senderName: string;
+        createdAt: string;
+      };
+      updatedAt: string;
+    }) => {
+      setConversations((prev) => {
+        const index = prev.findIndex((conv) => conv.id === data.conversationId);
+        if (index === -1) {
+          fetchConversations();
+          return prev;
+        }
+
+        const updated = [...prev];
+        updated[index] = {
+          ...updated[index],
+          lastMessage: {
+            id: data.lastMessage.id,
+            message: data.lastMessage.message,
+            senderId: data.lastMessage.senderId,
+            senderName: data.lastMessage.senderName,
+            createdAt: data.lastMessage.createdAt,
+          },
+          updatedAt: data.updatedAt,
+        };
+
+        updated.sort((a, b) => {
+          const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          return timeB - timeA;
+        });
+
+        return updated;
+      });
+    };
+
+    socket.on("conversationUpdated", handleConversationUpdated);
+
+    return () => {
+      socket.off("conversationUpdated", handleConversationUpdated);
+    };
+  }, [socket]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
