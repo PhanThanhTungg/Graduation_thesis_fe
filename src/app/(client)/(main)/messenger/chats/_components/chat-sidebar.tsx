@@ -79,9 +79,6 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
   const handleConversationClick = (
     conversationItem: ConversationListItemType,
   ) => {
-    if (conversationItem.isGroup || !conversationItem.otherUser) {
-      return;
-    }
     const conversation: ConversationType = {
       id: conversationItem.id,
       name: conversationItem.name,

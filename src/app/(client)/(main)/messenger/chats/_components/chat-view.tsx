@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Send } from "lucide-react";
+import { Send, Info } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { formatDate, formatTimeAgo } from "@/lib/helpers";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useSocket } from "@/components/providers/socket-provider";
 import { TypingIndicator } from "./typing-indicator";
+import { GroupMembersDialog } from "./group-members-dialog";
 
 interface ChatViewProps {
   conversation: ConversationType;
@@ -33,15 +34,19 @@ export function ChatView({ conversation }: ChatViewProps) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [typingUser, setTypingUser] = useState<TypingUser | null>(null);
+  const [showMembersDialog, setShowMembersDialog] = useState(false);
   const socket = useSocket();
 
   const otherUserId = conversation.otherUser?.id;
   const userIds = useMemo(
-    () => (otherUserId ? [otherUserId] : []),
-    [otherUserId],
+    () => (otherUserId && !conversation.isGroup ? [otherUserId] : []),
+    [otherUserId, conversation.isGroup],
   );
-  const { getStatus } = useOnlineStatus(userIds, { enabled: !!otherUserId });
-  const onlineStatus = otherUserId ? getStatus(otherUserId) : null;
+  const { getStatus } = useOnlineStatus(userIds, {
+    enabled: !!otherUserId && !conversation.isGroup,
+  });
+  const onlineStatus =
+    otherUserId && !conversation.isGroup ? getStatus(otherUserId) : null;
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingEmitRef = useRef<number>(0);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -220,36 +225,83 @@ export function ChatView({ conversation }: ChatViewProps) {
   return (
     <div className="flex flex-1 flex-col h-full">
       <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <Avatar className="size-10">
-            <AvatarImage src={conversation.otherUser.avatar || undefined} />
-            <AvatarFallback>
-              {conversation.otherUser.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="font-semibold">{conversation.otherUser.name}</h2>
-            <div className="flex items-center gap-2">
-              {onlineStatus?.isOnline ? (
-                <>
-                  <div className="size-2 bg-green rounded-full" />
-                  <p className="text-sm text-muted-foreground">Online</p>
-                </>
-              ) : onlineStatus?.lastLoginAt ? (
-                <p className="text-sm text-muted-foreground">
-                  Online {formatTimeAgo(onlineStatus.lastLoginAt)}
-                </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Avatar className="size-10">
+              {conversation.isGroup ? (
+                <AvatarFallback>
+                  {conversation.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) || "GR"}
+                </AvatarFallback>
               ) : (
-                <p className="text-sm text-muted-foreground">Offline</p>
+                <>
+                  <AvatarImage
+                    src={conversation.otherUser?.avatar || undefined}
+                  />
+                  <AvatarFallback>
+                    {conversation.otherUser?.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase() || "U"}
+                  </AvatarFallback>
+                </>
+              )}
+            </Avatar>
+            <div>
+              <h2 className="font-semibold">
+                {conversation.isGroup
+                  ? conversation.name || "Group"
+                  : conversation.otherUser?.name || "Unknown"}
+              </h2>
+              {!conversation.isGroup && (
+                <div className="flex items-center gap-2">
+                  {onlineStatus?.isOnline ? (
+                    <>
+                      <div className="size-2 bg-green rounded-full" />
+                      <p className="text-sm text-muted-foreground">Online</p>
+                    </>
+                  ) : onlineStatus?.lastLoginAt ? (
+                    <p className="text-sm text-muted-foreground">
+                      Online {formatTimeAgo(onlineStatus.lastLoginAt)}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Offline</p>
+                  )}
+                </div>
+              )}
+              {conversation.isGroup && (
+                <p className="text-sm text-muted-foreground">
+                  Group conversation
+                </p>
               )}
             </div>
           </div>
+          {conversation.isGroup && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowMembersDialog(true)}
+              className="shrink-0"
+            >
+              <Info className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
+
+      {conversation.isGroup && currentUser && (
+        <GroupMembersDialog
+          open={showMembersDialog}
+          onOpenChange={setShowMembersDialog}
+          conversationId={conversation.id}
+          currentUserId={currentUser.id}
+        />
+      )}
 
       <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4">
         {isLoadingMessages ? (
@@ -260,7 +312,9 @@ export function ChatView({ conversation }: ChatViewProps) {
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <p className="text-muted-foreground">
-                Start a conversation with {conversation.otherUser.name}
+                {conversation.isGroup
+                  ? `Start a conversation in ${conversation.name || "this group"}`
+                  : `Start a conversation with ${conversation.otherUser?.name || "this user"}`}
               </p>
             </div>
           </div>
@@ -295,6 +349,11 @@ export function ChatView({ conversation }: ChatViewProps) {
                       isMyMessage ? "items-end" : "items-start",
                     )}
                   >
+                    {conversation.isGroup && !isMyMessage && (
+                      <span className="text-xs text-muted-foreground mb-1">
+                        {msg.sender.name}
+                      </span>
+                    )}
                     <div
                       className={cn(
                         "rounded-lg px-4 py-2",

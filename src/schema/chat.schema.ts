@@ -6,11 +6,13 @@ export const ConversationSchema = z.object({
   isGroup: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
-  otherUser: z.object({
-    id: z.string(),
-    name: z.string(),
-    avatar: z.string().nullable(),
-  }),
+  otherUser: z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      avatar: z.string().nullable(),
+    })
+    .optional(),
 });
 
 export type ConversationType = z.infer<typeof ConversationSchema>;

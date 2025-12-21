@@ -1,4 +1,4 @@
-import { get, post } from "@/lib/request";
+import { get, post, del } from "@/lib/request";
 import {
   CreateOrGetConversationResponse,
   ConversationType,
@@ -144,3 +144,77 @@ export const createGroup = async (
     throw error;
   }
 };
+
+type ConversationMember = {
+  userId: string;
+  role: "admin" | "subadmin" | "member" | null;
+  joinedAt: string;
+  user: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+};
+
+type GetConversationMembersResponse = {
+  message: string;
+  data: {
+    members: ConversationMember[];
+    currentUserRole: "admin" | "subadmin" | "member" | null;
+  };
+};
+
+export const getConversationMembers = async (
+  conversationId: string,
+): Promise<GetConversationMembersResponse["data"]> => {
+  try {
+    const response = await get<GetConversationMembersResponse>(
+      `/api/chat/conversation/${conversationId}/members`,
+      undefined,
+    );
+
+    if (
+      response.status >= 200 &&
+      response.status < 300 &&
+      "data" in response.payload
+    ) {
+      return response.payload.data;
+    }
+
+    throw new Error(response.payload.message || "Failed to get members");
+  } catch (error) {
+    console.error("Error getting conversation members:", error);
+    throw error;
+  }
+};
+
+type RemoveMemberResponse = {
+  message: string;
+  data: {
+    removedUserId: string;
+  };
+};
+
+export const removeMember = async (
+  conversationId: string,
+  userId: string,
+): Promise<void> => {
+  try {
+    const response = await del<RemoveMemberResponse>(
+      `/api/chat/conversation/${conversationId}/member`,
+      { userId },
+      undefined,
+    );
+
+    if (response.status >= 200 && response.status < 300) {
+      return;
+    }
+
+    throw new Error(response.payload.message || "Failed to remove member");
+  } catch (error) {
+    console.error("Error removing member:", error);
+    throw error;
+  }
+};
+
+export type { ConversationMember };
