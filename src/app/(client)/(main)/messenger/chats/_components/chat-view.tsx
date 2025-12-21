@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,16 @@ import { UserType } from "@/schema/user.schema";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/helpers";
 import { useSocket } from "@/components/providers/socket-provider";
+import { TypingIndicator } from "./typing-indicator";
 
 interface ChatViewProps {
   conversation: ConversationType;
+}
+
+interface TypingUser {
+  userId: string;
+  userName: string;
+  userAvatar: string | null;
 }
 
 export function ChatView({ conversation }: ChatViewProps) {
@@ -24,7 +31,18 @@ export function ChatView({ conversation }: ChatViewProps) {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [typingUser, setTypingUser] = useState<TypingUser | null>(null);
   const socket = useSocket();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTypingEmitRef = useRef<number>(0);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,6 +66,18 @@ export function ChatView({ conversation }: ChatViewProps) {
   }, [conversation.id]);
 
   useEffect(() => {
+    if (!isLoadingMessages) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+  }, [isLoadingMessages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, typingUser]);
+
+  useEffect(() => {
     if (!socket) return;
 
     const roomName = `conversation:${conversation.id}`;
@@ -66,16 +96,49 @@ export function ChatView({ conversation }: ChatViewProps) {
             return timeA - timeB;
           });
         });
+        setTypingUser(null);
+      }
+    };
+
+    const handleTyping = (data: {
+      conversationId: string;
+      userId: string;
+      userName: string;
+      userAvatar: string | null;
+    }) => {
+      if (
+        data.conversationId === conversation.id &&
+        currentUser &&
+        data.userId !== currentUser.id
+      ) {
+        setTypingUser({
+          userId: data.userId,
+          userName: data.userName,
+          userAvatar: data.userAvatar,
+        });
+
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+          setTypingUser(null);
+        }, 3000);
       }
     };
 
     socket.on("newMessage", handleNewMessage);
+    socket.on("typing", handleTyping);
 
     return () => {
       socket.off("newMessage", handleNewMessage);
+      socket.off("typing", handleTyping);
       socket.emit("leaveRoom", roomName);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
     };
-  }, [socket, conversation.id]);
+  }, [socket, conversation.id, currentUser]);
 
   const handleSend = async () => {
     if (!message.trim() || isSending || !currentUser) return;
@@ -120,6 +183,31 @@ export function ChatView({ conversation }: ChatViewProps) {
     }
   };
 
+  const emitTyping = () => {
+    if (!socket || !currentUser) return;
+
+    const now = Date.now();
+    if (now - lastTypingEmitRef.current < 3000) {
+      return;
+    }
+
+    lastTypingEmitRef.current = now;
+
+    const roomName = `conversation:${conversation.id}`;
+    socket.emit("typing", {
+      room: roomName,
+      conversationId: conversation.id,
+      userId: currentUser.id,
+      userName: currentUser.fullName,
+      userAvatar: currentUser.avatarUrl,
+    });
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+    emitTyping();
+  };
+
   return (
     <div className="flex flex-1 flex-col h-full">
       <div className="p-4 border-b border-border">
@@ -141,7 +229,7 @@ export function ChatView({ conversation }: ChatViewProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4">
         {isLoadingMessages ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-muted-foreground">Loading messages...</p>
@@ -214,6 +302,12 @@ export function ChatView({ conversation }: ChatViewProps) {
                 </div>
               );
             })}
+            {typingUser && (
+              <TypingIndicator
+                userName={typingUser.userName}
+                userAvatar={typingUser.userAvatar}
+              />
+            )}
           </div>
         )}
       </div>
@@ -224,7 +318,7 @@ export function ChatView({ conversation }: ChatViewProps) {
             type="text"
             placeholder="Type a message..."
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleMessageChange}
             onKeyPress={handleKeyPress}
             className="flex-1"
           />
