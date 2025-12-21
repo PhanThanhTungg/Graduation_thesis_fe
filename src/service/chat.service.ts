@@ -107,3 +107,40 @@ export const getMessages = async (
     throw error;
   }
 };
+
+type CreateGroupResponse = {
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    isGroup: boolean;
+    memberCount: number;
+    createdAt: string;
+    updatedAt: string | null;
+  };
+};
+
+export const createGroup = async (
+  name: string,
+  userIds: string[],
+): Promise<CreateGroupResponse["data"]> => {
+  try {
+    const response = await post<CreateGroupResponse>("/api/chat/group", {
+      name,
+      userIds,
+    });
+
+    if (
+      response.status >= 200 &&
+      response.status < 300 &&
+      "data" in response.payload
+    ) {
+      return response.payload.data;
+    }
+
+    throw new Error(response.payload.message || "Failed to create group");
+  } catch (error) {
+    console.error("Error creating group:", error);
+    throw error;
+  }
+};

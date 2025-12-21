@@ -29,10 +29,10 @@ const menuItems = [
     href: "/messenger/chats",
   },
   {
-    id: "conversations",
-    label: "Conversations",
+    id: "groups",
+    label: "Groups",
     icon: MessageCircle,
-    href: "/messenger/conversations",
+    href: "/messenger/groups",
   },
   {
     id: "friends",

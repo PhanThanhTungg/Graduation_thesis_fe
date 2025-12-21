@@ -882,3 +882,45 @@ export const getMyLearning = async (
     );
   }
 };
+
+type GroupType = {
+  id: string;
+  name: string;
+  isGroup: boolean;
+  role: "admin" | "subadmin" | "member";
+  memberCount: number;
+  createdAt: string;
+  updatedAt: string | null;
+  course?: {
+    id: string;
+    title: string;
+    slug: string;
+    thumbnailUrl: string | null;
+  };
+  lastMessage?: {
+    id: string;
+    message: string | null;
+    senderId: string;
+    senderName: string;
+    createdAt: string;
+  };
+};
+
+type GetMyGroupsResponse = {
+  message: string;
+  data: GroupType[];
+};
+
+export const getMyGroups = async (): Promise<GroupType[]> => {
+  const response = await get<GetMyGroupsResponse>("/api/course/groups", {});
+
+  if (response.status === 200) {
+    return (response.payload as GetMyGroupsResponse).data;
+  } else {
+    throw new Error(
+      "payload" in response.payload && "message" in response.payload
+        ? response.payload.message
+        : "Failed to get groups",
+    );
+  }
+};
