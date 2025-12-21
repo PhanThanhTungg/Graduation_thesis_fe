@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { searchUsers } from "@/service/user.service";
 import { SearchedUser } from "@/schema/user.schema";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import {
   createOrGetConversation,
   getConversations,
@@ -35,6 +36,25 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
     ConversationListItemType[]
   >([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+
+  const conversationUserIds = useMemo(
+    () =>
+      conversations
+        .filter((conv) => !conv.isGroup && conv.otherUser)
+        .map((conv) => conv.otherUser!.id),
+    [conversations],
+  );
+
+  const { isOnline: isConversationUserOnline } =
+    useOnlineStatus(conversationUserIds);
+
+  const searchUserIds = useMemo(
+    () => searchResults.map((user) => user.id),
+    [searchResults],
+  );
+  const { isOnline: isSearchUserOnline } = useOnlineStatus(searchUserIds, {
+    enabled: searchResults.length > 0,
+  });
 
   const handleUserClick = async (userId: string) => {
     if (creatingConversation) return;
@@ -226,6 +246,14 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
                             .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
+                      <div
+                        className={cn(
+                          "absolute bottom-0 right-0 size-3 rounded-full border-2 border-background",
+                          isSearchUserOnline(user.id)
+                            ? "bg-green"
+                            : "bg-destructive",
+                        )}
+                      />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -278,6 +306,16 @@ export function ChatSidebar({ onConversationSelect }: ChatSidebarProps) {
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                  {!conversation.isGroup && conversation.otherUser && (
+                    <div
+                      className={cn(
+                        "absolute bottom-0 right-0 size-3 rounded-full border-2 border-background",
+                        isConversationUserOnline(conversation.otherUser.id)
+                          ? "bg-green"
+                          : "bg-destructive",
+                      )}
+                    />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">

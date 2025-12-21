@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import { ReduxProvider } from "@/store/provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SocketProvider } from "@/components/providers/socket-provider";
+import { HeartbeatProvider } from "@/components/providers/heartbeat-provider";
 
 const jost = Jost({
   variable: "--font-jost",
@@ -43,16 +44,18 @@ export default function RootLayout({
       >
         <ReduxProvider>
           <SocketProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <ToastContainer />
-              <Toaster />
-              {children}
-            </ThemeProvider>
+            <HeartbeatProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <ToastContainer />
+                <Toaster />
+                {children}
+              </ThemeProvider>
+            </HeartbeatProvider>
           </SocketProvider>
         </ReduxProvider>
       </body>

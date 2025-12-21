@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { showToast } from "@/lib/toast";
 import { getMyProfile } from "@/service/user.service";
 import { UserType } from "@/schema/user.schema";
 import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/helpers";
+import { formatDate, formatTimeAgo } from "@/lib/helpers";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useSocket } from "@/components/providers/socket-provider";
 import { TypingIndicator } from "./typing-indicator";
 
@@ -33,6 +34,14 @@ export function ChatView({ conversation }: ChatViewProps) {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [typingUser, setTypingUser] = useState<TypingUser | null>(null);
   const socket = useSocket();
+
+  const otherUserId = conversation.otherUser?.id;
+  const userIds = useMemo(
+    () => (otherUserId ? [otherUserId] : []),
+    [otherUserId],
+  );
+  const { getStatus } = useOnlineStatus(userIds, { enabled: !!otherUserId });
+  const onlineStatus = otherUserId ? getStatus(otherUserId) : null;
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingEmitRef = useRef<number>(0);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -224,7 +233,20 @@ export function ChatView({ conversation }: ChatViewProps) {
           </Avatar>
           <div>
             <h2 className="font-semibold">{conversation.otherUser.name}</h2>
-            <p className="text-sm text-muted-foreground">Active now</p>
+            <div className="flex items-center gap-2">
+              {onlineStatus?.isOnline ? (
+                <>
+                  <div className="size-2 bg-green rounded-full" />
+                  <p className="text-sm text-muted-foreground">Online</p>
+                </>
+              ) : onlineStatus?.lastLoginAt ? (
+                <p className="text-sm text-muted-foreground">
+                  Online {formatTimeAgo(onlineStatus.lastLoginAt)}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Offline</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

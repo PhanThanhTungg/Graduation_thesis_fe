@@ -135,3 +135,35 @@ export const searchUsers = async (
     throw error;
   }
 };
+
+export const getUsersOnlineStatus = async (
+  userIds: string[],
+): Promise<
+  Record<string, { isOnline: boolean; lastLoginAt: string | null }>
+> => {
+  if (userIds.length === 0) {
+    return {};
+  }
+
+  try {
+    const searchParams: Record<string, string> = {
+      userIds: userIds.join(","),
+    };
+
+    const response = await get<{
+      message: string;
+      data: Record<string, { isOnline: boolean; lastLoginAt: string | null }>;
+    }>("/api/user/online-status", searchParams);
+
+    if (response.status === 200 && "data" in response.payload) {
+      return response.payload.data;
+    }
+
+    throw new Error(
+      response.payload.message || "Failed to get users online status",
+    );
+  } catch (error) {
+    console.error("Error getting users online status:", error);
+    throw error;
+  }
+};
