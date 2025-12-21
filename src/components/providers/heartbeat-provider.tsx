@@ -18,14 +18,39 @@ export function HeartbeatProvider({ children }: { children: React.ReactNode }) {
     sendHeartbeat();
 
     intervalRef.current = setInterval(() => {
-      console.log("Sending heartbeat");
       sendHeartbeat();
     }, 10000);
+
+    const handleBeforeUnload = () => {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("client_access_token="))
+        ?.split("=")[1];
+
+      if (token) {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+        const url = `${baseUrl}/api/user/update-last-login`;
+
+        fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          keepalive: true,
+          credentials: "include",
+          body: JSON.stringify({}),
+        }).catch(() => {});
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { get, patch } from "@/lib/request";
+import { get, patch, post } from "@/lib/request";
 import { showToast } from "@/lib/toast";
 import {
   UpdateUserBodyType,
@@ -165,5 +165,13 @@ export const getUsersOnlineStatus = async (
   } catch (error) {
     console.error("Error getting users online status:", error);
     throw error;
+  }
+};
+
+export const updateLastLoginAt = async (): Promise<void> => {
+  try {
+    await post("/api/user/update-last-login", {});
+  } catch (error) {
+    console.error("Error updating last login:", error);
   }
 };
