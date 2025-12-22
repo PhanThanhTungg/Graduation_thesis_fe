@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Trash2, Eye } from "lucide-react";
 import { showToast } from "@/lib/toast";
 import { statusLabels, statusColors } from "@/lib/review-space.constants";
+import { formatInterval } from "@/lib/helpers";
 
 interface RevisionLessonCardProps {
   lesson: LessonReviewSettingType;
@@ -63,7 +64,7 @@ export default function RevisionLessonCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardHeader>
+      <CardHeader className="mb-[-20px]">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-1 flex-wrap">
@@ -104,7 +105,7 @@ export default function RevisionLessonCard({
           <div>
             <p className="text-xs text-muted-foreground mb-1">Interval</p>
             <p className="text-sm font-medium">
-              {lesson.intervalDays} {lesson.intervalDays === 1 ? "day" : "days"}
+              {formatInterval(lesson.intervalDays ?? lesson.interval ?? 0)}
             </p>
           </div>
           <div>

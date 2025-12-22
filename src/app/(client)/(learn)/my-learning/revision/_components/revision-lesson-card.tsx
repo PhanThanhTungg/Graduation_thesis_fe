@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 import { showToast } from "@/lib/toast";
+import { formatInterval } from "@/lib/helpers";
 
 interface RevisionLessonCardProps {
   lesson: LessonReviewSettingType;
@@ -98,7 +99,7 @@ export default function RevisionLessonCard({
           <div>
             <p className="text-xs text-muted-foreground mb-1">Interval</p>
             <p className="text-sm font-medium">
-              {lesson.intervalDays} {lesson.intervalDays === 1 ? "day" : "days"}
+              {formatInterval(lesson.intervalDays ?? lesson.interval ?? 0)}
             </p>
           </div>
           <div>

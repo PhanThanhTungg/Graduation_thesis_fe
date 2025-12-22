@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LessonReviewSettingType } from "@/schema/review-space.schema";
+import { formatInterval } from "@/lib/helpers";
 
 interface ReviewMetricsCardProps {
   setting: LessonReviewSettingType;
@@ -26,10 +27,9 @@ export function ReviewMetricsCard({ setting }: ReviewMetricsCardProps) {
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Interval Days</p>
+            <p className="text-sm text-muted-foreground mb-2">Interval</p>
             <p className="text-lg font-semibold">
-              {setting.intervalDays}{" "}
-              {setting.intervalDays === 1 ? "day" : "days"}
+              {formatInterval(setting.intervalDays ?? setting.interval ?? 0)}
             </p>
           </div>
           <div>

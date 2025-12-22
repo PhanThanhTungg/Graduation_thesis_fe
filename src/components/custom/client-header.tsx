@@ -88,6 +88,7 @@ export default async function ClientHeader() {
       </NavigationMenu>
 
       <div className="flex items-center gap-4">
+        <ModeToggle />
         <SearchPopover />
         {myProfile ? (
           <>
@@ -109,10 +110,6 @@ export default async function ClientHeader() {
             <Link href="/login">Login/Register</Link>
           </Button>
         )}
-      </div>
-
-      <div className="fixed top-0 right-0">
-        <ModeToggle />
       </div>
     </header>
   );

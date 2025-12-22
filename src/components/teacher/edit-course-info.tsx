@@ -1,17 +1,23 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useState, useEffect } from "react"
-import { IconPlus, IconTrash, IconUpload, IconEdit, IconX } from "@tabler/icons-react"
-import { Button } from "@/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useState, useEffect } from "react";
+import {
+  IconPlus,
+  IconTrash,
+  IconUpload,
+  IconEdit,
+  IconX,
+} from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -20,32 +26,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { CreateCourseBodySchema } from "@/schema/course.schema"
-import { CategoryType } from "@/schema/category.schema"
-import { ExtendedCourseType } from "@/schema/course.schema"
-import { z } from "zod"
-import { showToast } from "@/lib/toast"
-import { updateCourseById } from "@/service/course.service"
-import { uploadImages } from "@/service/upload.service"
-import Image from "next/image"
-import { CategoryTreeSelect } from "@/components/custom/category-tree-select"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { CreateCourseBodySchema } from "@/schema/course.schema";
+import { CategoryType } from "@/schema/category.schema";
+import { ExtendedCourseType } from "@/schema/course.schema";
+import { z } from "zod";
+import { showToast } from "@/lib/toast";
+import { updateCourseById } from "@/service/course.service";
+import { uploadImages } from "@/service/upload.service";
+import Image from "next/image";
+import { CategoryTreeSelect } from "@/components/custom/category-tree-select";
 
-type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>
+type CreateCourseFormValues = z.infer<typeof CreateCourseBodySchema>;
 
 interface EditCourseInfoProps {
-  course: ExtendedCourseType
-  categories: CategoryType[]
-  onUpdate?: (updatedCourse: ExtendedCourseType) => void
+  course: ExtendedCourseType;
+  categories: CategoryType[];
+  onUpdate?: (updatedCourse: ExtendedCourseType) => void;
 }
 
-export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
-  const [currentCourse, setCurrentCourse] = useState<ExtendedCourseType>(course)
+export function EditCourseInfo({
+  course,
+  categories,
+  onUpdate,
+}: EditCourseInfoProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [currentCourse, setCurrentCourse] =
+    useState<ExtendedCourseType>(course);
 
   const form = useForm<CreateCourseFormValues>({
     resolver: zodResolver(CreateCourseBodySchema),
@@ -62,78 +73,88 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
         requirements: course.courseDescription?.requirements?.length
           ? course.courseDescription.requirements
           : [""],
-        suitableParticipants: course.courseDescription?.suitableParticipants?.length
+        suitableParticipants: course.courseDescription?.suitableParticipants
+          ?.length
           ? course.courseDescription.suitableParticipants
           : [""],
         detail: course.courseDescription?.detail || "",
       },
     },
     mode: "onChange",
-  })
+  });
 
   useEffect(() => {
     if (course.thumbnailUrl) {
-      setThumbnailPreview(course.thumbnailUrl)
+      setThumbnailPreview(course.thumbnailUrl);
     }
-  }, [course.thumbnailUrl])
+  }, [course.thumbnailUrl]);
 
   const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-      form.setValue("thumbnailUrl", file, { shouldValidate: true })
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      form.setValue("thumbnailUrl", file, { shouldValidate: true });
     }
-  }
+  };
 
-  const addArrayField = (fieldName: "targetKnowledges" | "requirements" | "suitableParticipants") => {
-    const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
+  const addArrayField = (
+    fieldName: "targetKnowledges" | "requirements" | "suitableParticipants",
+  ) => {
+    const currentValues =
+      form.getValues(`courseDescription.${fieldName}`) || [];
     form.setValue(`courseDescription.${fieldName}`, [...currentValues, ""], {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const removeArrayField = (
     fieldName: "targetKnowledges" | "requirements" | "suitableParticipants",
-    index: number
+    index: number,
   ) => {
-    const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
-    const newValues = currentValues.filter((_, i) => i !== index)
-    form.setValue(`courseDescription.${fieldName}`, newValues.length > 0 ? newValues : [""], {
-      shouldValidate: true,
-    })
-  }
+    const currentValues =
+      form.getValues(`courseDescription.${fieldName}`) || [];
+    const newValues = currentValues.filter((_, i) => i !== index);
+    form.setValue(
+      `courseDescription.${fieldName}`,
+      newValues.length > 0 ? newValues : [""],
+      {
+        shouldValidate: true,
+      },
+    );
+  };
 
   const updateArrayField = (
     fieldName: "targetKnowledges" | "requirements" | "suitableParticipants",
     index: number,
-    value: string
+    value: string,
   ) => {
-    const currentValues = form.getValues(`courseDescription.${fieldName}`) || []
-    const newValues = [...currentValues]
-    newValues[index] = value
+    const currentValues =
+      form.getValues(`courseDescription.${fieldName}`) || [];
+    const newValues = [...currentValues];
+    newValues[index] = value;
     form.setValue(`courseDescription.${fieldName}`, newValues, {
       shouldValidate: true,
-    })
-  }
+    });
+  };
 
   const onSubmit = async (data: CreateCourseFormValues) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      let thumbnailUrl: string | undefined = undefined
+      let thumbnailUrl: string | undefined = undefined;
 
       if (data.thumbnailUrl instanceof File) {
-        const formData = new FormData()
-        formData.append("files", data.thumbnailUrl)
-        const urls = await uploadImages(formData)
+        const formData = new FormData();
+        formData.append("files", data.thumbnailUrl);
+        const urls = await uploadImages(formData);
         if (urls.length > 0) {
-          thumbnailUrl = urls[0]
+          thumbnailUrl = urls[0];
         }
       } else if (typeof data.thumbnailUrl === "string") {
-        thumbnailUrl = data.thumbnailUrl
+        thumbnailUrl = data.thumbnailUrl;
       }
 
       const updatedCourse = await updateCourseById(String(currentCourse.id), {
@@ -143,28 +164,36 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
         thumbnailUrl,
         courseDescription: {
           headline: data.courseDescription?.headline,
-          targetKnowledges: data.courseDescription?.targetKnowledges?.filter((item) => item.trim() !== ""),
-          requirements: data.courseDescription?.requirements?.filter((item) => item.trim() !== ""),
-          suitableParticipants: data.courseDescription?.suitableParticipants?.filter((item) => item.trim() !== ""),
+          targetKnowledges: data.courseDescription?.targetKnowledges?.filter(
+            (item) => item.trim() !== "",
+          ),
+          requirements: data.courseDescription?.requirements?.filter(
+            (item) => item.trim() !== "",
+          ),
+          suitableParticipants:
+            data.courseDescription?.suitableParticipants?.filter(
+              (item) => item.trim() !== "",
+            ),
           detail: data.courseDescription?.detail,
         },
-      })
+      });
 
-      setCurrentCourse(updatedCourse)
-      setIsEditing(false)
-      showToast("success", "Course updated successfully!")
-      
+      setCurrentCourse(updatedCourse);
+      setIsEditing(false);
+      showToast("success", "Course updated successfully!");
+
       if (onUpdate) {
-        onUpdate(updatedCourse)
+        onUpdate(updatedCourse);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update course"
-      showToast("error", errorMessage)
-      console.error(error)
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update course";
+      showToast("error", errorMessage);
+      console.error(error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleCancel = () => {
     form.reset({
@@ -174,21 +203,23 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
       thumbnailUrl: currentCourse.thumbnailUrl || undefined,
       courseDescription: {
         headline: currentCourse.courseDescription?.headline || "",
-        targetKnowledges: currentCourse.courseDescription?.targetKnowledges?.length
+        targetKnowledges: currentCourse.courseDescription?.targetKnowledges
+          ?.length
           ? currentCourse.courseDescription.targetKnowledges
           : [""],
         requirements: currentCourse.courseDescription?.requirements?.length
           ? currentCourse.courseDescription.requirements
           : [""],
-        suitableParticipants: currentCourse.courseDescription?.suitableParticipants?.length
+        suitableParticipants: currentCourse.courseDescription
+          ?.suitableParticipants?.length
           ? currentCourse.courseDescription.suitableParticipants
           : [""],
         detail: currentCourse.courseDescription?.detail || "",
       },
-    })
-    setThumbnailPreview(currentCourse.thumbnailUrl || null)
-    setIsEditing(false)
-  }
+    });
+    setThumbnailPreview(currentCourse.thumbnailUrl || null);
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -208,7 +239,7 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
           </div>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   return (
@@ -218,10 +249,10 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
           <CardHeader className="">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg">Edit Course Information</CardTitle>
-                <CardDescription>
-                  Update your course details
-                </CardDescription>
+                <CardTitle className="text-lg">
+                  Edit Course Information
+                </CardTitle>
+                <CardDescription>Update your course details</CardDescription>
               </div>
               <Button
                 type="button"
@@ -289,7 +320,8 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
                       />
                     </FormControl>
                     <FormDescription>
-                      Choose the main category for your course (only leaf categories can be selected)
+                      Choose the main category for your course (only leaf
+                      categories can be selected)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -301,52 +333,51 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
               control={form.control}
               name="thumbnailUrl"
               render={({ field }) => {
-                const { ...restField } = field;
+                const { value, ...restField } = field;
                 return (
-                <FormItem>
-                  <FormLabel>Thumbnail Image</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleThumbnailChange}
-                          onBlur={restField.onBlur}
-                          name={restField.name}
-                          ref={restField.ref}
-                          value={restField.value as string}
-                          className="hidden"
-                          id="thumbnail-upload"
-                        />
-                        <label htmlFor="thumbnail-upload">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="cursor-pointer"
-                            asChild
-                          >
-                            <span>
-                              <IconUpload className="mr-2 h-4 w-4" />
-                              Upload Thumbnail
-                            </span>
-                          </Button>
-                        </label>
-                      </div>
-                      {thumbnailPreview && (
-                        <div className="relative w-full max-w-md aspect-video">
-                          <Image
-                            src={thumbnailPreview}
-                            alt="Thumbnail preview"
-                            fill
-                            className="object-cover rounded-lg border"
+                  <FormItem>
+                    <FormLabel>Thumbnail Image</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleThumbnailChange}
+                            onBlur={restField.onBlur}
+                            name={restField.name}
+                            ref={restField.ref}
+                            className="hidden"
+                            id="thumbnail-upload"
                           />
+                          <label htmlFor="thumbnail-upload">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="cursor-pointer"
+                              asChild
+                            >
+                              <span>
+                                <IconUpload className="mr-2 h-4 w-4" />
+                                Upload Thumbnail
+                              </span>
+                            </Button>
+                          </label>
                         </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                        {thumbnailPreview && (
+                          <div className="relative w-full max-w-md aspect-video">
+                            <Image
+                              src={thumbnailPreview}
+                              alt="Thumbnail preview"
+                              fill
+                              className="object-cover rounded-lg border"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 );
               }}
             />
@@ -395,28 +426,41 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
 
             <div className="space-y-2">
               <FormLabel>Target Knowledges</FormLabel>
-              {form.watch("courseDescription.targetKnowledges")?.map((_, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={form.watch(`courseDescription.targetKnowledges.${index}`) || ""}
-                    onChange={(e) =>
-                      updateArrayField("targetKnowledges", index, e.target.value)
-                    }
-                    placeholder={`Target knowledge ${index + 1}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => removeArrayField("targetKnowledges", index)}
-                    disabled={
-                      (form.watch("courseDescription.targetKnowledges")?.length || 0) === 1
-                    }
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+              {form
+                .watch("courseDescription.targetKnowledges")
+                ?.map((_, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={
+                        form.watch(
+                          `courseDescription.targetKnowledges.${index}`,
+                        ) || ""
+                      }
+                      onChange={(e) =>
+                        updateArrayField(
+                          "targetKnowledges",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      placeholder={`Target knowledge ${index + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        removeArrayField("targetKnowledges", index)
+                      }
+                      disabled={
+                        (form.watch("courseDescription.targetKnowledges")
+                          ?.length || 0) === 1
+                      }
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               <Button
                 type="button"
                 variant="outline"
@@ -434,7 +478,10 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
               {form.watch("courseDescription.requirements")?.map((_, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
-                    value={form.watch(`courseDescription.requirements.${index}`) || ""}
+                    value={
+                      form.watch(`courseDescription.requirements.${index}`) ||
+                      ""
+                    }
                     onChange={(e) =>
                       updateArrayField("requirements", index, e.target.value)
                     }
@@ -446,7 +493,8 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
                     size="icon"
                     onClick={() => removeArrayField("requirements", index)}
                     disabled={
-                      (form.watch("courseDescription.requirements")?.length || 0) === 1
+                      (form.watch("courseDescription.requirements")?.length ||
+                        0) === 1
                     }
                   >
                     <IconTrash className="h-4 w-4" />
@@ -467,28 +515,41 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
 
             <div className="space-y-2">
               <FormLabel>Suitable Participants</FormLabel>
-              {form.watch("courseDescription.suitableParticipants")?.map((_, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    value={form.watch(`courseDescription.suitableParticipants.${index}`) || ""}
-                    onChange={(e) =>
-                      updateArrayField("suitableParticipants", index, e.target.value)
-                    }
-                    placeholder={`Target audience ${index + 1}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => removeArrayField("suitableParticipants", index)}
-                    disabled={
-                      (form.watch("courseDescription.suitableParticipants")?.length || 0) === 1
-                    }
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+              {form
+                .watch("courseDescription.suitableParticipants")
+                ?.map((_, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={
+                        form.watch(
+                          `courseDescription.suitableParticipants.${index}`,
+                        ) || ""
+                      }
+                      onChange={(e) =>
+                        updateArrayField(
+                          "suitableParticipants",
+                          index,
+                          e.target.value,
+                        )
+                      }
+                      placeholder={`Target audience ${index + 1}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        removeArrayField("suitableParticipants", index)
+                      }
+                      disabled={
+                        (form.watch("courseDescription.suitableParticipants")
+                          ?.length || 0) === 1
+                      }
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               <Button
                 type="button"
                 variant="outline"
@@ -513,6 +574,5 @@ export function EditCourseInfo({ course, categories, onUpdate }: EditCourseInfoP
         </div>
       </form>
     </Form>
-  )
+  );
 }
-
