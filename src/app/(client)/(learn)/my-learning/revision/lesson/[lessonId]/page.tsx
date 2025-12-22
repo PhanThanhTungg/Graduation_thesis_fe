@@ -22,7 +22,6 @@ import {
 import { useLessonReviewSetting } from "./_hooks/use-lesson-review-setting";
 import { InformationCard } from "./_components/information-card";
 import { SettingCard } from "./_components/setting-card";
-import { QuestionGenerationCard } from "./_components/question-generation-card";
 
 export default function LessonReviewDetailPage() {
   const params = useParams();
@@ -166,12 +165,6 @@ export default function LessonReviewDetailPage() {
           </CollapsibleContent>
         </Card>
       </Collapsible>
-
-      {setting.lessonSlug && (
-        <div className="mt-6">
-          <QuestionGenerationCard lessonSlug={setting.lessonSlug} />
-        </div>
-      )}
     </div>
   );
 }
