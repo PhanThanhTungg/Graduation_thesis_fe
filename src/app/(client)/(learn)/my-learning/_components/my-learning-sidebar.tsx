@@ -4,7 +4,14 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookOpen, FileText, RefreshCw, BarChart2, Menu } from "lucide-react";
+import {
+  BookOpen,
+  FileText,
+  RefreshCw,
+  BarChart2,
+  Menu,
+  GraduationCap,
+} from "lucide-react";
 
 interface Tab {
   label: string;
@@ -16,6 +23,7 @@ const tabs: Tab[] = [
   { label: "My courses", href: "courses", icon: BookOpen },
   { label: "My notes", href: "notes", icon: FileText },
   { label: "Revision", href: "revision", icon: RefreshCw },
+  { label: "Learning", href: "learning", icon: GraduationCap },
   { label: "Analyze", href: "analyze", icon: BarChart2 },
 ];
 
@@ -35,7 +43,9 @@ export function MyLearningSidebar({
   }, [pathname, setIsOpen]);
 
   const getActive = (href: string) => {
-    return pathname.includes(href);
+    const segments = pathname.split("/").filter(Boolean);
+    const lastSegment = segments[segments.length - 1];
+    return lastSegment === href;
   };
 
   return (
