@@ -12,6 +12,7 @@ interface FormSelectProps {
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
+  disabled?: boolean;
 }
 
 export function FormSelect({
@@ -19,11 +20,12 @@ export function FormSelect({
   value,
   onChange,
   options,
+  disabled,
 }: FormSelectProps) {
   return (
     <div className="space-y-2">
       <Label className="text-base font-semibold">{label}</Label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>

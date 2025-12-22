@@ -100,7 +100,12 @@ export const getLessonReviewSettingByLessonId = async (
 
 export const updateLessonReviewSetting = async (
   lessonId: string,
-  data: { reviewEnabled?: boolean; note?: string },
+  data: {
+    reviewEnabled?: boolean;
+    note?: string;
+    difficulty?: string;
+    typeQues?: string;
+  },
 ): Promise<LessonReviewSettingType> => {
   const response = await patch<LessonReviewSettingType>(
     `/api/review-space/lessons/${lessonId}`,

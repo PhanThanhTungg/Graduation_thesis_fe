@@ -21,7 +21,7 @@ import {
 import { useLessonReviewSetting } from "./_hooks/use-lesson-review-setting";
 import { ReviewStatusCard } from "./_components/review-status-card";
 import { ReviewMetricsCard } from "./_components/review-metrics-card";
-import { NoteCard } from "./_components/note-card";
+import { SettingCard } from "./_components/setting-card";
 import { QuestionGenerationCard } from "./_components/question-generation-card";
 
 export default function LessonReviewDetailPage() {
@@ -37,8 +37,13 @@ export default function LessonReviewDetailPage() {
     isUpdating,
     noteValue,
     setNoteValue,
+    difficultyValue,
+    setDifficultyValue,
+    typeQuesValue,
+    setTypeQuesValue,
     handleToggleReviewEnabled,
-    handleNoteBlur,
+    handleSaveSettings,
+    hasChanges,
   } = useLessonReviewSetting(lessonId);
 
   if (isLoading) {
@@ -138,11 +143,16 @@ export default function LessonReviewDetailPage() {
                 onToggleReviewEnabled={handleToggleReviewEnabled}
               />
               <ReviewMetricsCard setting={setting} />
-              <NoteCard
+              <SettingCard
                 noteValue={noteValue}
+                difficulty={difficultyValue}
+                typeQues={typeQuesValue}
                 isUpdating={isUpdating}
+                hasChanges={hasChanges}
                 onNoteChange={setNoteValue}
-                onNoteBlur={handleNoteBlur}
+                onDifficultyChange={setDifficultyValue}
+                onTypeQuesChange={setTypeQuesValue}
+                onSave={handleSaveSettings}
               />
             </CardContent>
           </CollapsibleContent>

@@ -12,6 +12,8 @@ export function useLessonReviewSetting(lessonId: string) {
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [noteValue, setNoteValue] = useState<string>("");
+  const [difficultyValue, setDifficultyValue] = useState<string>("");
+  const [typeQuesValue, setTypeQuesValue] = useState<string>("");
 
   useEffect(() => {
     const fetchSetting = async () => {
@@ -20,6 +22,8 @@ export function useLessonReviewSetting(lessonId: string) {
         const data = await getLessonReviewSettingByLessonId(lessonId);
         setSetting(data);
         setNoteValue(data.note || "");
+        setDifficultyValue(data.difficulty);
+        setTypeQuesValue(data.typeQues);
       } catch (err) {
         console.error("Error fetching lesson review setting:", err);
         setError("Failed to load lesson review setting");
@@ -50,20 +54,47 @@ export function useLessonReviewSetting(lessonId: string) {
     }
   };
 
-  const handleNoteBlur = async () => {
-    if (!setting) return;
-    if (noteValue === (setting.note || "")) return;
+  const hasChanges = () => {
+    if (!setting) return false;
+    return (
+      noteValue !== (setting.note || "") ||
+      difficultyValue !== setting.difficulty ||
+      typeQuesValue !== setting.typeQues
+    );
+  };
+
+  const handleSaveSettings = async () => {
+    if (!setting || !hasChanges()) return;
     try {
       setIsUpdating(true);
-      const updated = await updateLessonReviewSetting(lessonId, {
-        note: noteValue || undefined,
-      });
+      const updateData: {
+        note?: string;
+        difficulty?: string;
+        typeQues?: string;
+      } = {};
+
+      if (noteValue !== (setting.note || "")) {
+        updateData.note = noteValue || undefined;
+      }
+      if (difficultyValue !== setting.difficulty) {
+        updateData.difficulty = difficultyValue;
+      }
+      if (typeQuesValue !== setting.typeQues) {
+        updateData.typeQues = typeQuesValue;
+      }
+
+      const updated = await updateLessonReviewSetting(lessonId, updateData);
       setSetting(updated);
-      showToast("success", "Note updated successfully");
+      setNoteValue(updated.note || "");
+      setDifficultyValue(updated.difficulty);
+      setTypeQuesValue(updated.typeQues);
+      showToast("success", "Settings updated successfully");
     } catch (err) {
-      console.error("Error updating note:", err);
-      showToast("error", "Failed to update note");
+      console.error("Error updating settings:", err);
+      showToast("error", "Failed to update settings");
       setNoteValue(setting.note || "");
+      setDifficultyValue(setting.difficulty);
+      setTypeQuesValue(setting.typeQues);
     } finally {
       setIsUpdating(false);
     }
@@ -76,7 +107,12 @@ export function useLessonReviewSetting(lessonId: string) {
     isUpdating,
     noteValue,
     setNoteValue,
+    difficultyValue,
+    setDifficultyValue,
+    typeQuesValue,
+    setTypeQuesValue,
     handleToggleReviewEnabled,
-    handleNoteBlur,
+    handleSaveSettings,
+    hasChanges: hasChanges(),
   };
 }

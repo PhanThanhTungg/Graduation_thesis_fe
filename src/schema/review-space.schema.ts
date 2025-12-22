@@ -10,6 +10,14 @@ export const LessonReviewStatusEnum = z.enum([
 
 export const DifficultyEnum = z.enum(["very_easy", "easy", "medium", "hard"]);
 
+export const TypeQuestionEnum = z.enum([
+  "single_choice",
+  "multiple_choice",
+  "fill_in_the_blank",
+  "short_answer",
+  "true_false",
+]);
+
 export const LessonReviewSettingSchema = z.object({
   id: z.string(),
   reviewEnabled: z.boolean(),
@@ -21,6 +29,7 @@ export const LessonReviewSettingSchema = z.object({
   lastReviewedAt: z.union([z.string(), z.date()]).nullable(),
   note: z.string().nullable(),
   difficulty: DifficultyEnum,
+  typeQues: TypeQuestionEnum,
   userId: z.string(),
   lessonId: z.string(),
   lessonTitle: z.string(),
