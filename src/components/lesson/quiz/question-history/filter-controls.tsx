@@ -90,7 +90,7 @@ export function FilterControls({
     <div className="flex flex-col gap-3 shrink-0">
       <FilterHeader hasActiveFilters={hasActiveFilters} onReset={onReset} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="flex flex-row gap-6">
         <FilterSelect
           label="Question Type"
           value={filterType}

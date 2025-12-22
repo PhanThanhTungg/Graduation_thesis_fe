@@ -71,6 +71,7 @@ export interface QuestionHistoryParams {
   limit?: number;
   type?: string;
   difficulty?: string;
+  isForReview?: boolean;
   sortBy?: "date" | "score";
   sortOrder?: "asc" | "desc";
 }
@@ -97,6 +98,8 @@ export const getQuestionHistory = async (
     queryParams.append("type", params.type);
   if (params?.difficulty && params.difficulty !== "all")
     queryParams.append("difficulty", params.difficulty);
+  if (params?.isForReview !== undefined)
+    queryParams.append("isForReview", params.isForReview.toString());
   if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
   if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
 

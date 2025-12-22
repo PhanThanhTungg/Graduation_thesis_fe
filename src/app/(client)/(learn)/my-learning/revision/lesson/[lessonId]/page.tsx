@@ -22,6 +22,7 @@ import {
 import { useLessonReviewSetting } from "./_hooks/use-lesson-review-setting";
 import { InformationCard } from "./_components/information-card";
 import { SettingCard } from "./_components/setting-card";
+import { SPRQuestionHistoryCard } from "./_components/spr-question-history-card";
 
 export default function LessonReviewDetailPage() {
   const params = useParams();
@@ -165,6 +166,12 @@ export default function LessonReviewDetailPage() {
           </CollapsibleContent>
         </Card>
       </Collapsible>
+
+      {setting?.lessonSlug && (
+        <div className="mt-6">
+          <SPRQuestionHistoryCard lessonSlug={setting.lessonSlug} />
+        </div>
+      )}
     </div>
   );
 }

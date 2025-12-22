@@ -8,11 +8,7 @@ interface FilterHeaderProps {
 
 export function FilterHeader({ hasActiveFilters, onReset }: FilterHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-        <Filter className="w-4 h-4 text-orange" />
-        Filters & Sorting
-      </h3>
+    <div className="flex items-center justify-between mt-[-30px]">
       {hasActiveFilters && (
         <Button
           variant="ghost"
