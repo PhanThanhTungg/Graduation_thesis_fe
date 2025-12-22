@@ -30,6 +30,8 @@ export default function RevisionLessonPage() {
   >("all");
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
   const [selectedReviewStep, setSelectedReviewStep] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,6 +46,7 @@ export default function RevisionLessonPage() {
       const response = await getReviewSpaceLessons({
         page: currentPage,
         limit: itemsPerPage,
+        ...(debouncedSearch.trim() && { search: debouncedSearch.trim() }),
       });
       setLessons(response.data);
       setTotalItems(response.pagination.total);
@@ -57,8 +60,20 @@ export default function RevisionLessonPage() {
   };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
     fetchLessons();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, debouncedSearch]);
 
   // Get unique courses for filter (from current page data)
   const courses = useMemo(() => {
@@ -116,12 +131,6 @@ export default function RevisionLessonPage() {
         lesson.lessonId === updatedLesson.lessonId ? updatedLesson : lesson,
       ),
     );
-  };
-
-  const handleClearFilters = () => {
-    setSelectedStatus("all");
-    setSelectedCourse("all");
-    setSelectedReviewStep("all");
   };
 
   if (isLoading) {
@@ -194,10 +203,11 @@ export default function RevisionLessonPage() {
         selectedStatus={selectedStatus}
         selectedCourse={selectedCourse}
         selectedReviewStep={selectedReviewStep}
+        searchQuery={searchQuery}
         onStatusChange={setSelectedStatus}
         onCourseChange={setSelectedCourse}
         onReviewStepChange={setSelectedReviewStep}
-        onClearFilters={handleClearFilters}
+        onSearchChange={setSearchQuery}
       />
 
       {filteredLessons.length === 0 ? (

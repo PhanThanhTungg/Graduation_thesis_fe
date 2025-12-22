@@ -29,6 +29,7 @@ export const addLessonToReviewSpace = toggleLessonInReviewSpace;
 export const getReviewSpaceLessons = async (params?: {
   page?: number;
   limit?: number;
+  search?: string;
 }): Promise<{
   data: LessonReviewSettingType[];
   pagination: {
@@ -41,6 +42,7 @@ export const getReviewSpaceLessons = async (params?: {
   const queryParams: Record<string, unknown> = {};
   if (params?.page) queryParams.page = params.page;
   if (params?.limit) queryParams.limit = params.limit;
+  if (params?.search?.trim()) queryParams.search = params.search.trim();
 
   const response = await get<{
     data: LessonReviewSettingType[];

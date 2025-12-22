@@ -24,7 +24,7 @@ export function FormSelect({
 }: FormSelectProps) {
   return (
     <div className="space-y-2">
-      <Label className="text-base font-semibold">{label}</Label>
+      <Label>{label}</Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
           <SelectValue />

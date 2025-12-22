@@ -8,18 +8,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface RevisionFiltersProps {
   courses: { id: string; title: string }[];
   selectedStatus: LessonReviewStatus | "all";
   selectedCourse: string;
   selectedReviewStep: string;
+  searchQuery: string;
   onStatusChange: (status: LessonReviewStatus | "all") => void;
   onCourseChange: (courseId: string) => void;
   onReviewStepChange: (step: string) => void;
-  onClearFilters: () => void;
+  onSearchChange: (query: string) => void;
 }
 
 const statusOptions: { value: LessonReviewStatus | "all"; label: string }[] = [
@@ -45,16 +46,12 @@ export default function RevisionFilters({
   selectedStatus,
   selectedCourse,
   selectedReviewStep,
+  searchQuery,
   onStatusChange,
   onCourseChange,
   onReviewStepChange,
-  onClearFilters,
+  onSearchChange,
 }: RevisionFiltersProps) {
-  const hasActiveFilters =
-    selectedStatus !== "all" ||
-    selectedCourse !== "all" ||
-    selectedReviewStep !== "all";
-
   return (
     <div className="flex flex-wrap gap-2 items-center mb-6">
       <div className="">
@@ -103,17 +100,18 @@ export default function RevisionFilters({
         </Select>
       </div>
 
-      {hasActiveFilters && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onClearFilters}
-          className="gap-2"
-        >
-          <X className="size-4" />
-          Clear
-        </Button>
-      )}
+      <div className="flex-1 min-w-[200px] max-w-[300px] ml-auto">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
+          <Input
+            type="text"
+            placeholder="Search lessons..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -88,7 +88,7 @@ export default function RevisionLessonCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Status</p>
             <Badge
@@ -115,6 +115,10 @@ export default function RevisionLessonCard({
             <p className="text-sm font-medium">
               {lesson.easinessFactor.toFixed(2)}
             </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Lapsed</p>
+            <p className="text-sm font-medium">{lesson.lapsed}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground mb-1">Actions</p>

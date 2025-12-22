@@ -13,14 +13,14 @@ import {
 import { Home, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useLessonReviewSetting } from "./_hooks/use-lesson-review-setting";
-import { ReviewStatusCard } from "./_components/review-status-card";
-import { ReviewMetricsCard } from "./_components/review-metrics-card";
+import { InformationCard } from "./_components/information-card";
 import { SettingCard } from "./_components/setting-card";
 import { QuestionGenerationCard } from "./_components/question-generation-card";
 
@@ -118,31 +118,39 @@ export default function LessonReviewDetailPage() {
                     {setting.courseTitle}
                   </span>
                 </div>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  {isOpen ? (
-                    <>
-                      <span className="text-sm">Hide</span>
-                      <ChevronUp className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-sm">Show</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Review Enabled
+                    </span>
+                    <Switch
+                      checked={setting.reviewEnabled}
+                      onCheckedChange={handleToggleReviewEnabled}
+                      disabled={isUpdating}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    {isOpen ? (
+                      <>
+                        <span className="text-sm">Hide</span>
+                        <ChevronUp className="w-4 h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-sm">Show</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
           </CollapsibleTrigger>
 
           <CollapsibleContent>
             <CardContent className="space-y-6">
-              <ReviewStatusCard
-                setting={setting}
-                isUpdating={isUpdating}
-                onToggleReviewEnabled={handleToggleReviewEnabled}
-              />
-              <ReviewMetricsCard setting={setting} />
+              <InformationCard setting={setting} />
               <SettingCard
                 noteValue={noteValue}
                 difficulty={difficultyValue}
