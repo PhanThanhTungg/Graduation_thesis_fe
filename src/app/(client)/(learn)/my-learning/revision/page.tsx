@@ -21,6 +21,7 @@ import {
   Home,
   Settings,
 } from "lucide-react";
+import { LearningCalendar } from "./_components/learning-calendar";
 
 export default function RevisionPage() {
   const [stats, setStats] = useState({
@@ -168,6 +169,8 @@ export default function RevisionPage() {
               </CardContent>
             </Card>
           </div>
+
+          <LearningCalendar />
 
           <Card className="mb-8">
             <CardHeader>
