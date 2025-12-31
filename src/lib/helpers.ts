@@ -146,3 +146,52 @@ export const formatTimeAgo = (date: string | number | Date): string => {
   const diffInYears = Math.floor(diffInMonths / 12);
   return `${diffInYears} ${diffInYears === 1 ? "year" : "years"} ago`;
 };
+
+// Format interval from seconds to human-readable format (e.g., "5 minutes", "2 hours", "3 days")
+export const formatInterval = (seconds: number | undefined | null): string => {
+  if (
+    seconds === undefined ||
+    seconds === null ||
+    isNaN(seconds) ||
+    seconds < 0
+  ) {
+    return "0 seconds";
+  }
+
+  const numSeconds = Number(seconds);
+  if (isNaN(numSeconds) || numSeconds < 0) {
+    return "0 seconds";
+  }
+
+  if (numSeconds < 60) {
+    return `${numSeconds} ${numSeconds === 1 ? "second" : "seconds"}`;
+  }
+
+  const minutes = Math.floor(numSeconds / 60);
+  if (minutes < 60) {
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+  }
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) {
+    return `${days} ${days === 1 ? "day" : "days"}`;
+  }
+
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) {
+    return `${weeks} ${weeks === 1 ? "week" : "weeks"}`;
+  }
+
+  const months = Math.floor(days / 30);
+  if (months < 12) {
+    return `${months} ${months === 1 ? "month" : "months"}`;
+  }
+
+  const years = Math.floor(months / 12);
+  return `${years} ${years === 1 ? "year" : "years"}`;
+};

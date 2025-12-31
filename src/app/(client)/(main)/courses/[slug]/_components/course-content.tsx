@@ -1,14 +1,27 @@
-"use client"
+"use client";
 
 import { useState } from "react";
-import { CourseTabs, OverviewTab, CurriculumTab, InstructorTab, FAQsTab, ReviewsTab, type TabId } from "./";
+import {
+  CourseTabs,
+  OverviewTab,
+  CurriculumTab,
+  InstructorTab,
+  FAQsTab,
+  ReviewsTab,
+  type TabId,
+} from "./";
 import { ExtendedCourseType } from "@/schema/course.schema";
+import { CourseCurriculumType } from "@/schema/lesson.schema";
 
 interface CourseContentProps {
   course: ExtendedCourseType;
+  curriculum: CourseCurriculumType;
 }
 
-export default function CourseContent({ course }: CourseContentProps) {
+export default function CourseContent({
+  course,
+  curriculum,
+}: CourseContentProps) {
   const [activeTab, setActiveTab] = useState<TabId>("curriculum");
 
   const renderTabContent = () => {
@@ -16,7 +29,7 @@ export default function CourseContent({ course }: CourseContentProps) {
       case "overview":
         return <OverviewTab course={course} />;
       case "curriculum":
-        return <CurriculumTab/>;
+        return <CurriculumTab curriculum={curriculum} />;
       case "instructor":
         return <InstructorTab instructor={course.teacher} />;
       case "faqs":
@@ -28,10 +41,7 @@ export default function CourseContent({ course }: CourseContentProps) {
 
   return (
     <>
-      {/* Tabs */}
       <CourseTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Tab Content */}
       {renderTabContent()}
     </>
   );

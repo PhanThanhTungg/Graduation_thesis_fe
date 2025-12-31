@@ -4,6 +4,8 @@ import { z } from "zod";
 
 type CreateLessonBody = z.infer<typeof CreateLessonBodySchema>;
 
+type UpdateLessonBody = Partial<CreateLessonBody>;
+
 interface CreateLessonRequest {
   title: string;
   description?: string;
@@ -14,10 +16,15 @@ interface CreateLessonRequest {
     fileUrl: string;
     fileName: string;
     fileSize: number;
+    isForAiQues?: boolean;
+    isForAiQuiz?: boolean;
   }[];
   isFree?: boolean;
+  isGenQues?: boolean;
+  isGenQuiz?: boolean;
+  promptForGenQues?: string;
+  promptForGenQuiz?: string;
 }
-
 
 type CreateLessonResponse = {
   message: string;
@@ -34,7 +41,7 @@ type CreateLessonResponse = {
 
 export const createLesson = async (
   chapterId: string,
-  data: CreateLessonBody
+  data: CreateLessonBody,
 ): Promise<CreateLessonResponse["data"]> => {
   const requestData: CreateLessonRequest = {
     title: data.title,
@@ -61,10 +68,22 @@ export const createLesson = async (
   if (data.isPreview !== undefined) {
     requestData.isFree = data.isPreview;
   }
+  if (data.isGenQues !== undefined) {
+    requestData.isGenQues = data.isGenQues;
+  }
+  if (data.isGenQuiz !== undefined) {
+    requestData.isGenQuiz = data.isGenQuiz;
+  }
+  if (data.promptForGenQues !== undefined) {
+    requestData.promptForGenQues = data.promptForGenQues;
+  }
+  if (data.promptForGenQuiz !== undefined) {
+    requestData.promptForGenQuiz = data.promptForGenQuiz;
+  }
 
   const response = await post<CreateLessonResponse>(
     `/api/lesson/teacher-area/chapter/${chapterId}`,
-    requestData as unknown as Record<string, unknown>
+    requestData as unknown as Record<string, unknown>,
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -73,7 +92,7 @@ export const createLesson = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to create lesson"
+        : "Failed to create lesson",
     );
   }
 };
@@ -86,6 +105,10 @@ type LessonItem = {
   duration?: number | null;
   slug: string;
   chapterId: string;
+  isGenQues?: boolean;
+  isGenQuiz?: boolean;
+  promptForGenQues?: string | null;
+  promptForGenQuiz?: string | null;
   createdAt: string;
   updatedAt?: string | null;
   videoLesson?: {
@@ -98,6 +121,8 @@ type LessonItem = {
     fileUrl: string;
     fileName: string;
     fileSize: number;
+    isForAiQues?: boolean;
+    isForAiQuiz?: boolean;
   }[];
 };
 
@@ -124,10 +149,10 @@ type GetLessonsParams = {
 
 export const getLessonsByChapterId = async (
   chapterId: string,
-  params?: GetLessonsParams
+  params?: GetLessonsParams,
 ): Promise<GetLessonsByChapterIdResponse["data"]> => {
   const queryParams: Record<string, string> = {};
-  
+
   if (params?.keySearch) {
     queryParams.keySearch = params.keySearch;
   }
@@ -146,7 +171,7 @@ export const getLessonsByChapterId = async (
 
   const response = await get<GetLessonsByChapterIdResponse>(
     `/api/lesson/teacher-area/chapter/${chapterId}`,
-    Object.keys(queryParams).length > 0 ? queryParams : undefined
+    Object.keys(queryParams).length > 0 ? queryParams : undefined,
   );
 
   if (response.status === 200) {
@@ -155,7 +180,7 @@ export const getLessonsByChapterId = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get lessons"
+        : "Failed to get lessons",
     );
   }
 };
@@ -171,7 +196,13 @@ type UpdateLessonRequest = {
     fileUrl: string;
     fileName: string;
     fileSize: number;
+    isForAiQues?: boolean;
+    isForAiQuiz?: boolean;
   }[];
+  isGenQues?: boolean;
+  isGenQuiz?: boolean;
+  promptForGenQues?: string;
+  promptForGenQuiz?: string;
 };
 
 type UpdateLessonResponse = {
@@ -181,7 +212,7 @@ type UpdateLessonResponse = {
 
 export const updateLesson = async (
   lessonId: string,
-  data: CreateLessonBody
+  data: UpdateLessonBody,
 ): Promise<UpdateLessonResponse["data"]> => {
   const requestData: UpdateLessonRequest = {};
 
@@ -210,10 +241,22 @@ export const updateLesson = async (
   if (data.files !== undefined) {
     requestData.files = data.files;
   }
+  if (data.isGenQues !== undefined) {
+    requestData.isGenQues = data.isGenQues;
+  }
+  if (data.isGenQuiz !== undefined) {
+    requestData.isGenQuiz = data.isGenQuiz;
+  }
+  if (data.promptForGenQues !== undefined) {
+    requestData.promptForGenQues = data.promptForGenQues;
+  }
+  if (data.promptForGenQuiz !== undefined) {
+    requestData.promptForGenQuiz = data.promptForGenQuiz;
+  }
 
   const response = await patch<UpdateLessonResponse>(
     `/api/lesson/teacher-area/${lessonId}`,
-    requestData
+    requestData,
   );
 
   if (response.status === 200) {
@@ -222,7 +265,7 @@ export const updateLesson = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update lesson"
+        : "Failed to update lesson",
     );
   }
 };
@@ -231,11 +274,9 @@ type DeleteLessonResponse = {
   message: string;
 };
 
-export const deleteLesson = async (
-  lessonId: string
-): Promise<void> => {
+export const deleteLesson = async (lessonId: string): Promise<void> => {
   const response = await del<DeleteLessonResponse>(
-    `/api/lesson/teacher-area/${lessonId}`
+    `/api/lesson/teacher-area/${lessonId}`,
   );
 
   if (response.status === 200) {
@@ -244,7 +285,7 @@ export const deleteLesson = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to delete lesson"
+        : "Failed to delete lesson",
     );
   }
 };
@@ -271,11 +312,11 @@ type GetLessonBySlugResponse = {
 };
 
 export const getLessonBySlug = async (
-  lessonSlug: string
+  lessonSlug: string,
 ): Promise<GetLessonBySlugResponse["data"]> => {
   const response = await get<GetLessonBySlugResponse>(
-    `/api/lesson/teacher-area/${lessonSlug}`, 
-    undefined,  
+    `/api/lesson/teacher-area/${lessonSlug}`,
+    undefined,
   );
 
   if (response.status === 200) {
@@ -284,7 +325,7 @@ export const getLessonBySlug = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get lesson"
+        : "Failed to get lesson",
     );
   }
 };
@@ -297,7 +338,7 @@ type GetNextLessonResponse = {
 };
 
 export const getNextLessonByCourseSlug = async (
-  courseSlug: string
+  courseSlug: string,
 ): Promise<string> => {
   const response = await get<GetNextLessonResponse>(
     `/api/lesson/next-by-course/${courseSlug}`,
@@ -309,7 +350,7 @@ export const getNextLessonByCourseSlug = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get next lesson"
+        : "Failed to get next lesson",
     );
   }
 };
@@ -328,6 +369,7 @@ type LessonTreeItemDto = {
     duration: number | null;
   } | null;
   progress: "not_started" | "in_progress" | "completed";
+  isInReviewSpace: boolean;
   createdAt: string;
   updatedAt?: string | null;
 };
@@ -351,11 +393,11 @@ type GetLessonChapterTreeResponse = {
 };
 
 export const getLessonChapterTree = async (
-  courseSlug: string
+  courseSlug: string,
 ): Promise<ChapterWithLessonsTreeItemDto[]> => {
   const response = await get<GetLessonChapterTreeResponse>(
     `/api/lesson/lesson-chapter-tree/${courseSlug}`,
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
@@ -364,7 +406,7 @@ export const getLessonChapterTree = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get lesson chapter tree"
+        : "Failed to get lesson chapter tree",
     );
   }
 };
@@ -408,11 +450,11 @@ type GetLessonBySlugForStudentResponse = {
 };
 
 export const getLessonBySlugForStudent = async (
-  lessonSlug: string
+  lessonSlug: string,
 ): Promise<GetLessonBySlugForStudentResponse["data"]> => {
   const response = await get<GetLessonBySlugForStudentResponse>(
     `/api/lesson/${lessonSlug}`,
-    undefined
+    undefined,
   );
 
   if (response.status === 200) {
@@ -421,7 +463,7 @@ export const getLessonBySlugForStudent = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to get lesson"
+        : "Failed to get lesson",
     );
   }
 };
@@ -435,11 +477,11 @@ type PingStatusLessonResponse = {
 
 export const pingStatusLesson = async (
   lessonSlug: string,
-  progress: "not_started" | "in_progress" | "completed"
+  progress: "not_started" | "in_progress" | "completed",
 ): Promise<PingStatusLessonResponse["data"]> => {
   const response = await post<PingStatusLessonResponse>(
     `/api/lesson/ping/status-lesson/${lessonSlug}`,
-    { progress }
+    { progress },
   );
 
   if (response.status === 200 || response.status === 201) {
@@ -448,8 +490,7 @@ export const pingStatusLesson = async (
     throw new Error(
       "payload" in response.payload && "message" in response.payload
         ? response.payload.message
-        : "Failed to update lesson status"
+        : "Failed to update lesson status",
     );
   }
 };
-

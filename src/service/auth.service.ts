@@ -1,4 +1,5 @@
 import { post } from "@/lib/request";
+import { updateLastLoginAt } from "@/service/user.service";
 import { setCookieAction } from "@/lib/setCookieAction";
 import { showToast } from "@/lib/toast";
 import {
@@ -12,7 +13,7 @@ import { SubmitHandler } from "react-hook-form";
 export const clientRegister: SubmitHandler<UserRegisterType> = async (data) => {
   // Get timezone from browser
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  
+
   const response = await post<UserAuthResponseType>("/api/auth/register", {
     fullName: data.fullName,
     email: data.email,
@@ -60,6 +61,12 @@ export const clientRefreshToken = async (): Promise<string> => {
 };
 
 export const clientLogout = async () => {
+  try {
+    await updateLastLoginAt();
+  } catch (error) {
+    console.error("Error updating last login on logout:", error);
+  }
+
   const response = await post<{ message: string }>(
     "/api/auth/logout",
     undefined,

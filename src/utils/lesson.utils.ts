@@ -27,16 +27,6 @@ export function formatDuration(seconds: number | null | undefined): string {
   return "0 min";
 }
 
-export function hashStringToNumber(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash);
-}
-
 type ChapterTree = Awaited<ReturnType<typeof getLessonChapterTree>>;
 
 interface TransformResult {
@@ -59,7 +49,7 @@ export function transformChapterTreeWithStats(
         totalDuration += duration;
 
         return {
-          id: hashStringToNumber(lesson.id),
+          id: lesson.id,
           slug: lesson.slug,
           title: lesson.title,
           duration: formatDuration(duration),
@@ -67,6 +57,7 @@ export function transformChapterTreeWithStats(
           isPreview: lesson.isFree,
           isCompleted: lesson.progress === "completed",
           progress: lesson.progress,
+          isInReviewSpace: lesson.isInReviewSpace,
           videoId: lesson.videoLesson?.videoId,
           embedUrl: lesson.videoLesson?.embedUrl,
           content: lesson.description || undefined,
@@ -74,7 +65,7 @@ export function transformChapterTreeWithStats(
       });
 
       const section: SectionType = {
-        id: hashStringToNumber(chapter.id),
+        id: chapter.id,
         title: chapter.title,
         lessons,
       };
@@ -116,7 +107,7 @@ export function transformLessonToLessonItem(lesson: {
   }[];
 }): LessonItemType {
   return {
-    id: hashStringToNumber(lesson.id),
+    id: lesson.id,
     slug: lesson.slug,
     title: lesson.title,
     duration: formatDuration(lesson.videoLesson?.duration || null),
@@ -124,6 +115,7 @@ export function transformLessonToLessonItem(lesson: {
     isPreview: lesson.isFree,
     isCompleted: lesson.progress === "completed",
     progress: lesson.progress,
+    isInReviewSpace: false, // This function is used for current lesson, not from chapter tree
     videoId: lesson.videoLesson?.videoId,
     embedUrl: lesson.videoLesson?.embedUrl,
     content: lesson.description || undefined,

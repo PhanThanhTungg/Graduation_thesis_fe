@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,80 +8,91 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { CreateLessonBodySchema } from "@/schema/lesson.schema"
-import { useForm, Controller } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { useEffect, useState, useRef } from "react"
-import { Loader2, Upload, Eye, X, File as FileIcon } from "lucide-react"
-import { post } from "@/lib/request"
-import { showToast } from "@/lib/toast"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CreateLessonBodySchema } from "@/schema/lesson.schema";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useEffect, useState, useRef } from "react";
+import { Loader2, Upload, Eye, X, File as FileIcon } from "lucide-react";
+import { post } from "@/lib/request";
+import { showToast } from "@/lib/toast";
 
 type LessonData = {
-  id: string
-  title: string
-  description?: string | null
-  isFree?: boolean
+  id: string;
+  title: string;
+  description?: string | null;
+  isFree?: boolean;
+  isGenQues?: boolean;
+  isGenQuiz?: boolean;
   videoLesson?: {
-    id: string
-    videoId: string
-    embedUrl: string
-  } | null
+    id: string;
+    videoId: string;
+    embedUrl: string;
+  } | null;
   files?: {
-    id: string
-    fileUrl: string
-    fileName: string
-    fileSize: number
-  }[]
-}
+    id: string;
+    fileUrl: string;
+    fileName: string;
+    fileSize: number;
+  }[];
+};
 
 interface LessonDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (data: z.infer<typeof CreateLessonBodySchema>) => Promise<void>
-  mode: "add" | "edit"
-  isLoading?: boolean
-  lesson?: LessonData | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (data: z.infer<typeof CreateLessonBodySchema>) => Promise<void>;
+  mode: "add" | "edit";
+  isLoading?: boolean;
+  lesson?: LessonData | null;
 }
 
 type FormData = z.infer<typeof CreateLessonBodySchema> & {
-  isPreview?: boolean
-}
+  isPreview?: boolean;
+};
 
-export function LessonDialog({ 
-  open, 
-  onOpenChange, 
-  onSave, 
+export function LessonDialog({
+  open,
+  onOpenChange,
+  onSave,
   mode,
   isLoading = false,
-  lesson = null
+  lesson = null,
 }: LessonDialogProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [uploadedVideo, setUploadedVideo] = useState<{ videoId: string; embedUrl: string } | null>(null)
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const [uploadedFiles, setUploadedFiles] = useState<{ fileUrl: string; fileName: string; fileSize: number }[]>([])
-  const [isUploadingFiles, setIsUploadingFiles] = useState(false)
-  const [uploadingFileIndex, setUploadingFileIndex] = useState<number | null>(null)
-  const filesInputRef = useRef<HTMLInputElement>(null)
-  
-  const [draftData, setDraftData] = useState<{
-    title?: string
-    content?: string
-    isPreview?: boolean
-    uploadedVideo?: { videoId: string; embedUrl: string } | null
-    uploadedFiles?: { fileUrl: string; fileName: string; fileSize: number }[]
-  } | null>(null)
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedVideo, setUploadedVideo] = useState<{
+    videoId: string;
+    embedUrl: string;
+  } | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isSubmittingRef = useRef(false)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<
+    { fileUrl: string; fileName: string; fileSize: number }[]
+  >([]);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [uploadingFileIndex, setUploadingFileIndex] = useState<number | null>(
+    null,
+  );
+  const filesInputRef = useRef<HTMLInputElement>(null);
+
+  const [draftData, setDraftData] = useState<{
+    title?: string;
+    content?: string;
+    isPreview?: boolean;
+    isGenQues?: boolean;
+    isGenQuiz?: boolean;
+    uploadedVideo?: { videoId: string; embedUrl: string } | null;
+    uploadedFiles?: { fileUrl: string; fileName: string; fileSize: number }[];
+  } | null>(null);
+
+  const isSubmittingRef = useRef(false);
 
   const {
     register,
@@ -97,166 +108,178 @@ export function LessonDialog({
     defaultValues: {
       title: "",
       isPreview: false,
+      isGenQues: false,
+      isGenQuiz: false,
       content: "",
     },
-  })
-
+  });
 
   const getVideoDuration = (file: File): Promise<number> => {
     return new Promise((resolve, reject) => {
-      const video = document.createElement("video")
-      video.preload = "metadata"
+      const video = document.createElement("video");
+      video.preload = "metadata";
       video.onloadedmetadata = () => {
-        window.URL.revokeObjectURL(video.src)
-        resolve(Math.round(video.duration))
-      }
+        window.URL.revokeObjectURL(video.src);
+        resolve(Math.round(video.duration));
+      };
       video.onerror = () => {
-        reject(new Error("Failed to load video metadata"))
-      }
-      video.src = URL.createObjectURL(file)
-    })
-  }
+        reject(new Error("Failed to load video metadata"));
+      };
+      video.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("video/")) {
-        showToast("error", "Please select a video file")
-        return
+        showToast("error", "Please select a video file");
+        return;
       }
-      setSelectedFile(file)
-      setUploadedVideo(null)
+      setSelectedFile(file);
+      setUploadedVideo(null);
     }
-  }
+  };
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []);
     if (files.length > 0) {
-      setSelectedFiles((prev) => [...prev, ...files])
+      setSelectedFiles((prev) => [...prev, ...files]);
     }
-  }
+  };
 
   const removeSelectedFile = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const removeUploadedFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index))
-  }
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleUploadFiles = async () => {
     if (selectedFiles.length === 0) {
-      showToast("error", "Please select at least one file")
-      return
+      showToast("error", "Please select at least one file");
+      return;
     }
 
     try {
-      setIsUploadingFiles(true)
-      const newUploadedFiles: { fileUrl: string; fileName: string; fileSize: number }[] = []
+      setIsUploadingFiles(true);
+      const newUploadedFiles: {
+        fileUrl: string;
+        fileName: string;
+        fileSize: number;
+      }[] = [];
 
       for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i]
-        setUploadingFileIndex(i)
+        const file = selectedFiles[i];
+        setUploadingFileIndex(i);
 
         try {
-          const formData = new FormData()
-          formData.append("file", file)
+          const formData = new FormData();
+          formData.append("file", file);
 
-          const response = await post<{ fileUrl: string; fileName: string; fileSize: number }>(
-            "/api/upload/file",
-            formData,
-            { baseUrl: "/" }
-          )
+          const response = await post<{
+            fileUrl: string;
+            fileName: string;
+            fileSize: number;
+          }>("/api/upload/file", formData, { baseUrl: "/" });
 
           if (response.status === 200 && "fileUrl" in response.payload) {
             newUploadedFiles.push({
               fileUrl: response.payload.fileUrl,
               fileName: response.payload.fileName,
               fileSize: response.payload.fileSize,
-            })
+            });
           } else {
-            throw new Error("Failed to upload file")
+            throw new Error("Failed to upload file");
           }
         } catch (error) {
-          console.error(`Upload error for file ${file.name}:`, error)
-          showToast("error", `Failed to upload ${file.name}`)
+          console.error(`Upload error for file ${file.name}:`, error);
+          showToast("error", `Failed to upload ${file.name}`);
         }
       }
 
-      setUploadedFiles((prev) => [...prev, ...newUploadedFiles])
-      setSelectedFiles([])
+      setUploadedFiles((prev) => [...prev, ...newUploadedFiles]);
+      setSelectedFiles([]);
       if (filesInputRef.current) {
-        filesInputRef.current.value = ""
+        filesInputRef.current.value = "";
       }
-      showToast("success", `${newUploadedFiles.length} file(s) uploaded successfully`)
+      showToast(
+        "success",
+        `${newUploadedFiles.length} file(s) uploaded successfully`,
+      );
     } catch (error) {
-      console.error("Upload error:", error)
-      showToast("error", "Failed to upload files")
+      console.error("Upload error:", error);
+      showToast("error", "Failed to upload files");
     } finally {
-      setIsUploadingFiles(false)
-      setUploadingFileIndex(null)
+      setIsUploadingFiles(false);
+      setUploadingFileIndex(null);
     }
-  }
+  };
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      showToast("error", "Please select a video file")
-      return
+      showToast("error", "Please select a video file");
+      return;
     }
 
     try {
-      setIsUploading(true)
+      setIsUploading(true);
 
-      const formData = new FormData()
-      formData.append("file", selectedFile)
-      formData.append("title", selectedFile.name)
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("title", selectedFile.name);
 
       const response = await post<{ videoId: string; embedUrl: string }>(
         "/api/upload/video",
         formData,
-        { baseUrl: "/" }
-      )
+        { baseUrl: "/" },
+      );
 
-      if (response.status === 200 && "videoId" in response.payload && "embedUrl" in response.payload) {
-        const { videoId, embedUrl } = response.payload
+      if (
+        response.status === 200 &&
+        "videoId" in response.payload &&
+        "embedUrl" in response.payload
+      ) {
+        const { videoId, embedUrl } = response.payload;
 
-        let duration: number | undefined
+        let duration: number | undefined;
         try {
-          duration = await getVideoDuration(selectedFile)
+          duration = await getVideoDuration(selectedFile);
         } catch (error) {
-          console.warn("Failed to get video duration:", error)
-          showToast("error", "Failed to get video duration. Please try again.")
-          return
+          console.warn("Failed to get video duration:", error);
+          showToast("error", "Failed to get video duration. Please try again.");
+          return;
         }
 
         if (!duration || duration <= 0) {
-          showToast("error", "Invalid video duration. Please try again.")
-          return
+          showToast("error", "Invalid video duration. Please try again.");
+          return;
         }
 
-        setUploadedVideo({ videoId, embedUrl })
-        setValue("videoId", videoId)
-        setValue("embedUrl", embedUrl)
-        setValue("duration", duration)
+        setUploadedVideo({ videoId, embedUrl });
+        setValue("videoId", videoId);
+        setValue("embedUrl", embedUrl);
+        setValue("duration", duration);
 
-        showToast("success", "Video uploaded successfully")
-        setSelectedFile(null)
+        showToast("success", "Video uploaded successfully");
+        setSelectedFile(null);
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""
+          fileInputRef.current.value = "";
         }
       } else {
-        throw new Error("Failed to upload video")
+        throw new Error("Failed to upload video");
       }
     } catch (error) {
-      console.error("Upload error:", error)
+      console.error("Upload error:", error);
       showToast(
         "error",
-        error instanceof Error ? error.message : "Failed to upload video"
-      )
+        error instanceof Error ? error.message : "Failed to upload video",
+      );
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (open && !isLoading && !isSubmittingRef.current) {
@@ -264,102 +287,115 @@ export function LessonDialog({
         reset({
           title: lesson.title,
           isPreview: lesson.isFree ?? false,
+          isGenQues: lesson.isGenQues ?? false,
+          isGenQuiz: lesson.isGenQuiz ?? false,
           content: lesson.description || "",
           videoId: lesson.videoLesson?.videoId || "",
           embedUrl: lesson.videoLesson?.embedUrl || "",
-        })
+        });
         if (lesson.videoLesson) {
           setUploadedVideo({
             videoId: lesson.videoLesson.videoId,
             embedUrl: lesson.videoLesson.embedUrl,
-          })
+          });
         } else {
-          setUploadedVideo(null)
+          setUploadedVideo(null);
         }
         if (lesson.files && lesson.files.length > 0) {
-          setUploadedFiles(lesson.files.map(file => ({
-            fileUrl: file.fileUrl,
-            fileName: file.fileName,
-            fileSize: file.fileSize,
-          })))
+          setUploadedFiles(
+            lesson.files.map((file) => ({
+              fileUrl: file.fileUrl,
+              fileName: file.fileName,
+              fileSize: file.fileSize,
+            })),
+          );
         } else {
-          setUploadedFiles([])
+          setUploadedFiles([]);
         }
-        setSelectedFiles([])
+        setSelectedFiles([]);
       } else if (mode === "add") {
         if (draftData) {
           reset({
             title: draftData.title || "",
             isPreview: draftData.isPreview || false,
+            isGenQues: draftData.isGenQues || false,
+            isGenQuiz: draftData.isGenQuiz || false,
             content: draftData.content || "",
             videoId: draftData.uploadedVideo?.videoId || "",
             embedUrl: draftData.uploadedVideo?.embedUrl || "",
-          })
-          setUploadedVideo(draftData.uploadedVideo || null)
-          setUploadedFiles(draftData.uploadedFiles || [])
+          });
+          setUploadedVideo(draftData.uploadedVideo || null);
+          setUploadedFiles(draftData.uploadedFiles || []);
         } else {
           reset({
             title: "",
             isPreview: false,
             content: "",
-          })
-          setUploadedVideo(null)
-          setUploadedFiles([])
+          });
+          setUploadedVideo(null);
+          setUploadedFiles([]);
         }
-        setSelectedFile(null)
-        setSelectedFiles([])
+        setSelectedFile(null);
+        setSelectedFiles([]);
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""
+          fileInputRef.current.value = "";
         }
         if (filesInputRef.current) {
-          filesInputRef.current.value = ""
+          filesInputRef.current.value = "";
         }
       }
     }
-  }, [open, reset, mode, lesson, draftData, isLoading])
+  }, [open, reset, mode, lesson, draftData, isLoading]);
 
   const onSubmit = async (data: FormData) => {
     try {
-      isSubmittingRef.current = true
+      isSubmittingRef.current = true;
       const submitData = {
         ...data,
-        files: mode === "edit" ? uploadedFiles : uploadedFiles.length > 0 ? uploadedFiles : undefined,
-      }
-      await onSave(submitData)
+        files:
+          mode === "edit"
+            ? uploadedFiles
+            : uploadedFiles.length > 0
+              ? uploadedFiles
+              : undefined,
+      };
+      await onSave(submitData);
     } catch {
     } finally {
-      isSubmittingRef.current = false
+      isSubmittingRef.current = false;
     }
-  }
+  };
 
   const handleClose = () => {
-    if (isLoading) return
-    
+    if (isLoading) return;
+
     if (mode === "add") {
-      const currentValues = watch()
+      const currentValues = watch();
       setDraftData({
         title: currentValues.title,
         content: currentValues.content,
         isPreview: currentValues.isPreview,
+        isGenQues: currentValues.isGenQues,
+        isGenQuiz: currentValues.isGenQuiz,
         uploadedVideo: uploadedVideo,
         uploadedFiles: uploadedFiles,
-      })
+      });
     }
-    
-    reset()
-    setUploadedVideo(null)
-    setSelectedFile(null)
-    setSelectedFiles([])
-    setUploadedFiles([])
-    isSubmittingRef.current = false
+
+    reset();
+    setUploadedVideo(null);
+    setSelectedFile(null);
+    setSelectedFiles([]);
+    setUploadedFiles([]);
+    isSubmittingRef.current = false;
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
     if (filesInputRef.current) {
-      filesInputRef.current.value = ""
+      filesInputRef.current.value = "";
     }
-    onOpenChange(false)
-  }
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -369,8 +405,8 @@ export function LessonDialog({
             {mode === "add" ? "Add New Lesson" : "Edit Lesson"}
           </DialogTitle>
           <DialogDescription>
-            {mode === "add" 
-              ? "Create a new lesson for this chapter" 
+            {mode === "add"
+              ? "Create a new lesson for this chapter"
               : "Update the lesson details"}
           </DialogDescription>
         </DialogHeader>
@@ -387,7 +423,9 @@ export function LessonDialog({
                 className={errors.title ? "border-destructive" : ""}
               />
               {errors.title && (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.title.message}
+                </p>
               )}
             </div>
 
@@ -427,7 +465,8 @@ export function LessonDialog({
               {selectedFile && !uploadedVideo && (
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground">
-                    Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    Selected: {selectedFile.name} (
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                   </p>
                   <Button
                     type="button"
@@ -456,11 +495,16 @@ export function LessonDialog({
               {uploadedFiles.length > 0 && (
                 <div className="mb-2 space-y-2">
                   {uploadedFiles.map((file, index) => (
-                    <div key={index} className="p-3 border rounded-lg bg-accent/50 flex items-center justify-between">
+                    <div
+                      key={index}
+                      className="p-3 border rounded-lg bg-accent/50 flex items-center justify-between"
+                    >
                       <div className="flex-1 flex items-center gap-2">
                         <FileIcon className="w-4 h-4 text-muted-foreground" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{file.fileName}</p>
+                          <p className="text-sm font-medium truncate">
+                            {file.fileName}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             {(file.fileSize / 1024).toFixed(2)} KB
                           </p>
@@ -500,7 +544,10 @@ export function LessonDialog({
                 <div className="space-y-2">
                   <div className="space-y-1">
                     {selectedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 border rounded text-sm">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 border rounded text-sm"
+                      >
                         <span className="text-xs text-muted-foreground truncate flex-1">
                           {file.name} ({(file.size / 1024).toFixed(2)} KB)
                         </span>
@@ -591,8 +638,10 @@ export function LessonDialog({
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   {mode === "add" ? "Adding..." : "Saving..."}
                 </>
+              ) : mode === "add" ? (
+                "Add Lesson"
               ) : (
-                mode === "add" ? "Add Lesson" : "Save Changes"
+                "Save Changes"
               )}
             </Button>
           </DialogFooter>
@@ -617,6 +666,5 @@ export function LessonDialog({
         </DialogContent>
       </Dialog>
     </Dialog>
-  )
+  );
 }
-

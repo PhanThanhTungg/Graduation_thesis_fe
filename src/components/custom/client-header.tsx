@@ -15,6 +15,7 @@ import { getMyProfile } from "@/service/user.service";
 import { Button } from "../ui/button";
 import UserMenu from "./user-menu";
 import { unstable_noStore } from "next/cache";
+import { MessageSquare } from "lucide-react";
 
 const navItems = [
   {
@@ -87,6 +88,7 @@ export default async function ClientHeader() {
       </NavigationMenu>
 
       <div className="flex items-center gap-4">
+        <ModeToggle />
         <SearchPopover />
         {myProfile ? (
           <>
@@ -95,6 +97,12 @@ export default async function ClientHeader() {
                 <Link href="/teacher/dashboard">Teacher</Link>
               </Button>
             )}
+            <Link
+              href="/messenger"
+              className="relative flex items-center justify-center size-10 rounded-full bg-muted hover:bg-muted/80 transition-colors"
+            >
+              <MessageSquare className="size-5" />
+            </Link>
             <UserMenu user={myProfile} />
           </>
         ) : (
@@ -102,10 +110,6 @@ export default async function ClientHeader() {
             <Link href="/login">Login/Register</Link>
           </Button>
         )}
-      </div>
-
-      <div className="fixed top-0 right-0">
-        <ModeToggle />
       </div>
     </header>
   );

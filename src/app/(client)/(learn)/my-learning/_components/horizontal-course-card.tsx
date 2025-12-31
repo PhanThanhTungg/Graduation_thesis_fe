@@ -59,12 +59,12 @@ export default function HorizontalCourseCard({
     <Link href={learnUrl} className="group block">
       <div className="bg-card border rounded-xl overflow-hidden hover:shadow-2xl hover:shadow-green/10 transition-all duration-300 hover:-translate-y-1">
         <div className="flex gap-4 p-5">
-          <div className="relative w-56 h-40 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-muted to-muted/50">
+          <div className="relative w-44 h-32 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-muted to-muted/50">
             <Image
               src={course.thumbnailUrl || "/placeholder-course.jpg"}
               alt={course.title}
               fill
-              sizes="224px"
+              sizes="176px"
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -87,7 +87,7 @@ export default function HorizontalCourseCard({
                     {course.title}
                   </h3>
 
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-2">
                     <div className="flex items-center gap-1">
                       <User className="size-3.5" />
                       <span>{course.teacher.fullName}</span>
@@ -98,6 +98,37 @@ export default function HorizontalCourseCard({
                         <span>{formatDateToString(course.purchasedAt)}</span>
                       </div>
                     )}
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                        <div
+                          className="h-full bg-gradient-to-r from-green to-green/80 transition-all duration-500 rounded-full shadow-sm"
+                          style={{ width: `${progress.percentage}%` }}
+                        />
+                      </div>
+                      <span className="font-medium text-green whitespace-nowrap">
+                        {progress.percentage}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    {course.originalPrice &&
+                    course.finalPrice &&
+                    course.originalPrice > course.finalPrice ? (
+                      <>
+                        <span className="text-xs text-muted-foreground line-through">
+                          ${course.originalPrice.toFixed(2)}
+                        </span>
+                        <span className="text-lg font-bold text-green">
+                          ${course.finalPrice.toFixed(2)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-green">
+                        $
+                        {course.finalPrice?.toFixed(2) ||
+                          course.price.toFixed(2)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -107,52 +138,6 @@ export default function HorizontalCourseCard({
                     {course.rating}
                   </span>
                 </div>
-              </div>
-
-              <div className="space-y-2 pt-2 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-foreground">
-                    Progress
-                  </span>
-                  <span className="text-xs font-bold text-green">
-                    {progress.percentage}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden shadow-inner">
-                  <div
-                    className="h-full bg-gradient-to-r from-green to-green/80 transition-all duration-500 rounded-full shadow-sm"
-                    style={{ width: `${progress.percentage}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>
-                    {progress.completedLessons}/{progress.totalLessons} lessons
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t mt-3">
-              <div className="text-xs text-muted-foreground">
-                Continue learning
-              </div>
-              <div className="flex items-baseline gap-2">
-                {course.originalPrice &&
-                course.finalPrice &&
-                course.originalPrice > course.finalPrice ? (
-                  <>
-                    <span className="text-xs text-muted-foreground line-through">
-                      ${course.originalPrice.toFixed(2)}
-                    </span>
-                    <span className="text-xl font-bold text-green">
-                      ${course.finalPrice.toFixed(2)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-xl font-bold text-green">
-                    ${course.finalPrice?.toFixed(2) || course.price.toFixed(2)}
-                  </span>
-                )}
               </div>
             </div>
           </div>

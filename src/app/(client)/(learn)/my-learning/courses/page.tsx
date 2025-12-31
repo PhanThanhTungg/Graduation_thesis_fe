@@ -40,7 +40,7 @@ export default async function MyLearningPage({
 
   return (
     <>
-      <section className="container-md">
+      <section className="container-sm">
         <div className="mb-3">
           <h1 className="text-2xl font-bold mb-2">My purchased courses</h1>
           <p className="text-muted-foreground text-sm">

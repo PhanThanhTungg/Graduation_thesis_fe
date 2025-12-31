@@ -2,11 +2,14 @@ import { Metadata } from "next";
 import { getCourseBySlugTeacherArea } from "@/service/course.service";
 import { getLessonBySlug } from "@/service/lesson.service";
 import { notFound } from "next/navigation";
-import BreadcrumbCustom, { BreadcrumbProps } from "@/components/custom/breadcrumb";
+import BreadcrumbCustom, {
+  BreadcrumbProps,
+} from "@/components/custom/breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/helpers";
 import { EditLessonButton } from "./_components/edit-lesson-button";
 import { VideoPreview } from "./_components/video-preview";
+import { AiOptionsBox } from "./_components/ai-options-box";
 
 interface LessonDetailPageProps {
   params: Promise<{
@@ -21,7 +24,9 @@ export const metadata: Metadata = {
   description: "View and edit lesson details",
 };
 
-export default async function LessonDetailPage({ params }: LessonDetailPageProps) {
+export default async function LessonDetailPage({
+  params,
+}: LessonDetailPageProps) {
   const { slug, chapterslug, lessonslug } = await params;
 
   let course;
@@ -39,8 +44,11 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
   let lesson;
   try {
     lesson = await getLessonBySlug(lessonslug);
-    
-    if (lesson.chapter.slug !== chapterslug || lesson.chapter.course.id !== course.id.toString()) {
+
+    if (
+      lesson.chapter.slug !== chapterslug ||
+      lesson.chapter.course.id !== course.id.toString()
+    ) {
       notFound();
     }
   } catch (error) {
@@ -56,7 +64,10 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
     { url: "/teacher", label: "Teacher" },
     { url: "/teacher/courses", label: "Courses" },
     { url: `/teacher/courses/${course.slug}`, label: course.title },
-    { url: `/teacher/courses/${slug}/chapter/${chapterslug}`, label: lesson.chapter.title },
+    {
+      url: `/teacher/courses/${slug}/chapter/${chapterslug}`,
+      label: lesson.chapter.title,
+    },
     { url: undefined, label: lesson.title },
   ];
 
@@ -69,7 +80,9 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
             <h1 className="text-3xl font-bold bg-gradient-to-r from-violet to-green bg-clip-text text-transparent">
               Lesson Details
             </h1>
-            <p className="text-muted-foreground mt-1">Manage your lesson information</p>
+            <p className="text-muted-foreground mt-1">
+              Manage your lesson information
+            </p>
           </div>
 
           <Card>
@@ -91,26 +104,33 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
             <CardContent className="space-y-4">
               {lesson.description && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Description
+                  </h3>
                   <p className="text-sm">{lesson.description}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Position</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                    Position
+                  </h3>
                   <p className="text-sm">{lesson.position}</p>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Created At</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                    Created At
+                  </h3>
                   <p className="text-sm">{formatDate(lesson.createdAt)}</p>
                 </div>
 
                 {lesson.updatedAt && (
                   <div>
-                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Updated At</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                      Updated At
+                    </h3>
                     <p className="text-sm">{formatDate(lesson.updatedAt)}</p>
                   </div>
                 )}
@@ -125,10 +145,15 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
 
               {lesson.files && lesson.files.length > 0 && (
                 <div className="pt-4 border-t">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-4">Files</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                    Files
+                  </h3>
                   <div className="space-y-2">
                     {lesson.files.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex-1">
                           <p className="text-sm font-medium">{file.fileName}</p>
                           <p className="text-xs text-muted-foreground">
@@ -150,9 +175,17 @@ export default async function LessonDetailPage({ params }: LessonDetailPageProps
               )}
             </CardContent>
           </Card>
+
+          <AiOptionsBox
+            lessonId={lesson.id}
+            initialIsGenQues={!!lesson.isGenQues}
+            initialIsGenQuiz={!!lesson.isGenQuiz}
+            initialPromptForGenQues={lesson.promptForGenQues || ""}
+            initialPromptForGenQuiz={lesson.promptForGenQuiz || ""}
+            files={lesson.files || []}
+          />
         </div>
       </section>
     </>
   );
 }
-

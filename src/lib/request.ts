@@ -146,6 +146,13 @@ export const patch = <Response>(
   } as CustomRequestOptions);
 };
 
-export const del = <Response>(url: string, options?: OptionsType) => {
-  return request<Response>("DELETE", url, options as CustomRequestOptions);
+export const del = <Response>(
+  url: string,
+  body?: BodyType,
+  options?: OptionsType,
+) => {
+  return request<Response>("DELETE", url, {
+    ...options,
+    body,
+  } as CustomRequestOptions);
 };
