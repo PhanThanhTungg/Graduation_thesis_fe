@@ -52,16 +52,17 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: "Finance",
     items: [
-      { href: "#", icon: Wallet, label: "Transactions" },
+      { href: "/admin/transactions", icon: Wallet, label: "Transactions" },
       { href: "#", icon: Receipt, label: "Invoices" },
-      { href: "#", icon: CreditCard, label: "Payments" },
+      { href: "/admin/payments", icon: CreditCard, label: "Payments" },
     ],
   },
   {
     title: "Team",
     items: [
       { href: "/admin/user", icon: Users2, label: "Users" },
-      { href: "#", icon: Shield, label: "Permissions" },
+      { href: "/admin/permissions", icon: Shield, label: "Permissions" },
+      { href: "/admin/admins", icon: Users2, label: "Admins" },
       { href: "#", icon: MessagesSquare, label: "Chat" },
       { href: "#", icon: Video, label: "Meetings" },
     ],
