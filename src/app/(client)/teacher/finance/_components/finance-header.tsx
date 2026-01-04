@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CreateWithdrawalModal } from "./create-withdrawal-modal";
-import { Wallet } from "lucide-react";
+import { DepositModal } from "./deposit-modal";
+import { Wallet, Plus } from "lucide-react";
 
 interface FinanceHeaderProps {
   balance: number;
@@ -14,7 +15,8 @@ export function FinanceHeader({
   balance,
   onWithdrawalCreated,
 }: FinanceHeaderProps) {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [withdrawalModalOpen, setWithdrawalModalOpen] = useState(false);
+  const [depositModalOpen, setDepositModalOpen] = useState(false);
 
   return (
     <>
@@ -28,16 +30,28 @@ export function FinanceHeader({
               View your wallet balance, earnings, and transaction history
             </p>
           </div>
-          <Button onClick={() => setModalOpen(true)}>
-            <Wallet className="mr-2 h-4 w-4" />
-            Create Withdrawal Request
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setDepositModalOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Deposit
+            </Button>
+            <Button onClick={() => setWithdrawalModalOpen(true)}>
+              <Wallet className="mr-2 h-4 w-4" />
+              Create Withdrawal Request
+            </Button>
+          </div>
         </div>
       </section>
 
+      <DepositModal
+        open={depositModalOpen}
+        onOpenChange={setDepositModalOpen}
+        onSuccess={onWithdrawalCreated}
+      />
+
       <CreateWithdrawalModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+        open={withdrawalModalOpen}
+        onOpenChange={setWithdrawalModalOpen}
         onSuccess={onWithdrawalCreated}
         balance={balance}
       />

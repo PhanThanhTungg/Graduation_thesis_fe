@@ -219,3 +219,58 @@ export const createWithdrawal = async (data: {
       : "Failed to create withdrawal request",
   );
 };
+
+type CreateDepositResponse = {
+  message: string;
+  data: {
+    transactionId: string;
+    approvalUrl: string;
+    paypalOrderId: string;
+  };
+};
+
+type CaptureDepositResponse = {
+  message: string;
+  data: {
+    transactionId: string;
+    captureId: string;
+    amount: number;
+  };
+};
+
+export const createDeposit = async (amount: number) => {
+  const response = await post<CreateDepositResponse>(
+    "/api/finance/client/deposit",
+    { amount },
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as CreateDepositResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to create deposit request",
+  );
+};
+
+export const captureDeposit = async (
+  transactionId: string,
+  paypalOrderId: string,
+) => {
+  const response = await post<CaptureDepositResponse>(
+    `/api/finance/client/deposit/${transactionId}/capture`,
+    { paypalOrderId },
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as CaptureDepositResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to capture deposit",
+  );
+};
