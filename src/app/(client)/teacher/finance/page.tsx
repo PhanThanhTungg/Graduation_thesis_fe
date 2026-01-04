@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StudentOrders } from "./_components/student-orders";
+import { FinanceHeader } from "./_components/finance-header";
 
 export const metadata: Metadata = {
   title: "Finance - Teacher Space",
@@ -58,14 +59,7 @@ export default async function FinancePage() {
 
   return (
     <div className="container-sm py-12">
-      <section className="mb-8 section-title">
-        <h1 className="font-heading font-semibold text-3xl text-foreground mb-2">
-          Finance Management
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          View your wallet balance, earnings, and transaction history
-        </p>
-      </section>
+      {wallet && <FinanceHeader balance={wallet.balance} />}
 
       {wallet && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">

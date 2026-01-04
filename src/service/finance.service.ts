@@ -1,4 +1,4 @@
-import { get } from "@/lib/request";
+import { get, post } from "@/lib/request";
 
 type WalletResponse = {
   message: string;
@@ -183,5 +183,39 @@ export const getOrders = async (params?: {
     "payload" in response.payload && "message" in response.payload
       ? response.payload.message
       : "Failed to get orders",
+  );
+};
+
+type CreateWithdrawalResponse = {
+  message: string;
+  data: {
+    id: string;
+    walletId: string;
+    amount: number;
+    email: string;
+    status: "pending" | "processing" | "completed" | "cancelled";
+    note: string | null;
+    createdAt: string;
+  };
+};
+
+export const createWithdrawal = async (data: {
+  amount: number;
+  email: string;
+  note?: string;
+}) => {
+  const response = await post<CreateWithdrawalResponse>(
+    "/api/finance/client/withdrawals",
+    data,
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as CreateWithdrawalResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to create withdrawal request",
   );
 };
