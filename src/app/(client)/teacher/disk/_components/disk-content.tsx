@@ -49,6 +49,7 @@ export function DiskContent() {
     value: number;
     from: string;
     to: string;
+    usedSpace: number;
   } | null>(null);
   const [purchaseHistory, setPurchaseHistory] = useState<
     {
@@ -297,12 +298,38 @@ export function DiskContent() {
           </CardHeader>
           <CardContent>
             {diskSpace ? (
-              <div>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Total Space
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Total Space
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {diskSpace.value.toLocaleString()} MB
+                  </div>
                 </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {diskSpace.value.toLocaleString()} MB
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Used Space
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {Math.round(
+                      diskSpace.usedSpace / (1024 * 1024),
+                    ).toLocaleString()}{" "}
+                    MB
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Available Space
+                  </div>
+                  <div className="text-2xl font-bold text-green">
+                    {Math.max(
+                      0,
+                      diskSpace.value -
+                        Math.round(diskSpace.usedSpace / (1024 * 1024)),
+                    ).toLocaleString()}{" "}
+                    MB
+                  </div>
                 </div>
               </div>
             ) : (

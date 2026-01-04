@@ -12,6 +12,7 @@ interface CreateLessonRequest {
   videoId?: string;
   embedUrl?: string;
   duration?: number;
+  videoSize?: number;
   files?: {
     fileUrl: string;
     fileName: string;
@@ -61,6 +62,9 @@ export const createLesson = async (
   }
   if (data.duration !== undefined && typeof data.duration === "number") {
     requestData.duration = data.duration;
+  }
+  if (data.videoSize !== undefined && typeof data.videoSize === "number") {
+    requestData.videoSize = data.videoSize;
   }
   if (data.files && Array.isArray(data.files) && data.files.length > 0) {
     requestData.files = data.files;
@@ -191,6 +195,7 @@ type UpdateLessonRequest = {
   videoId?: string;
   embedUrl?: string;
   duration?: number;
+  videoSize?: number;
   isFree?: boolean;
   files?: {
     fileUrl: string;
@@ -234,6 +239,9 @@ export const updateLesson = async (
   }
   if (data.duration !== undefined && typeof data.duration === "number") {
     requestData.duration = data.duration;
+  }
+  if (data.videoSize !== undefined && typeof data.videoSize === "number") {
+    requestData.videoSize = data.videoSize;
   }
   if (data.isPreview !== undefined) {
     requestData.isFree = data.isPreview;

@@ -313,6 +313,7 @@ type DiskSpaceResponse = {
     value: number;
     from: string;
     to: string;
+    usedSpace: number;
   } | null;
 };
 

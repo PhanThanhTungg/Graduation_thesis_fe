@@ -261,6 +261,7 @@ export function LessonDialog({
         setValue("videoId", videoId);
         setValue("embedUrl", embedUrl);
         setValue("duration", duration);
+        setValue("videoSize", selectedFile.size);
 
         showToast("success", "Video uploaded successfully");
         setSelectedFile(null);
