@@ -1,13 +1,21 @@
-"use client"
+"use client";
 
 import { AdminCourseItemType } from "@/schema/course.schema";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Star, Calendar, DollarSign, BookOpen, Trash2 } from "lucide-react";
+import {
+  Users,
+  Star,
+  Calendar,
+  DollarSign,
+  BookOpen,
+  Trash2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice } from "@/lib/utils";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 
 interface CourseCardAdminProps {
   course: AdminCourseItemType;
@@ -17,17 +25,23 @@ interface CourseCardAdminProps {
 
 function formatDate(input: string | number | Date): string {
   const targetDate = input instanceof Date ? input : new Date(input);
-  return targetDate.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  return targetDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 }
 
-export function CourseCardAdmin({ course, onDelete, isDeleting = false }: CourseCardAdminProps) {
+export function CourseCardAdmin({
+  course,
+  onDelete,
+  isDeleting = false,
+}: CourseCardAdminProps) {
+  const { hasPermission } = useAdminPermissions();
+  const canDelete = hasPermission("course", "delete");
+
   // Check if course is deleted - handle both null and undefined
   const isDeleted = course.deletedAt !== null && course.deletedAt !== undefined;
-  
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,9 +53,11 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
 
   return (
     <Link href={`/admin/course/${course.id}`}>
-      <Card className={`group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-border hover:border-violet/40 ${
-        isDeleted ? "opacity-60 bg-muted/30" : ""
-      }`}>
+      <Card
+        className={`group overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer border-border hover:border-violet/40 ${
+          isDeleted ? "opacity-60 bg-muted/30" : ""
+        }`}
+      >
         <div className="flex flex-col md:flex-row items-stretch gap-0 h-full">
           {/* Thumbnail - Left Side / Top on mobile */}
           <div className="relative w-full md:w-64 h-48 md:h-auto flex-shrink-0 overflow-hidden bg-gradient-to-br from-violet/10 to-mint/10">
@@ -61,7 +77,7 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
                 </span>
               </div>
             )}
-            
+
             {/* Status Badges */}
             <div className="absolute top-3 left-3 flex flex-col gap-2">
               {isDeleted ? (
@@ -69,10 +85,10 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
                   ✕ Deleted
                 </Badge>
               ) : (
-                <Badge 
+                <Badge
                   className={`${
-                    course.isPublished 
-                      ? "bg-green/90 hover:bg-green text-white" 
+                    course.isPublished
+                      ? "bg-green/90 hover:bg-green text-white"
                       : "bg-orange/90 hover:bg-orange text-white"
                   }`}
                 >
@@ -82,7 +98,7 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
             </div>
 
             {/* Delete Button - Show only if not deleted */}
-            {!isDeleted && onDelete && (
+            {!isDeleted && onDelete && canDelete && (
               <div className="absolute top-3 right-3">
                 <Button
                   variant="destructive"
@@ -106,9 +122,11 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
             {/* Header: Title + Category */}
             <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
               <div className="flex-1 w-full">
-                <h3 className={`font-bold text-lg md:text-xl line-clamp-2 group-hover:text-violet transition-colors duration-300 mb-2 ${
-                  isDeleted ? "line-through text-muted-foreground" : ""
-                }`}>
+                <h3
+                  className={`font-bold text-lg md:text-xl line-clamp-2 group-hover:text-violet transition-colors duration-300 mb-2 ${
+                    isDeleted ? "line-through text-muted-foreground" : ""
+                  }`}
+                >
                   {course.title}
                 </h3>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -125,16 +143,18 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
                   )}
                 </div>
               </div>
-              
+
               {/* Price - Large Display */}
               <div className="text-left sm:text-right">
                 <div className="flex items-center gap-1 text-muted-foreground text-xs mb-1">
                   <DollarSign className="w-3 h-3" />
                   <span>Price</span>
                 </div>
-                <div className={`text-xl md:text-2xl font-bold ${
-                  isDeleted ? "text-muted-foreground" : "text-green"
-                }`}>
+                <div
+                  className={`text-xl md:text-2xl font-bold ${
+                    isDeleted ? "text-muted-foreground" : "text-green"
+                  }`}
+                >
                   {formatPrice(course.price)}
                 </div>
               </div>
@@ -147,7 +167,9 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Instructor</div>
-                <div className="text-sm font-medium text-foreground">{course.teacher.name}</div>
+                <div className="text-sm font-medium text-foreground">
+                  {course.teacher.name}
+                </div>
               </div>
             </div>
 
@@ -160,8 +182,12 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
                     <Users className="w-4 h-4 text-green" />
                   </div>
                   <div>
-                    <div className="text-xs text-muted-foreground">Students</div>
-                    <div className="text-sm font-semibold text-foreground">{course.countStudent}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Students
+                    </div>
+                    <div className="text-sm font-semibold text-foreground">
+                      {course.countStudent}
+                    </div>
                   </div>
                 </div>
 
@@ -172,7 +198,9 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
                   </div>
                   <div>
                     <div className="text-xs text-muted-foreground">Rating</div>
-                    <div className="text-sm font-semibold text-foreground">N/A</div>
+                    <div className="text-sm font-semibold text-foreground">
+                      N/A
+                    </div>
                   </div>
                 </div>
               </div>
@@ -182,7 +210,9 @@ export function CourseCardAdmin({ course, onDelete, isDeleting = false }: Course
                 <Calendar className="w-3.5 h-3.5" />
                 <div>
                   <span className="text-xs hidden sm:inline">Created: </span>
-                  <span className="font-medium">{formatDate(course.createdAt)}</span>
+                  <span className="font-medium">
+                    {formatDate(course.createdAt)}
+                  </span>
                 </div>
               </div>
             </div>

@@ -1,45 +1,154 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { IconPlus } from "@tabler/icons-react";
-import { AdminsDataTable } from "./listAdmins";
-import { CreateAdminModal } from "./create-admin-modal";
-import { getAdmins, AdminListItem } from "@/lib/admin-admins-mock-data";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { getAllAdminAccounts } from "@/service/admin/admin-account.service";
+import { getAdminRolesWithPermissions } from "@/service/admin/role-permission.service";
+import { AdminsDataTable } from "./data-table";
+import { AdminDialog } from "./admin-dialog";
+import { DeleteAdminDialog } from "./delete-admin-dialog";
+import { AdminAccount } from "@/schema/admin.schema";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
+import { AlertCircle } from "lucide-react";
 
-export default function AdminsPage() {
-  const [admins, setAdmins] = useState<AdminListItem[]>(() => getAdmins());
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface AdminRole {
+  id: string;
+  title: string;
+}
+
+export default function AdminAccountPage() {
+  const { hasPermission, isLoading: isCheckingPermission } =
+    useAdminPermissions();
+  const [data, setData] = useState<AdminAccount[]>([]);
+  const [roles, setRoles] = useState<AdminRole[]>([]);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
-    total: 4,
-    totalPages: 1,
+    total: 0,
+    totalPages: 0,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handlePaginationChange = useCallback((page: number, limit: number) => {
-    console.log("Pagination changed:", { page, limit });
-  }, []);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState<AdminAccount | null>(null);
 
-  const handleSearchChange = useCallback((search: string) => {
-    console.log("Search changed:", search);
-  }, []);
+  const hasAccess = hasPermission("admin", "view");
 
-  const handleSortChange = useCallback(
-    (sortField: string, sortOrder: "asc" | "desc") => {
-      console.log("Sort changed:", { sortField, sortOrder });
-    },
-    [],
-  );
+  const fetchData = async () => {
+    if (!hasAccess) return; // Don't fetch if no access
 
-  const handleCreateAdmin = useCallback((newAdmin: AdminListItem) => {
-    setAdmins((prev) => [newAdmin, ...prev]);
-    setPagination((prev) => ({
-      ...prev,
-      total: prev.total + 1,
-      totalPages: Math.ceil((prev.total + 1) / prev.limit),
+    setIsLoading(true);
+    const response = await getAllAdminAccounts({
+      page: pagination.page,
+      limit: pagination.limit,
+      keySearch: searchQuery || undefined,
+      sortField,
+      sortOrder,
+    });
+
+    setData(response.items);
+    setPagination(response.pagination);
+    setIsLoading(false);
+  };
+
+  const fetchRoles = async () => {
+    if (!hasAccess) return; // Don't fetch if no access
+
+    const rolesData = await getAdminRolesWithPermissions();
+    const formattedRoles = rolesData.map((role) => ({
+      id: role.id,
+      title: role.title || "",
     }));
-  }, []);
+    setRoles(formattedRoles);
+  };
+
+  useEffect(() => {
+    if (!isCheckingPermission && hasAccess) {
+      fetchRoles();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCheckingPermission, hasAccess]);
+
+  useEffect(() => {
+    if (!isCheckingPermission && hasAccess) {
+      fetchData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    pagination.page,
+    pagination.limit,
+    searchQuery,
+    sortField,
+    sortOrder,
+    isCheckingPermission,
+    hasAccess,
+  ]);
+
+  const handlePaginationChange = (page: number, limit: number) => {
+    setPagination((prev) => ({ ...prev, page, limit }));
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handleSortChange = (field: string, order: "asc" | "desc") => {
+    setSortField(field);
+    setSortOrder(order);
+  };
+
+  const handleCreateClick = () => {
+    setSelectedAdmin(null);
+    setCreateDialogOpen(true);
+  };
+
+  const handleEditClick = (admin: AdminAccount) => {
+    setSelectedAdmin(admin);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (admin: AdminAccount) => {
+    setSelectedAdmin(admin);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSuccess = () => {
+    fetchData();
+  };
+
+  // Show loading while checking permission
+  if (isCheckingPermission) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if no permission
+  if (!hasAccess) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] p-8">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold">Access Denied</h3>
+          <p className="text-muted-foreground">
+            You do not have permission to view this content.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -50,22 +159,44 @@ export default function AdminsPage() {
             Manage all administrators in the system
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <IconPlus className="mr-2 h-4 w-4" />
-          Create New Admin
-        </Button>
       </div>
+
       <AdminsDataTable
-        data={admins}
+        data={data}
+        roles={roles}
         pagination={pagination}
         onPaginationChange={handlePaginationChange}
         onSearchChange={handleSearchChange}
         onSortChange={handleSortChange}
+        onCreateClick={handleCreateClick}
+        onEditClick={handleEditClick}
+        onDeleteClick={handleDeleteClick}
+        isLoading={isLoading}
       />
-      <CreateAdminModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onSuccess={handleCreateAdmin}
+
+      <AdminDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        roles={roles}
+        mode="create"
+        onSuccess={handleSuccess}
+      />
+
+      <AdminDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        admin={selectedAdmin || undefined}
+        roles={roles}
+        mode="edit"
+        onSuccess={handleSuccess}
+      />
+
+      <DeleteAdminDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        adminId={selectedAdmin?.id || ""}
+        adminName={selectedAdmin?.fullName || ""}
+        onSuccess={handleSuccess}
       />
     </div>
   );

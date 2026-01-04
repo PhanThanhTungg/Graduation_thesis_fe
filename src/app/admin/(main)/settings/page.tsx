@@ -24,8 +24,12 @@ import {
 } from "@/lib/time-converter";
 import { WebSettingsForm } from "@/components/admin/web-settings-form";
 import { SprSettingsForm } from "@/components/admin/spr-settings-form";
+import { useAdminPermissions } from "@/hooks/useAdminPermissions";
+import { AlertCircle } from "lucide-react";
 
 export default function AdminSettingsPage() {
+  const { hasPermission, isLoading: isCheckingPermission } =
+    useAdminPermissions();
   const [settings, setSettings] = useState<AdminSettingType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -38,6 +42,8 @@ export default function AdminSettingsPage() {
     value: number;
     unit: TimeUnit;
   }>({ value: 0, unit: "seconds" });
+
+  const hasAccess = hasPermission("setting", "view");
 
   const form = useForm<UpdateAdminSettingType>({
     resolver: zodResolver(UpdateAdminSettingSchema),
@@ -58,6 +64,8 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     const fetchSettings = async () => {
+      if (!hasAccess) return;
+
       try {
         setIsLoading(true);
         const data = await getAdminSettings();
@@ -121,8 +129,12 @@ export default function AdminSettingsPage() {
       }
     };
 
-    fetchSettings();
-  }, [form]);
+    if (!isCheckingPermission && hasAccess) {
+      fetchSettings();
+    } else if (!isCheckingPermission && !hasAccess) {
+      setIsLoading(false);
+    }
+  }, [form, isCheckingPermission, hasAccess]);
 
   const onSubmit = async (data: UpdateAdminSettingType) => {
     try {
@@ -181,12 +193,28 @@ export default function AdminSettingsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isCheckingPermission || isLoading) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-2">Loading...</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] p-8">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold">Access Denied</h3>
+          <p className="text-muted-foreground">
+            You do not have permission to view this content.
+          </p>
         </div>
       </div>
     );

@@ -1,13 +1,16 @@
 export interface AdminPermission {
   id: string;
   object:
-    | "user_management"
-    | "course_management"
-    | "category_management"
-    | "admin_management"
-    | "finance"
-    | "statistics";
-  action: "view" | "edit";
+    | "dashboard"
+    | "course"
+    | "category"
+    | "transaction"
+    | "payment"
+    | "user"
+    | "permission"
+    | "admin"
+    | "setting";
+  action: "view" | "edit" | "delete" | "create";
 }
 
 export interface AdminRoleWithPermissions {
@@ -23,13 +26,16 @@ export interface AdminRoleWithPermissions {
 export interface PermissionItem {
   id: string;
   object:
-    | "user_management"
-    | "course_management"
-    | "category_management"
-    | "admin_management"
-    | "finance"
-    | "statistics";
-  action: "view" | "edit";
+    | "dashboard"
+    | "course"
+    | "category"
+    | "transaction"
+    | "payment"
+    | "user"
+    | "permission"
+    | "admin"
+    | "setting";
+  action: "view" | "edit" | "delete" | "create";
 }
 
 export const getAdminRoles = (): AdminRoleWithPermissions[] => {
@@ -43,7 +49,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "1",
           adminPermission: {
             id: "1",
-            object: "user_management",
+            object: "user",
             action: "view",
           },
         },
@@ -51,7 +57,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "2",
           adminPermission: {
             id: "2",
-            object: "user_management",
+            object: "user",
             action: "edit",
           },
         },
@@ -59,7 +65,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "3",
           adminPermission: {
             id: "3",
-            object: "course_management",
+            object: "course",
             action: "view",
           },
         },
@@ -67,7 +73,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "4",
           adminPermission: {
             id: "4",
-            object: "course_management",
+            object: "course",
             action: "edit",
           },
         },
@@ -75,7 +81,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "5",
           adminPermission: {
             id: "5",
-            object: "category_management",
+            object: "category",
             action: "view",
           },
         },
@@ -83,7 +89,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "6",
           adminPermission: {
             id: "6",
-            object: "category_management",
+            object: "category",
             action: "edit",
           },
         },
@@ -91,7 +97,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "7",
           adminPermission: {
             id: "7",
-            object: "admin_management",
+            object: "admin",
             action: "view",
           },
         },
@@ -99,7 +105,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "8",
           adminPermission: {
             id: "8",
-            object: "admin_management",
+            object: "admin",
             action: "edit",
           },
         },
@@ -107,7 +113,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "9",
           adminPermission: {
             id: "9",
-            object: "finance",
+            object: "payment",
             action: "view",
           },
         },
@@ -115,7 +121,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "10",
           adminPermission: {
             id: "10",
-            object: "finance",
+            object: "payment",
             action: "edit",
           },
         },
@@ -123,7 +129,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "11",
           adminPermission: {
             id: "11",
-            object: "statistics",
+            object: "dashboard",
             action: "view",
           },
         },
@@ -131,7 +137,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "12",
           adminPermission: {
             id: "12",
-            object: "statistics",
+            object: "dashboard",
             action: "edit",
           },
         },
@@ -146,7 +152,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "3",
           adminPermission: {
             id: "3",
-            object: "course_management",
+            object: "course",
             action: "view",
           },
         },
@@ -154,7 +160,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "4",
           adminPermission: {
             id: "4",
-            object: "course_management",
+            object: "course",
             action: "edit",
           },
         },
@@ -162,7 +168,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "5",
           adminPermission: {
             id: "5",
-            object: "category_management",
+            object: "category",
             action: "view",
           },
         },
@@ -170,7 +176,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "6",
           adminPermission: {
             id: "6",
-            object: "category_management",
+            object: "category",
             action: "edit",
           },
         },
@@ -185,7 +191,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "1",
           adminPermission: {
             id: "1",
-            object: "user_management",
+            object: "user",
             action: "view",
           },
         },
@@ -193,7 +199,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "2",
           adminPermission: {
             id: "2",
-            object: "user_management",
+            object: "user",
             action: "edit",
           },
         },
@@ -208,7 +214,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "1",
           adminPermission: {
             id: "1",
-            object: "user_management",
+            object: "user",
             action: "view",
           },
         },
@@ -216,7 +222,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "3",
           adminPermission: {
             id: "3",
-            object: "course_management",
+            object: "course",
             action: "view",
           },
         },
@@ -224,7 +230,7 @@ export const getAdminRoles = (): AdminRoleWithPermissions[] => {
           adminPermissionId: "5",
           adminPermission: {
             id: "5",
-            object: "category_management",
+            object: "category",
             action: "view",
           },
         },
