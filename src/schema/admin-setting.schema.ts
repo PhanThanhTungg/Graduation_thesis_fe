@@ -13,6 +13,8 @@ export const AdminSettingSchema = z.object({
   iniInterval: z.number(),
   iniEasyInterval: z.number(),
   leechThreshold: z.number(),
+  feeUploadPer100Mb: z.number(),
+  percentCommission: z.number(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
 });

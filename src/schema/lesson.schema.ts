@@ -70,6 +70,7 @@ export const CreateLessonBodySchema = z
     videoId: z.string().optional(),
     embedUrl: z.union([z.string(), z.instanceof(File)]).optional(),
     duration: z.number().optional(),
+    videoSize: z.number().optional(),
     isPreview: z.boolean().default(false).optional(),
     isGenQues: z.boolean().default(false).optional(),
     isGenQuiz: z.boolean().default(false).optional(),

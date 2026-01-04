@@ -49,14 +49,9 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Lessons",
-      url: "/teacher/lessons",
-      icon: IconFolder,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
+      title: "Finance",
+      url: "/teacher/finance",
+      icon: IconWallet,
     },
     {
       title: "Students",
@@ -67,6 +62,11 @@ const data = {
       title: "Vouchers",
       url: "/teacher/vouchers",
       icon: IconWallet,
+    },
+    {
+      title: "Disk",
+      url: "/teacher/disk",
+      icon: IconFolder,
     },
   ],
   navSecondary: [
