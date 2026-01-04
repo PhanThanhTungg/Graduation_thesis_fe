@@ -34,6 +34,7 @@ import {
 } from "@/lib/admin-permissions-mock-data";
 import { RoleDialog } from "./role-dialog";
 import { DeleteRoleDialog } from "./delete-role-dialog";
+import { PermissionGuard } from "@/components/admin/PermissionGuard";
 
 type PermissionsDataTableProps = {
   data: AdminRoleWithPermissions[];
@@ -148,18 +149,22 @@ export function PermissionsDataTable({
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleEdit(role)}>
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => handleDelete(role)}
-                  className="focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+                <PermissionGuard object="permission" action="edit">
+                  <DropdownMenuItem onClick={() => handleEdit(role)}>
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                </PermissionGuard>
+                <PermissionGuard object="permission" action="delete">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => handleDelete(role)}
+                    className="focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </PermissionGuard>
               </DropdownMenuContent>
             </DropdownMenu>
           );
@@ -178,10 +183,12 @@ export function PermissionsDataTable({
   return (
     <div className="w-full space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Role
-        </Button>
+        <PermissionGuard object="permission" action="create">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Role
+          </Button>
+        </PermissionGuard>
       </div>
 
       <div className="rounded-lg border">

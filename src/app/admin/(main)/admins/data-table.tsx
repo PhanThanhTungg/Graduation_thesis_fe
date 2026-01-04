@@ -52,6 +52,7 @@ import {
 import { MoreHorizontal, Pencil, Trash2, Plus } from "lucide-react";
 import { AdminAccount } from "@/schema/admin.schema";
 import { format } from "date-fns";
+import { PermissionGuard } from "@/components/admin/PermissionGuard";
 
 interface AdminRole {
   id: string;
@@ -177,18 +178,22 @@ export function AdminsDataTable({
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onEditClick(admin)}>
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onDeleteClick(admin)}
-                  className="focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
+                <PermissionGuard object="admin" action="edit">
+                  <DropdownMenuItem onClick={() => onEditClick(admin)}>
+                    <Pencil className="h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                </PermissionGuard>
+                <PermissionGuard object="admin" action="delete">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onDeleteClick(admin)}
+                    className="focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </PermissionGuard>
               </DropdownMenuContent>
             </DropdownMenu>
           );
@@ -285,10 +290,12 @@ export function AdminsDataTable({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={onCreateClick} size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Admin
-          </Button>
+          <PermissionGuard object="admin" action="create">
+            <Button onClick={onCreateClick} size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Admin
+            </Button>
+          </PermissionGuard>
         </div>
       </div>
 
