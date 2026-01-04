@@ -63,6 +63,11 @@ const data = {
       url: "/teacher/vouchers",
       icon: IconWallet,
     },
+    {
+      title: "Disk",
+      url: "/teacher/disk",
+      icon: IconFolder,
+    },
   ],
   navSecondary: [
     {

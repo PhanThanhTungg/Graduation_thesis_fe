@@ -124,6 +124,8 @@ export const getTransactions = async (params?: {
   limit?: number;
   type?: "deposit" | "withdrawal";
   status?: "pending" | "processing" | "completed" | "cancelled";
+  sortField?: "amount" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }) => {
   const response = await get<TransactionResponse>(
     "/api/finance/client/transactions",
@@ -272,5 +274,103 @@ export const captureDeposit = async (
     "payload" in response.payload && "message" in response.payload
       ? response.payload.message
       : "Failed to capture deposit",
+  );
+};
+
+type PurchaseDiskSpaceResponse = {
+  message: string;
+  data: {
+    totalPrice: number;
+    balanceAfter: number;
+  };
+};
+
+export const purchaseDiskSpace = async (data: {
+  value: number;
+  months: number;
+}) => {
+  const response = await post<PurchaseDiskSpaceResponse>(
+    "/api/disk/client/purchase",
+    data,
+  );
+
+  if (response.status === 200 || response.status === 201) {
+    return (response.payload as PurchaseDiskSpaceResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to purchase disk space",
+  );
+};
+
+type DiskSpaceResponse = {
+  message: string;
+  data: {
+    id: string;
+    userId: string;
+    value: number;
+    from: string;
+    to: string;
+  } | null;
+};
+
+export const getDiskSpace = async () => {
+  const response = await get<DiskSpaceResponse>(
+    "/api/disk/client/space",
+    undefined,
+  );
+
+  if (response.status === 200) {
+    return (response.payload as DiskSpaceResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to get disk space",
+  );
+};
+
+type DiskPurchaseHistoryResponse = {
+  message: string;
+  data: {
+    purchases: {
+      id: string;
+      value: number;
+      months: number;
+      pricePer100Mb: number;
+      totalPrice: number;
+      createdAt: string;
+      dateFrom: string;
+      dateTo: string;
+    }[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+};
+
+export const getDiskPurchaseHistory = async (params?: {
+  page?: number;
+  limit?: number;
+}) => {
+  const response = await get<DiskPurchaseHistoryResponse>(
+    "/api/disk/client/purchase-history",
+    params,
+  );
+
+  if (response.status === 200) {
+    return (response.payload as DiskPurchaseHistoryResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to get disk purchase history",
   );
 };
