@@ -1,9 +1,5 @@
 import { Metadata } from "next";
-import {
-  getWallet,
-  getTransactions,
-  getWithdrawals,
-} from "@/service/finance.service";
+import { getWallet, getTransactions } from "@/service/finance.service";
 import { formatPrice } from "@/lib/utils";
 import { formatDate } from "@/lib/helpers";
 import {
@@ -21,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { StudentOrders } from "./_components/student-orders";
 
 export const metadata: Metadata = {
   title: "Finance - Teacher Space",
@@ -30,12 +27,10 @@ export const metadata: Metadata = {
 export default async function FinancePage() {
   let wallet;
   let transactions;
-  let withdrawals;
 
   try {
     wallet = await getWallet();
     transactions = await getTransactions({ limit: 10 });
-    withdrawals = await getWithdrawals({ limit: 10 });
   } catch (error) {
     console.error("Failed to fetch finance data:", error);
   }
@@ -43,6 +38,7 @@ export default async function FinancePage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
+      case "success":
         return "text-green";
       case "processing":
         return "text-yellow";
@@ -61,8 +57,8 @@ export default async function FinancePage() {
   };
 
   return (
-    <div className="container-lg py-12">
-      <section className="mb-8">
+    <div className="container-sm py-12">
+      <section className="mb-8 section-title">
         <h1 className="font-heading font-semibold text-3xl text-foreground mb-2">
           Finance Management
         </h1>
@@ -140,7 +136,9 @@ export default async function FinancePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-8">
+        <StudentOrders />
+
         <Card>
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
@@ -186,47 +184,6 @@ export default async function FinancePage() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 No transactions found
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Withdrawal Requests</CardTitle>
-            <CardDescription>Your withdrawal request history</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {withdrawals && withdrawals.withdrawals.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Bank</TableHead>
-                    <TableHead>Date</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {withdrawals.withdrawals.map((withdrawal) => (
-                    <TableRow key={withdrawal.id}>
-                      <TableCell className="font-medium">
-                        {formatPrice(withdrawal.amount)}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(withdrawal.status)}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {withdrawal.bankName || "N/A"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatDate(withdrawal.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No withdrawal requests found
               </div>
             )}
           </CardContent>

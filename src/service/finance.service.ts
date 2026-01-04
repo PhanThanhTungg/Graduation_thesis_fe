@@ -68,6 +68,40 @@ type WithdrawalResponse = {
   };
 };
 
+type OrderResponse = {
+  message: string;
+  data: {
+    orders: {
+      id: string;
+      Order_id: string;
+      userId: string;
+      courseId: string;
+      discountAmount: number;
+      finalPrice: number;
+      status: "processing" | "success" | "cancelled";
+      paymentMethod: "paypal";
+      createdAt: string;
+      completedAt: string | null;
+      user: {
+        id: string;
+        fullName: string;
+        email: string;
+      };
+      course: {
+        id: string;
+        title: string;
+        slug: string;
+      };
+    }[];
+    pagination?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+};
+
 export const getWallet = async () => {
   const response = await get<WalletResponse>(
     "/api/finance/client/wallet",
@@ -125,5 +159,29 @@ export const getWithdrawals = async (params?: {
     "payload" in response.payload && "message" in response.payload
       ? response.payload.message
       : "Failed to get withdrawals",
+  );
+};
+
+export const getOrders = async (params?: {
+  page?: number;
+  limit?: number;
+  status?: "processing" | "success" | "cancelled";
+  courseId?: string;
+  sortField?: "finalPrice" | "createdAt";
+  sortOrder?: "asc" | "desc";
+}) => {
+  const response = await get<OrderResponse>(
+    "/api/finance/client/orders",
+    params,
+  );
+
+  if (response.status === 200) {
+    return (response.payload as OrderResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to get orders",
   );
 };

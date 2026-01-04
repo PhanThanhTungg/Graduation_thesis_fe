@@ -79,7 +79,7 @@ export const checkPurchase = async (courseId: string) => {
     "/api/payment/client/check-purchase",
     { courseId },
   );
-
+  console.log("response", response);
   if (response.status === 200) {
     return (response.payload as CheckPurchaseResponse).data;
   }
