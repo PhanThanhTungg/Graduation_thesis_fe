@@ -1,11 +1,14 @@
-"use client";
-
-import { useState } from "react";
 import { PermissionsDataTable } from "./listPermissions";
-import { getAdminRoles } from "@/lib/admin-permissions-mock-data";
+import {
+  getAdminRolesWithPermissions,
+  getAllPermissions,
+} from "@/service/admin/role-permission.service";
 
-export default function PermissionsPage() {
-  const [roles] = useState(() => getAdminRoles());
+export default async function PermissionsPage() {
+  const [roles, permissions] = await Promise.all([
+    getAdminRolesWithPermissions(),
+    getAllPermissions(),
+  ]);
 
   return (
     <div className="container mx-auto py-6">
@@ -15,7 +18,7 @@ export default function PermissionsPage() {
           Manage admin roles and their permissions
         </p>
       </div>
-      <PermissionsDataTable data={roles} />
+      <PermissionsDataTable data={roles} permissions={permissions} />
     </div>
   );
 }

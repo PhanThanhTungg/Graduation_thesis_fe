@@ -46,14 +46,12 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/admin/dashboard", icon: Home, label: "Dashboard" },
       { href: "/admin/course", icon: BarChart2, label: "Courses" },
       { href: "/admin/category", icon: Building2, label: "Category" },
-      { href: "#", icon: Folder, label: "Projects" },
     ],
   },
   {
     title: "Finance",
     items: [
       { href: "/admin/transactions", icon: Wallet, label: "Transactions" },
-      { href: "#", icon: Receipt, label: "Invoices" },
       { href: "/admin/payments", icon: CreditCard, label: "Payments" },
     ],
   },
@@ -63,8 +61,6 @@ const NAV_SECTIONS: NavSection[] = [
       { href: "/admin/user", icon: Users2, label: "Users" },
       { href: "/admin/permissions", icon: Shield, label: "Permissions" },
       { href: "/admin/admins", icon: Users2, label: "Admins" },
-      { href: "#", icon: MessagesSquare, label: "Chat" },
-      { href: "#", icon: Video, label: "Meetings" },
     ],
   },
 ];
@@ -134,7 +130,7 @@ export default function Sidebar() {
     <>
       <button
         type="button"
-        className="lg:hidden fixed top-4 left-4 z-[70] p-2 rounded-lg bg-white dark:bg-[#0F0F12] shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-1 p-2 rounded-lg bg-white dark:bg-[#0F0F12] shadow-md"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         aria-label="Toggle menu"
       >
@@ -143,7 +139,7 @@ export default function Sidebar() {
 
       <nav
         className={cn(
-          "fixed inset-y-0 left-0 z-[70] w-64 bg-white dark:bg-[#0F0F12] transform transition-transform duration-200 ease-in-out",
+          "fixed inset-y-0 left-0 z-1 w-64 bg-white dark:bg-[#0F0F12] transform transition-transform duration-200 ease-in-out",
           "lg:translate-x-0 lg:fixed lg:w-64 border-r border-gray-200 dark:border-[#1F1F23]",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         )}

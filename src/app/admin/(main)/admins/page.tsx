@@ -1,45 +1,102 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { IconPlus } from "@tabler/icons-react";
-import { AdminsDataTable } from "./listAdmins";
-import { CreateAdminModal } from "./create-admin-modal";
-import { getAdmins, AdminListItem } from "@/lib/admin-admins-mock-data";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { getAllAdminAccounts } from "@/service/admin/admin-account.service";
+import { getAdminRolesWithPermissions } from "@/service/admin/role-permission.service";
+import { AdminsDataTable } from "./data-table";
+import { AdminDialog } from "./admin-dialog";
+import { DeleteAdminDialog } from "./delete-admin-dialog";
+import { AdminAccount } from "@/schema/admin.schema";
 
-export default function AdminsPage() {
-  const [admins, setAdmins] = useState<AdminListItem[]>(() => getAdmins());
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface AdminRole {
+  id: string;
+  title: string;
+}
+
+export default function AdminAccountPage() {
+  const [data, setData] = useState<AdminAccount[]>([]);
+  const [roles, setRoles] = useState<AdminRole[]>([]);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
-    total: 4,
-    totalPages: 1,
+    total: 0,
+    totalPages: 0,
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handlePaginationChange = useCallback((page: number, limit: number) => {
-    console.log("Pagination changed:", { page, limit });
-  }, []);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState<AdminAccount | null>(null);
 
-  const handleSearchChange = useCallback((search: string) => {
-    console.log("Search changed:", search);
-  }, []);
+  const fetchData = async () => {
+    setIsLoading(true);
+    const response = await getAllAdminAccounts({
+      page: pagination.page,
+      limit: pagination.limit,
+      keySearch: searchQuery || undefined,
+      sortField,
+      sortOrder,
+    });
 
-  const handleSortChange = useCallback(
-    (sortField: string, sortOrder: "asc" | "desc") => {
-      console.log("Sort changed:", { sortField, sortOrder });
-    },
-    [],
-  );
+    setData(response.items);
+    setPagination(response.pagination);
+    setIsLoading(false);
+  };
 
-  const handleCreateAdmin = useCallback((newAdmin: AdminListItem) => {
-    setAdmins((prev) => [newAdmin, ...prev]);
-    setPagination((prev) => ({
-      ...prev,
-      total: prev.total + 1,
-      totalPages: Math.ceil((prev.total + 1) / prev.limit),
+  const fetchRoles = async () => {
+    const rolesData = await getAdminRolesWithPermissions();
+    const formattedRoles = rolesData.map((role) => ({
+      id: role.id,
+      title: role.title || "",
     }));
+    setRoles(formattedRoles);
+  };
+
+  useEffect(() => {
+    fetchRoles();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.limit, searchQuery, sortField, sortOrder]);
+
+  const handlePaginationChange = (page: number, limit: number) => {
+    setPagination((prev) => ({ ...prev, page, limit }));
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handleSortChange = (field: string, order: "asc" | "desc") => {
+    setSortField(field);
+    setSortOrder(order);
+  };
+
+  const handleCreateClick = () => {
+    setSelectedAdmin(null);
+    setCreateDialogOpen(true);
+  };
+
+  const handleEditClick = (admin: AdminAccount) => {
+    setSelectedAdmin(admin);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (admin: AdminAccount) => {
+    setSelectedAdmin(admin);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSuccess = () => {
+    fetchData();
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -50,22 +107,44 @@ export default function AdminsPage() {
             Manage all administrators in the system
           </p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <IconPlus className="mr-2 h-4 w-4" />
-          Create New Admin
-        </Button>
       </div>
+
       <AdminsDataTable
-        data={admins}
+        data={data}
+        roles={roles}
         pagination={pagination}
         onPaginationChange={handlePaginationChange}
         onSearchChange={handleSearchChange}
         onSortChange={handleSortChange}
+        onCreateClick={handleCreateClick}
+        onEditClick={handleEditClick}
+        onDeleteClick={handleDeleteClick}
+        isLoading={isLoading}
       />
-      <CreateAdminModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        onSuccess={handleCreateAdmin}
+
+      <AdminDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        roles={roles}
+        mode="create"
+        onSuccess={handleSuccess}
+      />
+
+      <AdminDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        admin={selectedAdmin || undefined}
+        roles={roles}
+        mode="edit"
+        onSuccess={handleSuccess}
+      />
+
+      <DeleteAdminDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        adminId={selectedAdmin?.id || ""}
+        adminName={selectedAdmin?.fullName || ""}
+        onSuccess={handleSuccess}
       />
     </div>
   );

@@ -16,17 +16,50 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Pencil, Trash2, Plus } from "lucide-react";
 import {
   AdminRoleWithPermissions,
+  AdminPermission,
   formatPermissionObject,
   formatPermissionAction,
 } from "@/lib/admin-permissions-mock-data";
+import { RoleDialog } from "./role-dialog";
+import { DeleteRoleDialog } from "./delete-role-dialog";
 
 type PermissionsDataTableProps = {
   data: AdminRoleWithPermissions[];
+  permissions: AdminPermission[];
 };
 
-export function PermissionsDataTable({ data }: PermissionsDataTableProps) {
+export function PermissionsDataTable({
+  data,
+  permissions,
+}: PermissionsDataTableProps) {
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedRole, setSelectedRole] =
+    React.useState<AdminRoleWithPermissions | null>(null);
+
+  const handleEdit = (role: AdminRoleWithPermissions) => {
+    setSelectedRole(role);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (role: AdminRoleWithPermissions) => {
+    setSelectedRole(role);
+    setDeleteDialogOpen(true);
+  };
+
   const columns: ColumnDef<AdminRoleWithPermissions>[] = React.useMemo(
     () => [
       {
@@ -65,30 +98,30 @@ export function PermissionsDataTable({ data }: PermissionsDataTableProps) {
           });
 
           return (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 max-w-md">
               {Array.from(permissionMap.entries()).map(([object, actions]) => (
-                <div key={object} className="flex flex-col gap-1">
-                  <Badge variant="outline" className="w-fit">
+                <Badge
+                  key={object}
+                  variant="outline"
+                  className="px-2 py-1 text-xs font-normal"
+                >
+                  <span className="font-semibold">
                     {formatPermissionObject(object)}
-                  </Badge>
-                  <div className="flex gap-1 ml-2">
-                    {Array.from(actions).map((action) => (
-                      <Badge
-                        key={`${object}-${action}`}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {formatPermissionAction(action)}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                  </span>
+                  <span className="mx-1.5 text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    {Array.from(actions)
+                      .map((action) => formatPermissionAction(action))
+                      .join(", ")}
+                  </span>
+                </Badge>
               ))}
             </div>
           );
         },
       },
       {
+        id: "permissionsCount",
         accessorKey: "permissions",
         header: "Total Permissions",
         cell: ({ row }) => {
@@ -96,6 +129,39 @@ export function PermissionsDataTable({ data }: PermissionsDataTableProps) {
             <span className="text-sm font-medium">
               {row.original.permissions.length} permissions
             </span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => {
+          const role = row.original;
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleEdit(role)}>
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => handleDelete(role)}
+                  className="focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           );
         },
       },
@@ -111,6 +177,13 @@ export function PermissionsDataTable({ data }: PermissionsDataTableProps) {
 
   return (
     <div className="w-full space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={() => setCreateDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Role
+        </Button>
+      </div>
+
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
@@ -161,6 +234,30 @@ export function PermissionsDataTable({ data }: PermissionsDataTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      <RoleDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        permissions={permissions}
+        mode="create"
+      />
+
+      <RoleDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        role={selectedRole || undefined}
+        permissions={permissions}
+        mode="edit"
+      />
+
+      {selectedRole && (
+        <DeleteRoleDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          roleId={selectedRole.id}
+          roleTitle={selectedRole.title || ""}
+        />
+      )}
     </div>
   );
 }
