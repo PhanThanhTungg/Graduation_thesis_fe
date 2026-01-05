@@ -21,7 +21,7 @@ type TransactionResponse = {
     transactions: {
       id: string;
       walletId: string;
-      type: "deposit" | "withdrawal";
+      type: "deposit" | "withdrawal" | "order" | "disk";
       amount: number;
       balanceBefore: number;
       balanceAfter: number;
@@ -122,7 +122,7 @@ export const getWallet = async () => {
 export const getTransactions = async (params?: {
   page?: number;
   limit?: number;
-  type?: "deposit" | "withdrawal";
+  type?: "deposit" | "withdrawal" | "order" | "disk";
   status?: "pending" | "processing" | "completed" | "cancelled";
   sortField?: "amount" | "createdAt";
   sortOrder?: "asc" | "desc";

@@ -48,8 +48,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { PaymentListItem, PaymentStatus } from "@/lib/admin-payments-mock-data";
-import { PaymentDetailModal } from "./payment-detail-modal";
+import {
+  PaymentListItem,
+  PaymentStatus,
+} from "@/service/admin/finance.service";
 
 type PaymentsDataTableProps = {
   data: PaymentListItem[];
@@ -101,9 +103,6 @@ export function PaymentsDataTable({
   const [statusFilter, setStatusFilter] = React.useState<PaymentStatus | "all">(
     "all",
   );
-  const [selectedPayment, setSelectedPayment] =
-    React.useState<PaymentListItem | null>(null);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const columns: ColumnDef<PaymentListItem>[] = React.useMemo(
     () => [
@@ -359,11 +358,6 @@ export function PaymentsDataTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer hover:bg-secondary/50"
-                  onClick={() => {
-                    setSelectedPayment(row.original);
-                    setIsModalOpen(true);
-                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -470,12 +464,6 @@ export function PaymentsDataTable({
           </div>
         </div>
       </div>
-
-      <PaymentDetailModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        payment={selectedPayment}
-      />
     </div>
   );
 }

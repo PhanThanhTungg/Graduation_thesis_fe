@@ -33,7 +33,7 @@ import { showToast } from "@/lib/toast";
 type Transaction = {
   id: string;
   walletId: string;
-  type: "deposit" | "withdrawal";
+  type: "deposit" | "withdrawal" | "order" | "disk";
   amount: number;
   balanceBefore: number;
   balanceAfter: number;
@@ -67,7 +67,7 @@ export function RecentTransactions() {
         type:
           typeFilter === "all"
             ? undefined
-            : (typeFilter as "deposit" | "withdrawal"),
+            : (typeFilter as "deposit" | "withdrawal" | "order" | "disk"),
         status:
           statusFilter === "all"
             ? undefined
@@ -165,6 +165,8 @@ export function RecentTransactions() {
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="deposit">Deposit</SelectItem>
               <SelectItem value="withdrawal">Withdrawal</SelectItem>
+              <SelectItem value="order">Order</SelectItem>
+              <SelectItem value="disk">Disk Space</SelectItem>
             </SelectContent>
           </Select>
 
@@ -231,12 +233,16 @@ export function RecentTransactions() {
                   </TableCell>
                   <TableCell
                     className={
-                      transaction.type === "deposit"
+                      transaction.type === "deposit" ||
+                      transaction.type === "order"
                         ? "text-green font-medium"
                         : "text-orange font-medium"
                     }
                   >
-                    {transaction.type === "deposit" ? "+" : "-"}
+                    {transaction.type === "deposit" ||
+                    transaction.type === "order"
+                      ? "+"
+                      : "-"}
                     {formatPrice(Math.abs(transaction.amount))}
                   </TableCell>
                   <TableCell>{getStatusBadge(transaction.status)}</TableCell>
