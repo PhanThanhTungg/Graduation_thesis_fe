@@ -66,7 +66,6 @@ type TransactionsDataTableProps = {
   onSearchChange: (search: string) => void;
   onSortChange: (sortField: string, sortOrder: "asc" | "desc") => void;
   onTypeFilterChange: (type: TransactionType | "all") => void;
-  onStatusFilterChange: (status: TransactionStatus | "all") => void;
 };
 
 const getStatusColor = (status: TransactionStatus) => {
@@ -104,7 +103,6 @@ export function TransactionsDataTable({
   onSearchChange,
   onSortChange,
   onTypeFilterChange,
-  onStatusFilterChange,
 }: TransactionsDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -116,9 +114,6 @@ export function TransactionsDataTable({
   const [typeFilter, setTypeFilter] = React.useState<TransactionType | "all">(
     "all",
   );
-  const [statusFilter, setStatusFilter] = React.useState<
-    TransactionStatus | "all"
-  >("all");
 
   const columns: ColumnDef<TransactionListItem>[] = React.useMemo(
     () => [
@@ -274,13 +269,18 @@ export function TransactionsDataTable({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const handleSearch = React.useCallback(
-    (value: string) => {
-      setSearchValue(value);
-      onSearchChange(value);
-    },
-    [onSearchChange],
-  );
+  // Debounced search to avoid excessive API calls
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearchChange(searchValue);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchValue, onSearchChange]);
+
+  const handleSearchInputChange = React.useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
 
   const handleTypeFilter = React.useCallback(
     (value: TransactionType | "all") => {
@@ -288,14 +288,6 @@ export function TransactionsDataTable({
       onTypeFilterChange(value);
     },
     [onTypeFilterChange],
-  );
-
-  const handleStatusFilter = React.useCallback(
-    (value: TransactionStatus | "all") => {
-      setStatusFilter(value);
-      onStatusFilterChange(value);
-    },
-    [onStatusFilterChange],
   );
 
   return (
@@ -307,7 +299,7 @@ export function TransactionsDataTable({
             <Input
               placeholder="Search by user name or email..."
               value={searchValue}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
               className="pl-9 pr-9"
             />
             {searchValue && (
@@ -315,7 +307,7 @@ export function TransactionsDataTable({
                 variant="ghost"
                 size="icon"
                 className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
-                onClick={() => handleSearch("")}
+                onClick={() => handleSearchInputChange("")}
               >
                 <IconX className="h-4 w-4" />
               </Button>
@@ -337,18 +329,6 @@ export function TransactionsDataTable({
               <SelectItem value="disk_space_income">
                 Disk Space Income
               </SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={handleStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>

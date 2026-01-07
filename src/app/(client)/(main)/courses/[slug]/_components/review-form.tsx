@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { Star, LogIn } from "lucide-react";
@@ -17,22 +17,50 @@ interface ReviewFormProps {
   onReviewSubmitted?: (review: ExtendedReview) => void;
 }
 
-export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormProps) {
+export default function ReviewForm({
+  courseId,
+  onReviewSubmitted,
+}: ReviewFormProps) {
   const [rating, setRating] = useState<number>(0);
   const [hoveredRating, setHoveredRating] = useState<number>(0);
   const [comment, setComment] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  const [hasPurchased, setHasPurchased] = useState<boolean>(false);
+  const [isCheckingPurchase, setIsCheckingPurchase] = useState<boolean>(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = await getCookie('client_access_token');
+      const token = await getCookie("client_access_token");
       setIsAuthenticated(!!token);
       setIsCheckingAuth(false);
     };
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    const checkCoursePurchase = async () => {
+      if (!isAuthenticated) {
+        setIsCheckingPurchase(false);
+        return;
+      }
+
+      try {
+        const { checkPurchase } = await import("@/service/payment.service");
+        const result = await checkPurchase(courseId);
+        setHasPurchased(result.hasPurchased);
+      } catch (error) {
+        setHasPurchased(false);
+      } finally {
+        setIsCheckingPurchase(false);
+      }
+    };
+
+    if (!isCheckingAuth) {
+      checkCoursePurchase();
+    }
+  }, [isAuthenticated, isCheckingAuth, courseId]);
 
   const handleSubmitReview = async () => {
     if (rating === 0) {
@@ -41,7 +69,7 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
     }
 
     setIsSubmitting(true);
-    
+
     const result = await createReview(courseId, {
       rating,
       comment: comment,
@@ -57,7 +85,7 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
     }
   };
 
-  if (isCheckingAuth) {
+  if (isCheckingAuth || isCheckingPurchase) {
     return (
       <div className="mb-8 p-5 border border-border rounded-lg bg-muted/30">
         <p className="text-sm text-muted-foreground">Loading...</p>
@@ -71,15 +99,33 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
         <div className="flex items-center gap-3">
           <LogIn className="size-5 text-muted-foreground" />
           <div className="flex-1">
-            <h4 className="font-semibold text-foreground mb-1">Sign in to leave a review</h4>
+            <h4 className="font-semibold text-foreground mb-1">
+              Sign in to leave a review
+            </h4>
             <p className="text-sm text-muted-foreground mb-3">
               You need to be logged in to share your thoughts about this course.
             </p>
             <Link href="/auth/login">
-              <Button size="sm">
-                Sign In
-              </Button>
+              <Button size="sm">Sign In</Button>
             </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasPurchased) {
+    return (
+      <div className="mb-8 p-5 border border-border rounded-lg bg-muted/30">
+        <div className="flex items-center gap-3">
+          <LogIn className="size-5 text-muted-foreground" />
+          <div className="flex-1">
+            <h4 className="font-semibold text-foreground mb-1">
+              Purchase required to review
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              You must purchase this course before leaving a review.
+            </p>
           </div>
         </div>
       </div>
@@ -89,7 +135,7 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
   return (
     <div className="mb-8 p-5 border border-border rounded-lg bg-muted/30">
       <h4 className="font-semibold text-foreground mb-4">Leave a Review</h4>
-      
+
       {/* Rating Input */}
       <div className="mb-4">
         <Label className="text-sm font-medium text-foreground mb-2 block">
@@ -99,7 +145,7 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
           {Array.from({ length: 5 }).map((_, index) => {
             const starValue = index + 1;
             const isActive = starValue <= (hoveredRating || rating);
-            
+
             return (
               <button
                 key={index}
@@ -114,7 +160,7 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
                     "size-8 transition-colors",
                     isActive
                       ? "fill-star text-star"
-                      : "fill-none text-muted-foreground"
+                      : "fill-none text-muted-foreground",
                   )}
                 />
               </button>
@@ -130,7 +176,10 @@ export default function ReviewForm({ courseId, onReviewSubmitted }: ReviewFormPr
 
       {/* Comment Input */}
       <div className="mb-4">
-        <Label htmlFor="comment" className="text-sm font-medium text-foreground mb-2 block">
+        <Label
+          htmlFor="comment"
+          className="text-sm font-medium text-foreground mb-2 block"
+        >
           Your Comment (Optional)
         </Label>
         <Textarea

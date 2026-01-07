@@ -27,7 +27,6 @@ export default function TransactionsPage() {
   const [filters, setFilters] = useState({
     search: "",
     type: "all" as TransactionType | "all",
-    status: "all" as TransactionStatus | "all",
     sortField: "createdAt" as "amount" | "createdAt",
     sortOrder: "desc" as "asc" | "desc",
   });
@@ -51,6 +50,10 @@ export default function TransactionsPage() {
 
         if (filters.search) {
           params.keySearch = filters.search;
+        }
+
+        if (filters.type !== "all") {
+          params.type = filters.type;
         }
 
         const data = await getPlatformTransactions(params);
@@ -104,14 +107,6 @@ export default function TransactionsPage() {
   const handleTypeFilterChange = useCallback(
     (type: TransactionType | "all") => {
       setFilters((prev) => ({ ...prev, type }));
-      setPagination((prev) => ({ ...prev, page: 1 }));
-    },
-    [],
-  );
-
-  const handleStatusFilterChange = useCallback(
-    (status: TransactionStatus | "all") => {
-      setFilters((prev) => ({ ...prev, status }));
       setPagination((prev) => ({ ...prev, page: 1 }));
     },
     [],
@@ -173,7 +168,6 @@ export default function TransactionsPage() {
         onSearchChange={handleSearchChange}
         onSortChange={handleSortChange}
         onTypeFilterChange={handleTypeFilterChange}
-        onStatusFilterChange={handleStatusFilterChange}
       />
     </div>
   );
