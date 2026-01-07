@@ -39,13 +39,13 @@ interface CourseDropdownOption {
 const getProgressColor = (progress: string) => {
   switch (progress) {
     case "completed":
-      return "bg-green-100 text-green-800";
+      return "bg-green-foreground/20 text-green-foreground";
     case "in_progress":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue/20 text-blue";
     case "not_started":
-      return "bg-gray-100 text-gray-800";
+      return "bg-muted text-muted-foreground";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-muted text-muted-foreground";
   }
 };
 
@@ -172,7 +172,7 @@ export default function StudentManagementContent() {
 
         {/* Course Selection */}
         <div className="mb-6">
-          <Card className="border-0 shadow-sm bg-white/50 backdrop-blur">
+          <Card className="border shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Select Course</CardTitle>
               <CardDescription>
@@ -202,7 +202,7 @@ export default function StudentManagementContent() {
         {/* Students Table */}
         {selectedCourseId && (
           <div>
-            <Card className="border-0 shadow-sm bg-white/50 backdrop-blur">
+            <Card className="border shadow-sm">
               <CardContent className="pt-6">
                 {loading ? (
                   <div className="space-y-3">
@@ -312,10 +312,10 @@ export default function StudentManagementContent() {
                                 <Badge
                                   className={`text-xs font-medium ${
                                     student.completionPercentage === 100
-                                      ? "bg-green-100 text-green-700 hover:bg-green-100"
+                                      ? "bg-green-foreground/20 text-green-foreground hover:bg-green-foreground/20"
                                       : student.completionPercentage > 0
-                                        ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-                                        : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+                                        ? "bg-blue/20 text-blue hover:bg-blue/20"
+                                        : "bg-muted text-muted-foreground hover:bg-muted"
                                   }`}
                                 >
                                   {student.completionPercentage === 100

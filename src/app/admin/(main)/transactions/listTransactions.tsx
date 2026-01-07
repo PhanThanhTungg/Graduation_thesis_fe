@@ -21,8 +21,6 @@ import {
   IconChevronsRight,
   IconSearch,
   IconX,
-  IconArrowDown,
-  IconArrowUp,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,7 +52,7 @@ import {
   TransactionListItem,
   TransactionType,
   TransactionStatus,
-} from "@/lib/admin-transactions-mock-data";
+} from "@/service/admin/finance.service";
 
 type TransactionsDataTableProps = {
   data: TransactionListItem[];
@@ -68,7 +66,6 @@ type TransactionsDataTableProps = {
   onSearchChange: (search: string) => void;
   onSortChange: (sortField: string, sortOrder: "asc" | "desc") => void;
   onTypeFilterChange: (type: TransactionType | "all") => void;
-  onStatusFilterChange: (status: TransactionStatus | "all") => void;
 };
 
 const getStatusColor = (status: TransactionStatus) => {
@@ -83,8 +80,10 @@ const getStatusColor = (status: TransactionStatus) => {
 
 const getTypeColor = (type: TransactionType) => {
   const colors: Record<TransactionType, string> = {
-    deposit: "bg-green-foreground text-primary-foreground",
-    withdrawal: "bg-orange text-primary-foreground",
+    commission_income: "bg-green-foreground text-primary-foreground",
+    upload_fee_income: "bg-blue text-primary-foreground",
+    ai_fee_income: "bg-purple text-primary-foreground",
+    disk_space_income: "bg-orange text-primary-foreground",
   };
   return colors[type] || "bg-muted text-muted-foreground";
 };
@@ -104,7 +103,6 @@ export function TransactionsDataTable({
   onSearchChange,
   onSortChange,
   onTypeFilterChange,
-  onStatusFilterChange,
 }: TransactionsDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -116,9 +114,6 @@ export function TransactionsDataTable({
   const [typeFilter, setTypeFilter] = React.useState<TransactionType | "all">(
     "all",
   );
-  const [statusFilter, setStatusFilter] = React.useState<
-    TransactionStatus | "all"
-  >("all");
 
   const columns: ColumnDef<TransactionListItem>[] = React.useMemo(
     () => [
@@ -156,23 +151,14 @@ export function TransactionsDataTable({
         header: "Type",
         cell: ({ row }) => {
           const type = row.original.type;
+          const typeLabel = type
+            .split("_")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
           return (
-            <div className="flex items-center gap-2">
-              {type === "deposit" ? (
-                <IconArrowDown
-                  className="w-4 h-4"
-                  style={{ color: "var(--green)" }}
-                />
-              ) : (
-                <IconArrowUp
-                  className="w-4 h-4"
-                  style={{ color: "var(--orange)" }}
-                />
-              )}
-              <Badge variant="outline" className={getTypeColor(type)}>
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Badge>
-            </div>
+            <Badge variant="outline" className={getTypeColor(type)}>
+              {typeLabel}
+            </Badge>
           );
         },
       },
@@ -181,14 +167,9 @@ export function TransactionsDataTable({
         header: "Amount",
         cell: ({ row }) => {
           const transaction = row.original;
-          const isDeposit = transaction.type === "deposit";
           return (
-            <span
-              className="font-semibold"
-              style={{ color: isDeposit ? "var(--green)" : "var(--orange)" }}
-            >
-              {isDeposit ? "+" : "-"}
-              {formatCurrency(transaction.amount)}
+            <span className="font-semibold" style={{ color: "var(--green)" }}>
+              +{formatCurrency(transaction.amount)}
             </span>
           );
         },
@@ -288,13 +269,18 @@ export function TransactionsDataTable({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const handleSearch = React.useCallback(
-    (value: string) => {
-      setSearchValue(value);
-      onSearchChange(value);
-    },
-    [onSearchChange],
-  );
+  // Debounced search to avoid excessive API calls
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearchChange(searchValue);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchValue, onSearchChange]);
+
+  const handleSearchInputChange = React.useCallback((value: string) => {
+    setSearchValue(value);
+  }, []);
 
   const handleTypeFilter = React.useCallback(
     (value: TransactionType | "all") => {
@@ -302,14 +288,6 @@ export function TransactionsDataTable({
       onTypeFilterChange(value);
     },
     [onTypeFilterChange],
-  );
-
-  const handleStatusFilter = React.useCallback(
-    (value: TransactionStatus | "all") => {
-      setStatusFilter(value);
-      onStatusFilterChange(value);
-    },
-    [onStatusFilterChange],
   );
 
   return (
@@ -321,7 +299,7 @@ export function TransactionsDataTable({
             <Input
               placeholder="Search by user name or email..."
               value={searchValue}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
               className="pl-9 pr-9"
             />
             {searchValue && (
@@ -329,32 +307,28 @@ export function TransactionsDataTable({
                 variant="ghost"
                 size="icon"
                 className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
-                onClick={() => handleSearch("")}
+                onClick={() => handleSearchInputChange("")}
               >
                 <IconX className="h-4 w-4" />
               </Button>
             )}
           </div>
           <Select value={typeFilter} onValueChange={handleTypeFilter}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-52">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="deposit">Deposit</SelectItem>
-              <SelectItem value="withdrawal">Withdrawal</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={handleStatusFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="commission_income">
+                Commission Income
+              </SelectItem>
+              <SelectItem value="upload_fee_income">
+                Upload Fee Income
+              </SelectItem>
+              <SelectItem value="ai_fee_income">AI Fee Income</SelectItem>
+              <SelectItem value="disk_space_income">
+                Disk Space Income
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

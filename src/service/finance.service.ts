@@ -21,7 +21,7 @@ type TransactionResponse = {
     transactions: {
       id: string;
       walletId: string;
-      type: "deposit" | "withdrawal";
+      type: "deposit" | "withdrawal" | "order" | "disk";
       amount: number;
       balanceBefore: number;
       balanceAfter: number;
@@ -122,7 +122,7 @@ export const getWallet = async () => {
 export const getTransactions = async (params?: {
   page?: number;
   limit?: number;
-  type?: "deposit" | "withdrawal";
+  type?: "deposit" | "withdrawal" | "order" | "disk";
   status?: "pending" | "processing" | "completed" | "cancelled";
   sortField?: "amount" | "createdAt";
   sortOrder?: "asc" | "desc";
@@ -373,5 +373,49 @@ export const getDiskPurchaseHistory = async (params?: {
     "payload" in response.payload && "message" in response.payload
       ? response.payload.message
       : "Failed to get disk purchase history",
+  );
+};
+
+type TeacherFilesResponse = {
+  message: string;
+  data: {
+    files: {
+      id: string;
+      name: string;
+      size: number;
+      url: string;
+      type: "file" | "video";
+      duration?: number;
+      createdAt: string;
+      lessonTitle: string;
+      chapterTitle: string;
+      courseTitle: string;
+    }[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+};
+
+export const getTeacherFiles = async (params?: {
+  page?: number;
+  limit?: number;
+}) => {
+  const response = await get<TeacherFilesResponse>(
+    "/api/disk/client/files",
+    params,
+  );
+
+  if (response.status === 200) {
+    return (response.payload as TeacherFilesResponse).data;
+  }
+
+  throw new Error(
+    "payload" in response.payload && "message" in response.payload
+      ? response.payload.message
+      : "Failed to get teacher files",
   );
 };

@@ -3,10 +3,11 @@
 import { useCallback, useState, useEffect } from "react";
 import { PaymentsDataTable } from "./listPayments";
 import {
-  getPayments,
+  getWithdrawals,
   PaymentListItem,
   PaymentStatus,
-} from "@/lib/admin-payments-mock-data";
+  GetWithdrawalsParams,
+} from "@/service/admin/finance.service";
 import { useAdminPermissions } from "@/hooks/useAdminPermissions";
 import { AlertCircle } from "lucide-react";
 
@@ -14,44 +15,103 @@ export default function PaymentsPage() {
   const { hasPermission, isLoading: isCheckingPermission } =
     useAdminPermissions();
   const [payments, setPayments] = useState<PaymentListItem[]>([]);
-  const [pagination] = useState({
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
-    total: 45,
-    totalPages: 5,
+    total: 0,
+    totalPages: 0,
+  });
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all" as PaymentStatus | "all",
+    sortField: "createdAt" as "amount" | "createdAt",
+    sortOrder: "desc" as "asc" | "desc",
   });
 
   const hasAccess = hasPermission("payment", "view");
 
   useEffect(() => {
-    if (!isCheckingPermission && hasAccess) {
-      setPayments(getPayments());
-    }
-  }, [isCheckingPermission, hasAccess]);
+    if (isCheckingPermission || !hasAccess) return;
+
+    const fetchWithdrawals = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const params: GetWithdrawalsParams = {
+          page: pagination.page,
+          limit: pagination.limit,
+          sortField: filters.sortField,
+          sortOrder: filters.sortOrder,
+        };
+
+        if (filters.search) {
+          params.keySearch = filters.search;
+        }
+
+        if (filters.status !== "all") {
+          params.status = filters.status;
+        }
+
+        const data = await getWithdrawals(params);
+        setPayments(data.withdrawals);
+        setPagination((prev) => ({
+          ...prev,
+          total: data.pagination.total,
+          totalPages: data.pagination.totalPages,
+        }));
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch withdrawals",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchWithdrawals();
+  }, [
+    isCheckingPermission,
+    hasAccess,
+    pagination.page,
+    pagination.limit,
+    filters.search,
+    filters.status,
+    filters.sortField,
+    filters.sortOrder,
+  ]);
 
   const handlePaginationChange = useCallback((page: number, limit: number) => {
-    console.log("Pagination changed:", { page, limit });
+    setPagination((prev) => ({ ...prev, page, limit }));
   }, []);
 
   const handleSearchChange = useCallback((search: string) => {
-    console.log("Search changed:", search);
+    setFilters((prev) => ({ ...prev, search }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
   }, []);
 
   const handleSortChange = useCallback(
     (sortField: string, sortOrder: "asc" | "desc") => {
-      console.log("Sort changed:", { sortField, sortOrder });
+      setFilters((prev) => ({
+        ...prev,
+        sortField: sortField as "amount" | "createdAt",
+        sortOrder: sortOrder as "asc" | "desc",
+      }));
     },
     [],
   );
 
   const handleStatusFilterChange = useCallback(
     (status: PaymentStatus | "all") => {
-      console.log("Status filter changed:", status);
+      setFilters((prev) => ({ ...prev, status }));
+      setPagination((prev) => ({ ...prev, page: 1 }));
     },
     [],
   );
 
-  if (isCheckingPermission) {
+  if (isCheckingPermission || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -73,6 +133,20 @@ export default function PaymentsPage() {
           <p className="text-muted-foreground">
             You do not have permission to view this content.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] p-8">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+          </div>
+          <h3 className="text-lg font-semibold">Error</h3>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       </div>
     );

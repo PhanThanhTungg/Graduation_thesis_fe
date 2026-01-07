@@ -7,6 +7,7 @@ import {
   getWallet,
 } from "@/service/finance.service";
 import { BuyDiskModal } from "./buy-disk-modal";
+import { UploadedFilesCard } from "./uploaded-files-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -339,6 +340,10 @@ export function DiskContent() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 mb-8">
+        <UploadedFilesCard />
       </div>
 
       <Card>
